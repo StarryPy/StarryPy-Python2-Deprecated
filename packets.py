@@ -4,23 +4,53 @@ from enum import IntEnum
 
 
 class Packets(IntEnum):
-    PROTOCOL_VERSION = 0x01
-    CONNECT_RESPONSE = 0x02
-    HANDSHAKE_CHALLENGE = 0x04
-    CHAT_RECEIVED = 0x05
-    UNIVERSE_TIME_UPDATE = 0x06
-    CLIENT_CONNECT = 0x07
-    HANDSHAKE_RESPONSE = 0x09
-    WARP_COMMAND = 0x10
-    CHAT_SENT = 0x0b
-    CONTEXT_UPDATE = 0x0c
-    ENTITY_INTERACT = 0x1e
-    OPEN_CONTAINER = 0x21
-    CLOSE_CONTAINER = 0x22
-    SWAP_IN_CONTAINER = 0x23
-    CLEAR_CONTAINER = 0x28
-    WORLD_UPDATE = 0x29
-    HEARTBEAT = 0x30
+    PROTOCOL_VERSION = 1
+    CONNECT_RESPONSE = 2
+    SERVER_DISCONNECT = 3
+    HANDSHAKE_CHALLENGE = 4
+    CHAT_RECEIVED = 5
+    UNIVERSE_TIME_UPDATE = 6
+    CLIENT_CONNECT = 7
+    CLIENT_DISCONNECT = 8
+    HANDSHAKE_RESPONSE = 9
+    WARP_COMMAND = 10
+    CHAT_SENT = 11
+    CLIENT_CONTEXT_UPDATE = 12
+    WORLD_START = 13
+    WORLD_STOP = 14
+    TILE_ARRAY_UPDATE = 15
+    TILE_UPDATE = 16
+    TILE_LIQUID_UPDATE = 17
+    TILE_DAMAGE_UPDATE = 18
+    TILE_MODIFICATION_FAILURE = 19
+    GIVE_ITEM = 20
+    SWAP_IN_CONTAINER_RESULT = 22
+    ENVIRONMENT_UPDATE = 23
+    ENTITY_INTERACT_RESULT = 24
+    MODIFY_TILE_LIST = 25
+    DAMAGE_TILE = 26
+    DAMAGE_TILE_GROUP = 27
+    REQUEST_DROP = 28
+    SPAWN_ENTITY = 29
+    ENTITY_INTERACT = 30
+    CONNECT_WIRE = 31
+    DISCONNECT_ALL_WIRES = 32
+    OPEN_CONTAINER = 33
+    CLOSE_CONTAINER = 34
+    SWAP_IN_CONTAINER = 35
+    ITEM_APPLY_IN_CONTAINER = 36
+    START_CRAFTING_IN_CONTAINER = 37
+    STOP_CRAFTING_IN_CONTAINER = 38
+    BURN_CONTAINER = 39
+    CLEAR_CONTAINER = 40
+    WORLD_UPDATE = 41
+    ENTITY_CREATE = 42
+    ENTITY_UPDATE = 43
+    ENTITY_DESTROY = 44
+    DAMAGE_NOTIFICATION = 45
+    STATUS_EFFECT_REQUEST = 46
+    UPDATE_WORLD_PROPERTIES = 47
+    HEARTBEAT = 48
 
 
 class SignedVLQ(Construct):
@@ -129,6 +159,9 @@ class Variant(Construct):
                     stream) for _ in range(size)}
         return None
 
+    def _build(self, obj, stream, context):
+        return chr(6) + PascalString("").build(obj)
+
 
 class HexAdapter(Adapter):
     def _encode(self, obj, context):
@@ -193,5 +226,41 @@ client_connect = Struct("client_connect",
                         VLQ("shipworld_length"),
                         Field("shipworld", lambda ctx: ctx.shipworld_length),
                         PascalString("account"))
-warp_command = Struct("warp_command", )
-world_started = Struct("world_start")
+world_coordinate = Struct("world_coordinate",
+                          PascalString("sector"),
+                          VLQ("x"),
+                          VLQ("y"),
+                          VLQ("z"),
+                          SignedVLQ("planet"))
+warp_command = Struct("warp_command",
+                      VLQ("warp"),
+                      world_coordinate,
+                      PascalString("player")
+)
+
+world_started = Struct("world_start",
+                       VLQ("planet_size"),
+                       Bytes("planet", lambda ctx: ctx.planet_size),
+                       VLQ("world_structure_size"),
+                       Bytes("world_structure", lambda ctx: ctx.world_structure_size),
+                       VLQ("sky_size"),
+                       Bytes("sky", lambda ctx: ctx.sky_size),
+                       VLQ("server_weather_size"),
+                       Bytes("server_weather", lambda ctx: ctx.server_weather_size),
+                       BFloat32("spawn_x"),
+                       BFloat32("spawn_y"),
+)
+give_item = Struct("give_item",
+                   PascalString("name"),
+                   VLQ("count"),
+                   Byte("variant_type"),
+                   PascalString("description"))
+
+give_item_write = lambda name, count: give_item.build(
+    Container(
+        name=name,
+        count=count,
+        variant_type=7,
+        description=''
+    )
+)

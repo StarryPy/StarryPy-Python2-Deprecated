@@ -20,7 +20,7 @@ class ConfigurationManager(object):
 
     def save(self):
         with open("config/config.json", "w") as config:
-            config.write(json.dumps(self.config))
+            config.write(json.dumps(self.config, indent=4, separators=(',', ': ')))
 
     def __getattr__(self, item):
         if item != "config":

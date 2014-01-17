@@ -123,6 +123,10 @@ class PlayerManager(object):
         self.session.add(Ban(ip=ip))
         self.session.commit()
 
+    def get_by_name(self, name):
+        return self.session.query(Player).filter(Player.logged_in == True,
+                                                 func.lower(Player.name) == func.lower(name)).first()
+
 
 def permissions(level=UserLevels.OWNER):
     """

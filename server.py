@@ -1,5 +1,7 @@
 import logging
 from uuid import uuid4
+import zlib
+
 import construct
 from twisted.internet import reactor
 from twisted.internet.protocol import ClientFactory, ServerFactory, Protocol, \
@@ -7,6 +9,7 @@ from twisted.internet.protocol import ClientFactory, ServerFactory, Protocol, \
 from construct import Container
 import construct.core
 from twisted.internet.task import deferLater
+
 from config import ConfigurationManager
 import packets
 from plugin_manager import PluginManager
@@ -105,7 +108,7 @@ class StarryPyServerProtocol(Protocol):
         self.plugin_manager = self.factory.plugin_manager
         logging.debug("Connection made in StarryPyServerProtocol with UUID %s" %
                       self.id)
-        reactor.connectTCP('localhost', 21024, StarboundClientFactory(self))
+        reactor.connectTCP(self.config.server_hostname, self.config.server_port, StarboundClientFactory(self))
 
     def string_received(self):
         """
@@ -205,15 +208,21 @@ class StarryPyServerProtocol(Protocol):
         This function is the meat of it all. Every time a full packet with
         a derived ID <= 48, it is passed through here.
         """
-        if p.id not in [48, 6, 12, 41]: print p.id
+        if p.id not in [48, 6, 12, 41]:
+            print packets.Packets(p.id)
         if p.id == packets.Packets.CLIENT_CONNECT:
             return self.client_connect(p)
         elif p.id == packets.Packets.CHAT_SENT:
             return self.chat_sent(p)
         elif p.id == packets.Packets.CONNECT_RESPONSE:
             return self.connect_response(p)
-            #elif p.id == packets.Packets.WORLD_START:
-            #    print packets.world_started.parse(zlib.decompress(p.data))
+        elif p.id == packets.Packets.WORLD_START:
+            print zlib.decompress(p.data).encode("hex")
+        elif p.id == packets.Packets.WARP_COMMAND:
+            print packets.warp_command.parse(p.data)
+        elif p.id == packets.Packets.GIVE_ITEM:
+            print packets.give_item.parse(p.data)
+            print p.data.encode("hex")
             #print p.data
         return True
 

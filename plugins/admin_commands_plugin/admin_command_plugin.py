@@ -1,5 +1,6 @@
 from base_plugin import SimpleCommandPlugin
 from core_plugins.user_manager import permissions, UserLevels
+import packets
 
 
 class UserCommandPlugin(SimpleCommandPlugin):
@@ -8,7 +9,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
     """
     name = "user_management_commands"
     depends = ['command_dispatcher', 'player_manager']
-    commands = ["who", "whois", "kick", "ban", "kickban"]
+    commands = ["who", "whois", "kick", "ban", "kickban", "give_item"]
 
     def activate(self):
         super(UserCommandPlugin, self).activate()
@@ -94,4 +95,30 @@ class UserCommandPlugin(SimpleCommandPlugin):
         else:
             self.protocol.send_chat_message("Couldn't find IP: %s" % ip)
         return False
+
+    @permissions(UserLevels.ADMIN)
+    def give_item(self, data):
+        name, item = self.extract_name(data)
+        target_player = self.player_manager.get_by_name(name)
+        if target_player is not None:
+            target_protocol = self.protocol.factory.protocols[target_player.protocol]
+            if len(item) > 0:
+                item_name = item[0]
+                if len(item) > 1:
+                    item_count = int(item[1])
+                else:
+                    item_count = 1
+                item_packet = self.protocol._build_packet(packets.Packets.GIVE_ITEM,
+                                                          packets.give_item_write(item_name, item_count))
+                target_protocol.transport.write(item_packet)
+                print item_packet.encode("hex")
+                target_protocol.send_chat_message(
+                    "%s has given you: %s (count: %d)" % (self.protocol.player.name, item_name, item_count - 1))
+                self.protocol.send_chat_message("Sent the item.")
+            else:
+                self.protocol.send_chat_message("You have to give an item name.")
+        else:
+            self.protocol.send_chat_message("Couldn't find name: %s" % name)
+        return False
+
 

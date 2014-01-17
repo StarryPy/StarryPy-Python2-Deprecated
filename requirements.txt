@@ -1,4 +1,4 @@
 sqlalchemy
 twisted
-enum
+enum34
 construct
