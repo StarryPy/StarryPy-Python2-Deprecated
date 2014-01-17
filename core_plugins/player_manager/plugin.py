@@ -1,5 +1,4 @@
 import logging
-import zlib
 from construct import Container
 from twisted.words.ewords import AlreadyLoggedIn
 from base_plugin import BasePlugin
@@ -12,10 +11,11 @@ class PlayerManagerPlugin(BasePlugin):
     name = "player_manager"
 
     def activate(self):
+        super(PlayerManagerPlugin, self).activate()
         self.player_manager = PlayerManager(self.config)
 
     def on_client_connect(self, data):
-        client_data = client_connect.parse(zlib.decompress(data.data))
+        client_data = client_connect.parse(data.data)
         try:
             self.protocol.player = self.player_manager.fetch_or_create(
                 name=client_data.name,
@@ -36,7 +36,6 @@ class PlayerManagerPlugin(BasePlugin):
             )
             self.protocol.transport.write(ban_packet)
             self.protocol.transport.loseConnection()
-            print e
             return False
 
     def after_connect_response(self, data):
@@ -48,6 +47,6 @@ class PlayerManagerPlugin(BasePlugin):
             self.protocol.transport.loseConnection()
         self.protocol.player.client_id = connection_parameters.client_id
         self.protocol.player.logged_in = True
-        print "Player %s (UUID: %s, IP: %s) logged in" % (
+        logging.info("Player %s (UUID: %s, IP: %s) logged in" % (
             self.protocol.player.name, self.protocol.player.uuid,
-            self.protocol.transport.getHost().host)
+            self.protocol.transport.getHost().host))

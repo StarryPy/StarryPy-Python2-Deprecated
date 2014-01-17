@@ -1,3 +1,4 @@
+import logging
 from base_plugin import BasePlugin
 from packets import chat_send
 
@@ -6,6 +7,7 @@ class CommandDispatchPlugin(BasePlugin):
     name = "command_dispatcher"
 
     def activate(self):
+        super(CommandDispatchPlugin, self).activate()
         self.commands = {}
         self.command_prefix = self.config.command_prefix
 
@@ -20,8 +22,7 @@ class CommandDispatchPlugin(BasePlugin):
                     self.commands[command](split_command[1:])
                 return False
             except Exception as e:
-                print "Got an exception"
-                print e
+                logging.exception(e)
 
     def register(self, f, names):
         if not callable(f):
@@ -38,3 +39,6 @@ class CommandDispatchPlugin(BasePlugin):
             else:
                 self.commands[name] = f
 
+    def unregister(self, name):
+        if name in self.commands:
+            del (self.commands[name])

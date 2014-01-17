@@ -3,8 +3,10 @@ Defines a common manager for plugins, which provide the bulk of the
 functionality in StarryPy.
 """
 import inspect
+import logging
 import os
 import sys
+
 from base_plugin import BasePlugin
 from config import ConfigurationManager
 
@@ -51,6 +53,10 @@ class PluginManager(object):
         sys.path.append(self.plugin_dir)
         self.load_plugins(self.plugin_dir)
 
+        self.activate_plugins()
+        logging.info("Loaded plugins: %s" % "\n".join(
+            ["%s, Active: %s" % (plugin.name, plugin.active) for plugin in self.plugins]))
+
     def load_plugins(self, plugin_dir):
         """
         Loads and instantiates all classes deriving from `self.base_class`,
@@ -72,7 +78,6 @@ class PluginManager(object):
                     if issubclass(plugin,
                                   self.base_class) and plugin is not self.base_class:
                         plugin_instance = plugin(self.config)
-                        print plugin_instance.name
                         if plugin_instance.name in self.plugin_names:
                             continue
                         if plugin_instance.depends is not None:
@@ -89,7 +94,8 @@ class PluginManager(object):
 
     def activate_plugins(self):
         for plugin in self.plugins:
-            plugin.activate()
+            if plugin.auto_activate:
+                plugin.activate()
 
     def deactivate_plugins(self):
         for plugin in self.plugins:
@@ -108,6 +114,8 @@ class PluginManager(object):
         """
         return_values = []
         for plugin in self.plugins:
+            if not plugin.active:
+                continue
             plugin.protocol = protocol
             res = getattr(plugin, command, lambda _: True)(data)
             if res is None:
@@ -126,9 +134,6 @@ class PluginManager(object):
         :raises : PluginNotFound
         """
         for plugin in self.plugins:
-            print plugin.name
-            print name
-            print plugin.name == name
             if plugin.name.lower() == name.lower():
                 return plugin
         raise PluginNotFound("No plugin with name=%s found." % name.lower())

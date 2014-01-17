@@ -3,6 +3,11 @@ from construct.core import _read_stream, _write_stream
 from enum import IntEnum
 
 
+class Direction(IntEnum):
+    CLIENT = 0
+    SERVER = 1
+
+
 class Packets(IntEnum):
     PROTOCOL_VERSION = 1
     CONNECT_RESPONSE = 2
@@ -67,36 +72,12 @@ class SignedVLQ(Construct):
             return -(value >> 1)
 
     def _build(self, obj, stream, context):
-        value = abs(obj)
-        holder = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        pos = 0
-        while True:
-            byte_value = value & 0x7f
-            value >>= 7
-            if value != 0:
-                byte_value |= 0x80
-            pos += 1
-            holder[pos] = byte_value
-
-            if value == 0:
-                break
-        res_holder = holder[:pos + 1]
-        res_holder.reverse()
-        if pos > 1:
-            res_holder[0] |= 0x80
-            res_holder[pos - 1] ^= 0x80
-        res_holder = res_holder[:-1]
-        res_holder = "".join([chr(x) for x in res_holder])
-        res_holder <<= 1
-        if pos > 1:
-            res_holder[-1] += 1
-        if obj < 0:
-            b = 1
+        value = obj
+        if value < 0:
+            value = -2 * value + 1
         else:
-            b = 0
-        res_holder &= -1
-        res_holder |= b
-        _write_stream(stream, pos, res_holder)
+            value = 2 * value
+        VLQ("")._build(value, stream, context)
 
 
 class PacketOutOfOrder(Exception):
@@ -114,28 +95,18 @@ class VLQ(Construct):
         return value
 
     def _build(self, obj, stream, context):
-        value = obj
-        holder = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        pos = 0
-        while True:
-            byte_value = value & 0x7f
+        result = bytearray()
+        value = int(obj)
+        while value > 0:
+            byte = value & 0x7f
             value >>= 7
             if value != 0:
-                byte_value |= 0x80
-            pos += 1
-            holder[pos] = byte_value
-
-            if value == 0:
-                break
-        res_holder = holder[:pos + 1]
-        res_holder.reverse()
-        if pos > 1:
-            res_holder[0] |= 0x80
-            res_holder[pos - 1] ^= 0x80
-        res_holder = res_holder[:-1]
-        if pos > 1:
-            res_holder[-1] += 1
-        _write_stream(stream, pos, "".join([chr(x) for x in res_holder]))
+                byte |= 0x80
+            result.insert(0, byte)
+        if len(result) > 1:
+            result[0] |= 0x80
+            result[-1] ^= 0x80
+        _write_stream(stream, len(result), "".join([chr(x) for x in result]))
 
 
 class Variant(Construct):
@@ -162,7 +133,6 @@ class Variant(Construct):
     def _build(self, obj, stream, context):
         return chr(6) + PascalString("").build(obj)
 
-
 class HexAdapter(Adapter):
     def _encode(self, obj, context):
         return obj.decode(
@@ -178,12 +148,12 @@ handshake_response = Struct("Handshake Response",
 
 packet = Struct("Base packet",
                 Byte("id"),
-                VLQ("payload_size"),
-                Field("data", lambda ctx: ctx.payload_size / 2))
+                SignedVLQ("payload_size"),
+                Field("data", lambda ctx: abs(ctx.payload_size)))
 
 start_packet = Struct("Interim Packet",
                       Byte("id"),
-                      VLQ("payload_size"),
+                      SignedVLQ("payload_size"),
                       GreedyRange(String("data", 1)))
 
 protocol_version = Struct("Protocol Version",
@@ -226,14 +196,16 @@ client_connect = Struct("client_connect",
                         VLQ("shipworld_length"),
                         Field("shipworld", lambda ctx: ctx.shipworld_length),
                         PascalString("account"))
+
 world_coordinate = Struct("world_coordinate",
                           PascalString("sector"),
                           VLQ("x"),
                           VLQ("y"),
                           VLQ("z"),
                           SignedVLQ("planet"))
+
 warp_command = Struct("warp_command",
-                      VLQ("warp"),
+                      UBInt32("warp"),
                       world_coordinate,
                       PascalString("player")
 )

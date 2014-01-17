@@ -1,5 +1,5 @@
 from base_plugin import SimpleCommandPlugin
-from core_plugins.user_manager import permissions, UserLevels
+from core_plugins.player_manager import permissions, UserLevels
 import packets
 
 
@@ -10,10 +10,12 @@ class UserCommandPlugin(SimpleCommandPlugin):
     name = "user_management_commands"
     depends = ['command_dispatcher', 'player_manager']
     commands = ["who", "whois", "kick", "ban", "kickban", "give_item"]
+    auto_activate = True
 
     def activate(self):
         super(UserCommandPlugin, self).activate()
         self.player_manager = self.plugins['player_manager'].player_manager
+        self.godmode = {}
 
     @staticmethod
     def extract_name(l):
@@ -56,7 +58,6 @@ class UserCommandPlugin(SimpleCommandPlugin):
         name, reason = self.extract_name(data)
         if reason is None:
             reason = "no reason given"
-        print name
         info = self.player_manager.whois(name)
         if info and info.logged_in:
             tp = self.protocol.factory.protocols[info.protocol]
@@ -111,7 +112,6 @@ class UserCommandPlugin(SimpleCommandPlugin):
                 item_packet = self.protocol._build_packet(packets.Packets.GIVE_ITEM,
                                                           packets.give_item_write(item_name, item_count))
                 target_protocol.transport.write(item_packet)
-                print item_packet.encode("hex")
                 target_protocol.send_chat_message(
                     "%s has given you: %s (count: %d)" % (self.protocol.player.name, item_name, item_count - 1))
                 self.protocol.send_chat_message("Sent the item.")
@@ -120,5 +120,4 @@ class UserCommandPlugin(SimpleCommandPlugin):
         else:
             self.protocol.send_chat_message("Couldn't find name: %s" % name)
         return False
-
 

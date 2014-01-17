@@ -19,16 +19,19 @@ class BasePlugin(object):
     description = "The common class for all plugins to inherit from."
     version = ".1"
     depends = None
+    auto_activate = True
 
     def __init__(self, config):
         self.config = config
         self.protocol = None
         self.plugins = {}
+        self.active = False
 
     def activate(self):
         """
         Called when the plugins are activated, do any setup work here.
         """
+        self.active = True
         return True
 
     def deactivate(self):
@@ -36,6 +39,7 @@ class BasePlugin(object):
         Called when the plugin is deactivated. Do any cleanup work here,
         as it is likely that the plugin will soon be destroyed.
         """
+        self.active = False
         return True
 
     def on_protocol_version(self, data):
@@ -286,6 +290,20 @@ class BasePlugin(object):
         :return : None
         """
 
+    def on_damage_notification(self, data):
+        """
+        Called when a damage notification packet is sent from the server.
+
+        :rtype : bool
+        """
+
+    def after_damage_notification(self, data):
+        """
+        Called after a damage notication packet is sent successfully.
+
+        :return : None
+        """
+
     def __repr__(self):
         return "<Plugin instance: %s (version %s)>" % (self.name, self.version)
 
@@ -303,10 +321,21 @@ class SimpleCommandPlugin(BasePlugin):
     version = "0.1"
     depends = ["command_dispatcher"]
     commands = []
+    auto_activate = True
+
+    def __init__(self, config):
+        super(SimpleCommandPlugin, self).__init__(config)
+        self.previously_activated = False
 
     def activate(self):
+        super(SimpleCommandPlugin, self).activate()
         for command in self.commands:
             f = getattr(self, command)
             if not callable(f):
                 raise CommandNameError("Could not find a method called %s" % command)
             self.plugins['command_dispatcher'].register(f, command)
+
+    def deactivate(self):
+        super(SimpleCommandPlugin, self).deactivate()
+        for command in self.commands:
+            self.plugins['command_dispatcher'].unregister(command)

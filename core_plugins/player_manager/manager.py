@@ -95,8 +95,6 @@ class PlayerManager(object):
                             ip=ip)
             player.ips = [IPAddress(ip=ip)]
             self.session.add(player)
-        print uuid
-        print self.config.owner_uuid
         if uuid == self.config.owner_uuid:
             player.access_level = int(UserLevels.OWNER)
         self.session.commit()
@@ -115,11 +113,9 @@ class PlayerManager(object):
         self.session.close()
 
     def check_bans(self, ip):
-        print self.session.query(Ban).all()
         return self.session.query(Ban).filter_by(ip=ip).first() is not None
 
     def ban(self, ip):
-        print ip
         self.session.add(Ban(ip=ip))
         self.session.commit()
 

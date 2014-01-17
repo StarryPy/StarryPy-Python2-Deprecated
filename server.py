@@ -46,9 +46,11 @@ class BufferedPackets(object):
         self.original = original
         self.parsed_original = packets.start_packet.parse(self.original)
         self.id = self.parsed_original.id
-        self.payload_size = self.parsed_original.payload_size / 2
+        self.payload_size = abs(self.parsed_original.payload_size)
+        self.compressed = self.parsed_original.payload_size < 0
         self.original_data = "".join(self.parsed_original.data)
         self.supplemental_data = ""
+        self.direction = None
 
     @property
     def remaining(self):
@@ -61,6 +63,8 @@ class BufferedPackets(object):
 
     @property
     def data(self):
+        if self.compressed:
+            return zlib.decompress(self.original_data + self.supplemental_data)
         return self.original_data + self.supplemental_data
 
     @property
@@ -94,6 +98,7 @@ class StarryPyServerProtocol(Protocol):
         self.buffering_packet = None
         self.after_write_callback = None
         self.plugin_manager = None
+        self.debug_file = open(self.config.debug_file, 'w')
         logging.info("Created StarryPyServerProtocol with UUID %s" % self.id)
 
     def connectionMade(self):
@@ -136,7 +141,7 @@ class StarryPyServerProtocol(Protocol):
                     self.buffering_packet.reconstructed)
         except construct.core.FieldError as e:
             logging.error(str(e))
-            self.client_connect.transport.write(
+            self.client_protocol.transport.write(
                 self.buffering_packet.reconstructed)
 
         finally:
@@ -157,6 +162,7 @@ class StarryPyServerProtocol(Protocol):
         """
         if not self.parsing:
             self.buffering_packet = BufferedPackets(data)
+            self.buffering_packet.direction = packets.Direction.SERVER
             logging.debug("Received initial packet.")
             if self.buffering_packet.finished:
                 logging.debug("reports finished")
@@ -194,6 +200,10 @@ class StarryPyServerProtocol(Protocol):
         return True
 
     @route
+    def damage_notification(self, data):
+        return True
+
+    @route
     def client_connect(self, data):
         """
         Called when the client attempts to connect to the Starbound server.
@@ -209,7 +219,9 @@ class StarryPyServerProtocol(Protocol):
         a derived ID <= 48, it is passed through here.
         """
         if p.id not in [48, 6, 12, 41]:
-            print packets.Packets(p.id)
+            self.debug_file.write(
+                "%s sent in direction: %s\n" % (str(packets.Packets(p.id)), str(packets.Direction(p.direction))))
+            self.debug_file.flush()
         if p.id == packets.Packets.CLIENT_CONNECT:
             return self.client_connect(p)
         elif p.id == packets.Packets.CHAT_SENT:
@@ -217,13 +229,9 @@ class StarryPyServerProtocol(Protocol):
         elif p.id == packets.Packets.CONNECT_RESPONSE:
             return self.connect_response(p)
         elif p.id == packets.Packets.WORLD_START:
-            print zlib.decompress(p.data).encode("hex")
+            pass
         elif p.id == packets.Packets.WARP_COMMAND:
-            print packets.warp_command.parse(p.data)
-        elif p.id == packets.Packets.GIVE_ITEM:
-            print packets.give_item.parse(p.data)
-            print p.data.encode("hex")
-            #print p.data
+            pass
         return True
 
     def send_chat_message(self, text, channel=0, world='', name=''):
@@ -263,7 +271,7 @@ class StarryPyServerProtocol(Protocol):
         :return: The build packet.
         :rtype : str
         """
-        length = len(data) * 2
+        length = len(data)
         return packets.packet.build(
             Container(id=packet_type, payload_size=length, data=data))
 
@@ -350,6 +358,7 @@ class ClientProtocol(Protocol):
         """
         if not self.parsing:
             self.buffering_packet = BufferedPackets(data)
+            self.buffering_packet.direction = packets.Direction.CLIENT
             logging.debug("Received initial packet.")
             if self.buffering_packet.finished:
                 logging.debug("reports finished")
