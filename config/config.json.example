@@ -1,0 +1,11 @@
+{
+    "server_hostname": "localhost",
+    "server_address": "localhost",
+    "debug_file": "debug.log",
+    "core_plugin_path": "./core_plugins",
+    "owner_uuid": "",
+    "player_db": "config/player.db",
+    "server_port": 21024,
+    "plugin_path": "./plugins",
+    "command_prefix": "/"
+}
