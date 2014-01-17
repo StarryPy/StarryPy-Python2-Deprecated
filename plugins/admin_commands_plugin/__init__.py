@@ -1,0 +1,1 @@
+from admin_command_plugin import UserCommandPlugin

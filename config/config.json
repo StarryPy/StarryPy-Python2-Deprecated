@@ -1,0 +1,1 @@
+{"server_address": "localhost", "ban_file": "config/bans.json", "core_plugin_path": "./core_plugins", "owner_uuid": "", "player_db": "config/player.db", "server_port": 21025, "plugin_path": "./plugins", "command_prefix": "/"}
