@@ -1,0 +1,1 @@
+from graphite_stats_plugin import GraphiteStatsPlugin

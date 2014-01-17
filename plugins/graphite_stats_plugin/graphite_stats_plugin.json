@@ -1,0 +1,8 @@
+{
+    "enabled": "False",
+    "graphite_host": "localhost",
+    "graphite_port": 2003,
+    "intervall": 60,
+    "graphite_prefix": "starbound",
+    "metrics": ["player_count"]
+}
