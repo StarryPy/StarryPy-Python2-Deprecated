@@ -60,5 +60,4 @@ class GraphiteStatsPlugin(BasePlugin):
     defined in the config.json. Make sure to return a single value.
     """
     def player_count(self):
-        print(str(self.player_manager.player_count()))
-        return 42            
+        return self.player_manager.player_count()            
