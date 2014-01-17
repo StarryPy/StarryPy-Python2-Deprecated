@@ -16,6 +16,7 @@ class GraphiteStatsPlugin(BasePlugin):
     auto_activate = False    
     
     def activate(self):
+        super(GraphiteStatsPlugin,self).activate()
         with open("plugins/graphite_stats_plugin/graphite_stats_plugin.json", "r+") as config:
             self.config = json.load(config)
         self.player_manager = self.plugins['player_manager'].player_manager
