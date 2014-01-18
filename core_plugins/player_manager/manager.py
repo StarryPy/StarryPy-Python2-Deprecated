@@ -104,6 +104,9 @@ class PlayerManager(object):
         return [x.name for x in
                 self.session.query(Player).filter_by(logged_in=True).all()]
 
+    def player_count(self):
+        return self.session.query(Player).filter_by(logged_in=True).count()
+
     def whois(self, name):
         return self.session.query(Player).filter(Player.logged_in == True,
                                                  func.lower(Player.name) == func.lower(name)).first()
