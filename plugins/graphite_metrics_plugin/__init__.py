@@ -1,0 +1,1 @@
+from graphite_metrics_plugin import GraphiteMetricsPlugin

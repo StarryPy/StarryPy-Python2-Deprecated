@@ -7,25 +7,23 @@ from base_plugin import BasePlugin
 from core_plugins.user_manager import permissions, UserLevels
 
 
-class GraphiteStatsPlugin(BasePlugin):
+class GraphiteMetricsPlugin(BasePlugin):
     """
-    Plugin to send stati of your starbound server to a graphite metrics service.
+    Plugin to send metrics of your starbound server to a graphite service.
     """
-    name = "graphite_stats_plugin"
+    name = "graphite_metrics_plugin"
     depends = ['player_manager']
-    auto_activate = False    
+    auto_activate = False
     
     def activate(self):
-        super(GraphiteStatsPlugin,self).activate()
+        super(GraphiteMetricsPlugin,self).activate()
         with open("plugins/graphite_stats_plugin/graphite_stats_plugin.json", "r+") as config:
             self.config = json.load(config)
         self.player_manager = self.plugins['player_manager'].player_manager
-        if self.config["enabled"] == "True":
-            self.connect_to_graphite()
-            self.looper = task.LoopingCall(self.get_metrics)
-            self.looper.start(self.config["intervall"])
-        else:
-            logging.info("%s disabled." % self.name)
+        self.connect_to_graphite()
+        self.looper = task.LoopingCall(self.get_metrics)
+        self.looper.start(self.config["intervall"])
+
 
     def connect_to_graphite(self):
         logging.debug("connecting to graphite instance at %s:%s" % (self.config["graphite_host"], self.config["graphite_port"]))

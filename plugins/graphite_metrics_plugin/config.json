@@ -1,5 +1,4 @@
 {
-    "enabled": "False",
     "graphite_host": "localhost",
     "graphite_port": 2003,
     "intervall": 60,
