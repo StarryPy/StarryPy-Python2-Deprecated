@@ -50,3 +50,6 @@ class PlayerManagerPlugin(BasePlugin):
         logging.info("Player %s (UUID: %s, IP: %s) logged in" % (
             self.protocol.player.name, self.protocol.player.uuid,
             self.protocol.transport.getHost().host))
+
+    def after_client_disconnect(self, player):
+        player.logged_in = False
