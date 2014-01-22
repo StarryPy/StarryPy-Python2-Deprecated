@@ -226,6 +226,16 @@ class StarryPyServerProtocol(Protocol):
         :rtype : bool
         """
         return True
+    
+    @route
+    def warp_command(self, data):
+        """
+        Called when the players issues a warp.
+
+        :param player: The warp_command data.
+        :rtype : bool
+        """
+        return True        
 
     def handle_starbound_packets(self, p):
         """
@@ -247,7 +257,7 @@ class StarryPyServerProtocol(Protocol):
         elif p.id == packets.Packets.WORLD_START:
             pass
         elif p.id == packets.Packets.WARP_COMMAND:
-            pass
+            return self.warp_command(p)
         return True
 
     def send_chat_message(self, text, channel=0, world='', name=''):
