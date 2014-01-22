@@ -210,6 +210,23 @@ warp_command = Struct("warp_command",
                       PascalString("player")
 )
 
+warp_command_write = lambda type, x, y, z, player: warp_command.build(
+    Container(
+        warp=type,
+        world_coordinate=world_coordinate.build(
+          Container(
+            sector=0,
+            x=x,
+            y=y,
+            z=z,
+            planet=0
+          )
+        ),
+        player=player
+    )
+)
+
+
 world_started = Struct("world_start",
                        VLQ("planet_size"),
                        Bytes("planet", lambda ctx: ctx.planet_size),
