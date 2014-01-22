@@ -217,6 +217,16 @@ class StarryPyServerProtocol(Protocol):
         """
         return True
 
+    @route
+    def client_disconnect(self, player):
+        """
+        Called when the client singnals that it is about to disconnect from the Starbound server.
+
+        :param player: The Player.
+        :rtype : bool
+        """
+        return True
+
     def handle_starbound_packets(self, p):
         """
         This function is the meat of it all. Every time a full packet with
@@ -228,6 +238,8 @@ class StarryPyServerProtocol(Protocol):
             self.debug_file.flush()
         if p.id == packets.Packets.CLIENT_CONNECT:
             return self.client_connect(p)
+        elif p.id == packets.Packets.CLIENT_DISCONNECT:
+            return self.client_disconnect(self.player)
         elif p.id == packets.Packets.CHAT_SENT:
             return self.chat_sent(p)
         elif p.id == packets.Packets.CONNECT_RESPONSE:
@@ -294,7 +306,7 @@ class StarryPyServerProtocol(Protocol):
         :return: None
         """
         if self.player:
-            self.player.logged_in = False
+            self.client_disconnect(self.player)
             #logging.warning("Lost connection. Reason given: %s" % str(reason))
 
     def die(self):

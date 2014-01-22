@@ -99,6 +99,15 @@ class BasePlugin(object):
         """
         return True
 
+    def on_client_disconnect(self, player):
+        """        
+        Called when the player sends a disconnect packet.
+        
+        :return: Whether the packet should be sent or not.
+        :return : None
+        """         
+        return True
+
     def on_handshake_response(self, data):
         """
         Called when a handshake response packet is sent by the client.
@@ -223,6 +232,11 @@ class BasePlugin(object):
         Called after the client_connect packet is sent successfully.
         :return : None
         """
+    def after_client_disconnect(self, player):
+        """
+        Called after the player sends a disconnect packet.
+        :return : None
+        """         
 
     def after_handshake_response(self, data):
         """
