@@ -27,8 +27,12 @@ def route(func):
         res = self.plugin_manager.do(self, on, data)
         if res:
             res = func(self, data)
-            deferLater(reactor, .05, self.plugin_manager.do, self, after, data)
+            d = deferLater(reactor, .05, self.plugin_manager.do, self, after, data)
+            d.addErrback(print_this_defered_failure)
         return res
+    
+    def print_this_defered_failure(f):
+        print(f)
 
     return wrapped_function
 
