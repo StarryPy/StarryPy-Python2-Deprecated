@@ -53,7 +53,6 @@ class PluginManager(object):
         sys.path.append(self.plugin_dir)
         self.load_plugins(self.plugin_dir)
 
-        self.activate_plugins()
         logging.info("Loaded plugins: %s" % "\n".join(
             ["%s, Active: %s" % (plugin.name, plugin.active) for plugin in self.plugins]))
 
