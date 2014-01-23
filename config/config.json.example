@@ -8,4 +8,12 @@
     "server_port": 21024,
     "plugin_path": "./plugins",
     "command_prefix": "/"
+    "colors": {
+    	"default": "^#F7EB43;",
+    	"guest": "^#F7EB43;",
+    	"registered": "^#A0F743;",
+    	"moderator": "^#4385F7;",
+    	"admin": "^#C443F7;",
+    	"owner": "^#F7434C;"    
+    }
 }

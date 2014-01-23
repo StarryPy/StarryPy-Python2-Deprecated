@@ -37,8 +37,8 @@ class UserCommandPlugin(SimpleCommandPlugin):
                          terminator)
 
     def who(self, data):
-        self.protocol.send_chat_message(
-            "Players online: %s" % " ".join(self.player_manager.who()))
+        who = [w.colored_name(self.config.colors) for w in self.player_manager.who()]
+        self.protocol.send_chat_message("Players online: %s" % " ".join(who))
         return False
 
     @permissions(UserLevels.ADMIN)
@@ -47,8 +47,8 @@ class UserCommandPlugin(SimpleCommandPlugin):
         info = self.player_manager.whois(name)
         if info:
             self.protocol.send_chat_message(
-                "Name: %s\nUUID: %s\nIP address: %s""" % (
-                    info.name, info.uuid, info.ip))
+                "Name: %s\nUserlevel: %s\nUUID: %s\nIP address: %s""" % (
+                    info.colored_name(self.config.colors), UserLevels(info.access_level), info.uuid, info.ip))
         else:
             self.protocol.send_chat_message("Player not found!")
         return False
