@@ -13,10 +13,10 @@ class Announcer(BasePlugin):
 
     def after_client_connect(self, data):
         try:
-            self.protocol.factory.broadcast(self.protocol.player.name+" joined.",0,"","Announcer")
+            self.protocol.factory.broadcast(self.protocol.player.colored_name(self.config.colors)+" joined.",0,"","Announcer")
         except AttributeError:
             pass
 
     def after_client_disconnect(self,data):
-        self.protocol.factory.broadcast(self.protocol.player.name+" left.",0,"","Announcer")
+        self.protocol.factory.broadcast(self.protocol.player.colored_name(self.config.colors)+" left.",0,"","Announcer")
 
