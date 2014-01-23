@@ -72,11 +72,9 @@ class SignedVLQ(Construct):
             return -(value >> 1)
 
     def _build(self, obj, stream, context):
-        value = obj
-        if value < 0:
-            value = -2 * value + 1
-        else:
-            value = 2 * value
+        value = abs(obj * 2)
+        if obj < 0:
+            value += 1
         VLQ("")._build(value, stream, context)
 
 
@@ -199,10 +197,12 @@ client_connect = Struct("client_connect",
 
 world_coordinate = Struct("world_coordinate",
                           PascalString("sector"),
-                          VLQ("x"),
-                          VLQ("y"),
-                          VLQ("z"),
-                          SignedVLQ("planet"))
+                          SBInt32("x"),
+                          SBInt32("y"),
+                          SBInt32("z"),
+                          SBInt32("planet"),
+                          SBInt32("satelite")
+                          )
 
 warp_command = Struct("warp_command",
                       UBInt32("warp"),
@@ -210,22 +210,21 @@ warp_command = Struct("warp_command",
                       PascalString("player")
 )
 
-warp_command_write = lambda type, x, y, z, player: warp_command.build(
+warp_command_write = lambda t, x, y, z, player: warp_command.build(
     Container(
-        warp=type,
-        world_coordinate=world_coordinate.build(
-          Container(
-            sector=0,
+        warp=t,
+        world_coordinate=Container(
+            sector=u'',
             x=x,
             y=y,
             z=z,
-            planet=0
+            planet=0,
+            satelite=0
           )
-        ),
+        ,
         player=player
     )
 )
-
 
 world_started = Struct("world_start",
                        VLQ("planet_size"),

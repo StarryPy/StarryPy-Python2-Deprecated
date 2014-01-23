@@ -22,15 +22,14 @@ class Warpy(SimpleCommandPlugin):
         name = " ".join(name)
         target_player = self.player_manager.get_by_name(name)
         
-        if target_player is not None:
-            print(self.protocol.player.name + " warping to :"+name)
+        if target_player is not None and target_player is not self.protocol.player:
+            print(self.protocol.player.name + " warping to: "+name)
             target_protocol = self.protocol.factory.protocols[target_player.protocol]
             warp_packet = self.protocol._build_packet(Packets.WARP_COMMAND,
-                                                      warp_command_write(2,0,0,0,target_player.name))
+                                                      warp_command_write(3,0,0,0,target_player.name.encode('utf-8')))
             self.protocol.client_protocol.transport.write(warp_packet)
-            print("sent a packet...")
         else:
-            self.protocol.send_chat_message("no such player. Usage: /warp Playername")
+            self.protocol.send_chat_message("no such player. Usage: /warp Playername (not yourself!)")
 
 
         
