@@ -42,6 +42,9 @@ class Player(Base):
     ip = Column(String)
     ips = relationship("IPAddress", order_by="IPAddress.id", backref="players")
 
+    def colored_name(self, colors):
+        color = colors[str(UserLevels(self.access_level)).split(".")[1].lower()]
+        return color+self.name+colors["default"]
 
 class IPAddress(Base):
     __tablename__ = 'ips'
@@ -101,8 +104,7 @@ class PlayerManager(object):
         return player
 
     def who(self):
-        return [x.name for x in
-                self.session.query(Player).filter_by(logged_in=True).all()]
+        return self.session.query(Player).filter_by(logged_in=True).all()
 
     def whois(self, name):
         return self.session.query(Player).filter(Player.logged_in == True,
