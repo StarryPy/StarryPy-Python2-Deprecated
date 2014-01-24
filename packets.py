@@ -72,11 +72,9 @@ class SignedVLQ(Construct):
             return -(value >> 1)
 
     def _build(self, obj, stream, context):
-        value = obj
-        if value < 0:
-            value = -2 * value + 1
-        else:
-            value = 2 * value
+        value = abs(obj * 2)
+        if obj < 0:
+            value += 1
         VLQ("")._build(value, stream, context)
 
 
@@ -109,29 +107,38 @@ class VLQ(Construct):
         _write_stream(stream, len(result), "".join([chr(x) for x in result]))
 
 
-class Variant(Construct):
-    def _parse(self, stream, context):
-        id = _read_stream(stream, 1)
-        if id == 2:
-            return BFloat64("").parse_stream(stream)
-        elif id == 3:
-            return Flag("").parse_stream(stream)
-        elif id == 4:
-            return VLQ("").parse_stream(stream)
-        elif id == 5:
-            return PascalString("").parse_stream(stream)
-        elif id == 6:
-            size = VLQ("length").parse_stream(stream)
-            return [Variant("").parse_stream(stream) for _ in range(size)]
-        elif id == 7:
-            size = VLQ("length").parse_stream(stream)
-            return {
-                PascalString("").parse_stream(stream): Variant("").parse_stream(
-                    stream) for _ in range(size)}
-        return None
-
-    def _build(self, obj, stream, context):
-        return chr(6) + PascalString("").build(obj)
+def variant(name="variant"):
+    return  Struct(name,
+                Enum(Byte("type"),
+                    NULL = 1,
+                    DOUBLE = 2,
+                    BOOL = 3,
+                    SVLQ = 4,
+                    STRING = 5,
+                    VARIANT = 6,
+                    DICT = 7
+                ),
+                Switch("data", lambda ctx: ctx.type,
+                    {
+                        "DOUBLE" : BFloat64("data"),
+                        "BOOL" : Flag("data"),
+                        "SVLQ" : SignedVLQ("data"),
+                        "STRING" : PascalString("data"),
+                        "VARIANT" : Struct("data",
+                            VLQ("length"),
+                            Array(lambda ctx: ctx.length, LazyBound("data", lambda: variant()))
+                        ),
+                        "DICT" : Struct("data",
+                            VLQ("length"),
+                            Array(lambda ctx: ctx.length, Struct("dict",
+                                PascalString("key"),
+                                LazyBound("value", lambda: variant())
+                                )
+                            )
+                        )
+                    }
+                )
+            )
 
 class HexAdapter(Adapter):
     def _encode(self, obj, context):
@@ -187,7 +194,7 @@ client_connect = Struct("client_connect",
                         VLQ("asset_digest_length"),
                         String("asset_digest",
                                lambda ctx: ctx.asset_digest_length),
-                        Variant("claim"),
+                        variant("claim"),
                         Flag("uuid_exists"),
                         If(lambda ctx: ctx.uuid_exists is True,
                            HexAdapter(Field("uuid", 16))),
@@ -199,15 +206,33 @@ client_connect = Struct("client_connect",
 
 world_coordinate = Struct("world_coordinate",
                           PascalString("sector"),
-                          VLQ("x"),
-                          VLQ("y"),
-                          VLQ("z"),
-                          SignedVLQ("planet"))
+                          SBInt32("x"),
+                          SBInt32("y"),
+                          SBInt32("z"),
+                          SBInt32("planet"),
+                          SBInt32("satelite")
+                          )
 
 warp_command = Struct("warp_command",
                       UBInt32("warp"),
                       world_coordinate,
                       PascalString("player")
+)
+
+warp_command_write = lambda t, sector=u'', x=0, y=0, z=0, planet=0,satelite=0, player=u'': warp_command.build(
+    Container(
+        warp=t,
+        world_coordinate=Container(
+            sector=sector,
+            x=x,
+            y=y,
+            z=z,
+            planet=planet,
+            satelite=satelite
+          )
+        ,
+        player=player
+    )
 )
 
 world_started = Struct("world_start",
@@ -236,3 +261,18 @@ give_item_write = lambda name, count: give_item.build(
         description=''
     )
 )
+
+update_world_properties = Struct("world_properties",
+                        UBInt8("count"),
+                        Array(lambda ctx: ctx.count, Struct("properties",
+                           PascalString("key"),
+                           variant("value")
+                        ))
+)
+
+def update_world_properties_write(dict):
+    return update_world_properties.build(Container(
+            count=len(dict),
+            properties=[Container(key=k, value=Container(type="SVLQ", data=v)) for k,v in dict.items()]
+        )
+    )
