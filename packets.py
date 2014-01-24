@@ -107,30 +107,38 @@ class VLQ(Construct):
         _write_stream(stream, len(result), "".join([chr(x) for x in result]))
 
 
-class Variant(Construct):
-    def _parse(self, stream, context):
-        id = ord(_read_stream(stream, 1))
-        print "in variant: id = %s" % id
-        if id == 2:
-            return BFloat64("").parse_stream(stream)
-        elif id == 3:
-            return Flag("").parse_stream(stream)
-        elif id == 4:
-            return SignedVLQ("").parse_stream(stream)
-        elif id == 5:
-            return PascalString("").parse_stream(stream)
-        elif id == 6:
-            size = VLQ("length").parse_stream(stream)
-            return [Variant("").parse_stream(stream) for _ in range(size)]
-        elif id == 7:
-            size = VLQ("length").parse_stream(stream)
-            return {
-                PascalString("").parse_stream(stream): Variant("").parse_stream(
-                    stream) for _ in range(size)}
-        return None
-
-    def _build(self, obj, stream, context):
-        return chr(6) + PascalString("").build(obj)
+def variant(name="variant"):
+    return  Struct(name,
+                Enum(Byte("type"),
+                    NULL = 1,
+                    DOUBLE = 2,
+                    BOOL = 3,
+                    SVLQ = 4,
+                    STRING = 5,
+                    VARIANT = 6,
+                    DICT = 7
+                ),
+                Switch("data", lambda ctx: ctx.type,
+                    {
+                        "DOUBLE" : BFloat64("data"),
+                        "BOOL" : Flag("data"),
+                        "SVLQ" : SignedVLQ("data"),
+                        "STRING" : PascalString("data"),
+                        "VARIANT" : Struct("data",
+                            VLQ("length"),
+                            Array(lambda ctx: ctx.length, LazyBound("data", lambda: variant()))
+                        ),
+                        "DICT" : Struct("data",
+                            VLQ("length"),
+                            Array(lambda ctx: ctx.length, Struct("dict",
+                                PascalString("key"),
+                                LazyBound("value", lambda: variant())
+                                )
+                            )
+                        )
+                    }
+                )
+            )
 
 class HexAdapter(Adapter):
     def _encode(self, obj, context):
@@ -186,7 +194,7 @@ client_connect = Struct("client_connect",
                         VLQ("asset_digest_length"),
                         String("asset_digest",
                                lambda ctx: ctx.asset_digest_length),
-                        Variant("claim"),
+                        variant("claim"),
                         Flag("uuid_exists"),
                         If(lambda ctx: ctx.uuid_exists is True,
                            HexAdapter(Field("uuid", 16))),
@@ -254,28 +262,17 @@ give_item_write = lambda name, count: give_item.build(
     )
 )
 
-update_world_properties = Struct("update_world_prperties",
-                      UBInt8("count"),
-                      PascalString("prop"),
-                      PascalString("player")
+update_world_properties = Struct("world_properties",
+                        UBInt8("count"),
+                        Array(lambda ctx: ctx.count, Struct("properties",
+                           PascalString("key"),
+                           variant("value")
+                        ))
 )
 
-class UpdateWorldWPoperties(Construct):
-    def _parse(self, stream, context):
-        h = {}
-        count = ord(_read_stream(stream, 1))
-        print count
-        for _ in range(count):
-            key = PascalString("").parse_stream(stream)
-            value = Variant("").parse_stream(stream)
-            h[key] = value
-        return h
-
-    def _build(self, obj, stream, context):
-        res = bytearray()
-        res.append(len(obj))
-        for k,v in obj.items():
-            res += bytearray(bytes(PascalString("").build(k)))
-            res.append(4)
-            res += bytearray(bytes(SignedVLQ("").build(v)))
-        _write_stream(stream, len(res), "".join(map(chr,res)))
+def update_world_properties_write(dict):
+    return update_world_properties.build(Container(
+            count=len(dict),
+            properties=[Container(key=k, value=Container(type="SVLQ", data=v)) for k,v in dict.items()]
+        )
+    )
