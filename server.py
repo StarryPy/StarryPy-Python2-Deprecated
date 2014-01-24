@@ -27,7 +27,7 @@ def route(func):
         res = self.plugin_manager.do(self, on, data)
         if res:
             res = func(self, data)
-            d = deferLater(reactor, .05, self.plugin_manager.do, self, after, data)
+            d = deferLater(reactor, .25, self.plugin_manager.do, self, after, data)
             d.addErrback(print_this_defered_failure)
         return res
     
@@ -315,8 +315,9 @@ class StarryPyServerProtocol(Protocol):
         :param reason: The reason for the disconnection.
         :return: None
         """
-        if self.player:
-            self.client_disconnect(self.player)
+        if self.player:            
+            if self.player.logged_in:
+                self.client_disconnect(self.player)
             #logging.warning("Lost connection. Reason given: %s" % str(reason))
 
     def die(self):
