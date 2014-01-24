@@ -109,13 +109,14 @@ class VLQ(Construct):
 
 class Variant(Construct):
     def _parse(self, stream, context):
-        id = _read_stream(stream, 1)
+        id = ord(_read_stream(stream, 1))
+        print "in variant: id = %s" % id
         if id == 2:
             return BFloat64("").parse_stream(stream)
         elif id == 3:
             return Flag("").parse_stream(stream)
         elif id == 4:
-            return VLQ("").parse_stream(stream)
+            return SignedVLQ("").parse_stream(stream)
         elif id == 5:
             return PascalString("").parse_stream(stream)
         elif id == 6:
@@ -210,16 +211,16 @@ warp_command = Struct("warp_command",
                       PascalString("player")
 )
 
-warp_command_write = lambda t, x, y, z, player: warp_command.build(
+warp_command_write = lambda t, sector=u'', x=0, y=0, z=0, planet=0,satelite=0, player=u'': warp_command.build(
     Container(
         warp=t,
         world_coordinate=Container(
-            sector=u'',
+            sector=sector,
             x=x,
             y=y,
             z=z,
-            planet=0,
-            satelite=0
+            planet=planet,
+            satelite=satelite
           )
         ,
         player=player
@@ -252,3 +253,29 @@ give_item_write = lambda name, count: give_item.build(
         description=''
     )
 )
+
+update_world_properties = Struct("update_world_prperties",
+                      UBInt8("count"),
+                      PascalString("prop"),
+                      PascalString("player")
+)
+
+class UpdateWorldWPoperties(Construct):
+    def _parse(self, stream, context):
+        h = {}
+        count = ord(_read_stream(stream, 1))
+        print count
+        for _ in range(count):
+            key = PascalString("").parse_stream(stream)
+            value = Variant("").parse_stream(stream)
+            h[key] = value
+        return h
+
+    def _build(self, obj, stream, context):
+        res = bytearray()
+        res.append(len(obj))
+        for k,v in obj.items():
+            res += bytearray(bytes(PascalString("").build(k)))
+            res.append(4)
+            res += bytearray(bytes(SignedVLQ("").build(v)))
+        _write_stream(stream, len(res), "".join(map(chr,res)))
