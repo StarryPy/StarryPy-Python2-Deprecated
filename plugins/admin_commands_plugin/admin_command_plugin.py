@@ -99,6 +99,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.ADMIN)
     def give_item(self, data):
+        "Gives an item to a player. Syntax: /give [target player] [item name] [optional: item count]"
         name, item = self.extract_name(data)
         target_player = self.player_manager.get_by_name(name)
         if target_player is not None:

@@ -30,59 +30,76 @@ def route(func):
             d = deferLater(reactor, .25, self.plugin_manager.do, self, after, data)
             d.addErrback(print_this_defered_failure)
         return res
-    
+
     def print_this_defered_failure(f):
         print(f)
 
     return wrapped_function
 
 
-class BufferedPackets(object):
-    """
-    Class that holds data about a packet that is being reconstructed from
-    incoming data.
+class Packet(object):
+    def __init__(self, id, payload_size, data, original_data, compressed=False):
+        self.id = id
+        self.payload_size = payload_size
+        self.data = data
+        self.original_data = original_data
+        self.compressed = compressed
 
-    These are not passed to plugins, instead the fully parsed packet is sent
-    if the format is known, otherwise just the packet data.
-    """
 
-    def __init__(self, original):
-        self.original = original
-        self.parsed_original = packets.start_packet.parse(self.original)
-        self.id = self.parsed_original.id
-        self.payload_size = abs(self.parsed_original.payload_size)
-        self.compressed = self.parsed_original.payload_size < 0
-        self.original_data = "".join(self.parsed_original.data)
-        self.supplemental_data = ""
-        self.direction = None
-
-    @property
-    def remaining(self):
-        """A property that returns the amount of data still expected."""
-        return self.payload_size - len(self.data)
-
-    @property
-    def finished(self):
-        return len(self.data) >= self.payload_size
-
-    @property
-    def data(self):
-        if self.compressed:
-            return zlib.decompress(self.original_data + self.supplemental_data)
-        return self.original_data + self.supplemental_data
-
-    @property
-    def reconstructed(self):
-        logging.debug("Reconstructing original packet.")
-        return self.original + self.supplemental_data
+class PacketStream(object):
+    def __init__(self, protocol):
+        self._stream = ""
+        self.id = None
+        self.payload_size = None
+        self.header_length = None
+        self.ready = False
+        self.payload = None
+        self.compressed = False
+        self.packet_size = None
+        self.protocol = protocol
 
     def __add__(self, other):
-        """Allows simple appending of data to the packet with +="""
-        logging.debug(
-            "Adding data to BufferedPackets. Current length: %d/%d", len(
-                self.data), self.payload_size)
-        self.supplemental_data += other
+        self._stream += other
+        try:
+            self.start_packet()
+            self.check_packet()
+        except:
+            pass
         return self
+
+    def start_packet(self):
+        if len(self._stream) > 0 and self.payload_size is None:
+            packet_header = packets.start_packet.parse(self._stream)
+            self.id = packet_header.id
+            self.payload_size = abs(packet_header.payload_size)
+            if packet_header.payload_size < 0:
+                self.compressed = True
+            else:
+                self.compressed = False
+            self.header_length = 1 + len(packets.SignedVLQ("").build(self.payload_size))
+            self.packet_size = self.payload_size + self.header_length
+            return True
+
+    def check_packet(self):
+        if len(self._stream) >= self.packet_size:
+            p, self._stream = self._stream[:self.packet_size], self._stream[self.packet_size:]
+            if not self._stream:
+                self._stream = ""
+            p_parsed = packets.packet.parse(p)
+            packet = Packet(id=p_parsed.id, payload_size=p_parsed.payload_size, data=p_parsed.data, original_data=p)
+            if self.compressed:
+                packet.data = zlib.decompress(packet.data)
+                packet.compressed = True
+            self.protocol.string_received(packet)
+            self.reset()
+            self.start_packet()
+            self.check_packet()
+
+    def reset(self):
+        self.id = None
+        self.payload_size = None
+        self.packet_size = None
+        self.compressed = False
 
 
 class StarryPyServerProtocol(Protocol):
@@ -115,11 +132,12 @@ class StarryPyServerProtocol(Protocol):
         :rtype : None
         """
         self.plugin_manager = self.factory.plugin_manager
+        self.packet_stream = PacketStream(self)
         logging.debug("Connection made in StarryPyServerProtocol with UUID %s" %
                       self.id)
         reactor.connectTCP(self.config.server_hostname, self.config.server_port, StarboundClientFactory(self))
 
-    def string_received(self):
+    def string_received(self, packet):
         """
         This method is called whenever a completed packet is received from the 
         client going to the Starbound server.
@@ -128,28 +146,21 @@ class StarryPyServerProtocol(Protocol):
 
         Processing of parsed data is handled in handle_starbound_packets()
         :rtype : None
-        """
-        try:
-            if 48 >= self.buffering_packet.id:
-                if self.handle_starbound_packets(self.buffering_packet):
-                    self.client_protocol.transport.write(
-                        self.buffering_packet.reconstructed)
-                    if self.after_write_callback is not None:
-                        self.after_write_callback()
-            else:
-                # We received an unknown packet; send it along.
-                logging.warning(
-                    "Received unknown message ID (%d) from client." %
-                    self.buffering_packet.id)
+    """
+        if 48 >= packet.id:
+            if self.handle_starbound_packets(packet):
                 self.client_protocol.transport.write(
-                    self.buffering_packet.reconstructed)
-        except construct.core.FieldError as e:
-            logging.error(str(e))
+                    packet.original_data)
+                if self.after_write_callback is not None:
+                    self.after_write_callback()
+        else:
+            # We received an unknown packet; send it along.
+            logging.warning(
+                "Received unknown message ID (%d) from client." %
+                packet.id)
             self.client_protocol.transport.write(
-                self.buffering_packet.reconstructed)
+                packet.original_data)
 
-        finally:
-            self.buffering_packet = None
 
     def dataReceived(self, data):
         """
@@ -164,22 +175,7 @@ class StarryPyServerProtocol(Protocol):
 
         :rtype : None
         """
-        if not self.parsing:
-            self.buffering_packet = BufferedPackets(data)
-            self.buffering_packet.direction = packets.Direction.SERVER
-            logging.debug("Received initial packet.")
-            if self.buffering_packet.finished:
-                logging.debug("reports finished")
-                self.string_received()
-                self.parsing = False
-            else:
-                self.parsing = True
-        else:
-            logging.debug("Received continutation packet.")
-            self.buffering_packet += data
-            if self.buffering_packet.finished:
-                self.string_received()
-                self.parsing = False
+        self.packet_stream += data
 
     @route
     def connect_response(self, data):
@@ -226,7 +222,7 @@ class StarryPyServerProtocol(Protocol):
         :rtype : bool
         """
         return True
-    
+
     @route
     def warp_command(self, data):
         """
@@ -235,16 +231,16 @@ class StarryPyServerProtocol(Protocol):
         :param player: The warp_command data.
         :rtype : bool
         """
-        return True        
+        return True
 
     def handle_starbound_packets(self, p):
         """
         This function is the meat of it all. Every time a full packet with
         a derived ID <= 48, it is passed through here.
         """
-        if p.id not in [48, 6, 12, 41]:
+        if p.id not in [48, 6] and p.id <= 48:
             self.debug_file.write(
-                "%s sent in direction: %s\n" % (str(packets.Packets(p.id)), str(packets.Direction(p.direction))))
+                '{"id": "%s", "data": "%s"}' % (str(packets.Packets(p.id)), p.data.encode("hex")))
             self.debug_file.flush()
         if p.id == packets.Packets.CLIENT_CONNECT:
             return self.client_connect(p)
@@ -334,6 +330,9 @@ class ClientProtocol(Protocol):
     The protocol class which handles the connection to the Starbound server.
     """
 
+    def __init__(self):
+        self.packet_stream = PacketStream(self)
+
     def connectionMade(self):
         """
         Called when the connection to the Starbound server is initially
@@ -343,10 +342,10 @@ class ClientProtocol(Protocol):
         :return: None
         """
         self.server_protocol.client_protocol = self
-        self.buffering_packet = None
         self.parsing = False
 
-    def string_received(self):
+
+    def string_received(self, packet):
         """
         This method is called whenever a completed packet is received from the
         Starbound server.
@@ -358,19 +357,16 @@ class ClientProtocol(Protocol):
 
         :return: None
         """
-
         try:
             if self.server_protocol.handle_starbound_packets(
-                    self.buffering_packet):
+                    packet):
                 self.server_protocol.write(
-                    self.buffering_packet.reconstructed)
+                    packet.original_data)
         except construct.core.FieldError as e:
             logging.error(str(e))
             self.server_protocol.write(
-                self.buffering_packet.reconstructed)
+                packet.original_data)
 
-        finally:
-            self.buffering_packet = None
 
     def dataReceived(self, data):
         """
@@ -383,22 +379,7 @@ class ClientProtocol(Protocol):
         :param data: Raw packet data from the Starbound server.
         :return: None
         """
-        if not self.parsing:
-            self.buffering_packet = BufferedPackets(data)
-            self.buffering_packet.direction = packets.Direction.CLIENT
-            logging.debug("Received initial packet.")
-            if self.buffering_packet.finished:
-                logging.debug("reports finished")
-                self.string_received()
-                self.parsing = False
-            else:
-                self.parsing = True
-        else:
-            logging.debug("Received continutation packet.")
-            self.buffering_packet += data
-            if self.buffering_packet.finished:
-                self.string_received()
-                self.parsing = False
+        self.packet_stream += data
 
 
 class StarryPyServerFactory(ServerFactory):

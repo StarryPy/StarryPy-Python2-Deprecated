@@ -1,4 +1,5 @@
 import datetime
+from functools import wraps
 
 from enum import Enum
 
@@ -44,7 +45,8 @@ class Player(Base):
 
     def colored_name(self, colors):
         color = colors[str(UserLevels(self.access_level)).split(".")[1].lower()]
-        return color+self.name+colors["default"]
+        return color + self.name + colors["default"]
+
 
 class IPAddress(Base):
     __tablename__ = 'ips'
@@ -127,11 +129,12 @@ class PlayerManager(object):
 
 
 def permissions(level=UserLevels.OWNER):
-    """
-    Provides a decorator to enable/disable permissions based on user level.
-    """
+    """Provides a decorator to enable/disable permissions based on user level."""
 
     def wrapper(func):
+        func.level = level
+
+        @wraps(func)
         def wrapped_function(self, *args, **kwargs):
             if self.protocol.player.access_level >= level:
                 return func(self, *args, **kwargs)

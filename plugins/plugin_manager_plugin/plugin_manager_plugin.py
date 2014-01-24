@@ -1,10 +1,11 @@
 from base_plugin import SimpleCommandPlugin
 from core_plugins.player_manager import permissions, UserLevels
+from plugin_manager import PluginNotFound
 
 
 class PluginManagerPlugin(SimpleCommandPlugin):
     name = "plugin_manager"
-    commands = ["list_plugins", "enable_plugin", "disable_plugin"]
+    commands = ["list_plugins", "enable_plugin", "disable_plugin", "help"]
     auto_activate = True
 
     @property
@@ -22,11 +23,16 @@ class PluginManagerPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.ADMIN)
     def disable_plugin(self, data):
+
+        """
+        Disables a currently activated plugin. Syntax: /disable_plugin [plugin name]
+        """
         if len(data) == 0:
             self.protocol.send_chat_message("You have to specify a plugin.")
             return
-        plugin = self.plugin_manager.get_by_name(data[0])
-        if not plugin:
+        try:
+            plugin = self.plugin_manager.get_by_name(data[0])
+        except PluginNotFound:
             self.protocol.send_chat_message("Couldn't find a plugin with the name %s" % data[0])
             return
         if plugin is self:
@@ -41,11 +47,13 @@ class PluginManagerPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.ADMIN)
     def enable_plugin(self, data):
+        """Enables a currently deactivated plugin. Syntax: /enable_plugin [plugin name]"""
         if len(data) == 0:
             self.protocol.send_chat_message("You have to specify a plugin.")
             return
-        plugin = self.plugin_manager.get_by_name(data[0])
-        if not plugin:
+        try:
+            plugin = self.plugin_manager.get_by_name(data[0])
+        except PluginNotFound:
             self.protocol.send_chat_message("Couldn't find a plugin with the name %s" % data[0])
             return
         if plugin.active:
@@ -54,7 +62,16 @@ class PluginManagerPlugin(SimpleCommandPlugin):
         plugin.activate()
         self.protocol.send_chat_message("Successfully activated plugin.")
 
-
-
-
-
+    def help(self, data):
+        """Prints help messages for plugin commands. Syntax: /help [command]"""
+        if len(data) > 0:
+            command = data[0].lower()
+            func = self.plugins['command_dispatcher'].commands.get(command, None)
+            if func is None:
+                self.protocol.send_chat_message("Couldn't find a command with the name %s" % command)
+            self.protocol.send_chat_message("%s%s: %s" % (self.config.command_prefix, command, func.__doc__))
+        else:
+            commands = self.plugins['command_dispatcher'].commands
+            level = self.protocol.player.access_level
+            #accessible_commands = [x for x,y in commands if y.level >= level]
+            return True

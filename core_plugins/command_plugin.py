@@ -20,6 +20,9 @@ class CommandDispatchPlugin(BasePlugin):
                 if command in self.commands:
                     self.commands[command].__self__.protocol = self.protocol
                     self.commands[command](split_command[1:])
+                else:
+                    self.protocol.send_chat_message(
+                        "Couldn't find a command called %s%s" % (self.command_prefix, command))
                 return False
             except Exception as e:
                 logging.exception(e)
