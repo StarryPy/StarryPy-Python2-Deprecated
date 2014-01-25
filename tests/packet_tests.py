@@ -59,17 +59,17 @@ Tests for packet type 0x06: Universe Time Update, Server -> Client
 '''
 class UniverseTimeUpdateTest(unittest.TestCase):
 
-    def testChatReceived(self):
-        packet = "TODO: NO TEST DATA".decode("hex")
+    def testParseBuild(self):
+        packet = "85e2c976".decode("hex")
         parsed = universe_time_update().parse(packet)
 
-        assert_equal(universe_time_update().build(parsed), packet)        
+        assert_equal(universe_time_update().build(parsed), packet)
 
 '''
 Tests for packet type 0x07: Client Connect, Server -> Client, compressed 
 '''
 class ClientConnectTest(unittest.TestCase):
-    def testClientConnect(self):
+    def testParseBuild(self):
         with open("tests/large_packets.json", "r+") as large_packets:
             packet = json.load(large_packets)['client_connect'].decode("hex")
         parsed = client_connect().parse(packet)
@@ -80,7 +80,7 @@ class ClientConnectTest(unittest.TestCase):
 Tests for packet type 0x08: Client Disconnect, Server -> Client, compressed 
 '''
 class ClientDisconnectTest(unittest.TestCase):
-    def testClientConnect(self):
+    def testParseBuild(self):
         packet = "00".decode("hex")
         parsed = client_disconnect().parse(packet)
 
@@ -124,7 +124,7 @@ class WarpCommandTest(unittest.TestCase):
 
 
     def testWarpOtherShip(self):
-        packet = "TODO: NO TEST DATA".decode("hex")
+        packet = "00000003000000000000000000000000000000000000000000056d61666669".decode("hex")
         parsed = warp_command().parse(packet)
         assert_is_not(parsed.player,'')
         assert_equal(parsed.warp_type,'WARP_OTHER_SHIP')
@@ -134,6 +134,14 @@ class WarpCommandTest(unittest.TestCase):
 
     def testWarpDown(self):
         packet = "0000000400000000000000000000000000000000000000000000".decode("hex")
+        parsed = warp_command().parse(packet)
+        assert_equal(parsed.warp_type,'WARP_DOWN')
+        
+        built_packet = warp_command().build(parsed)        
+        assert_equal(packet, built_packet)
+    
+    def testWarpDownHomePlanet(self):
+        packet = "TODO: NO TEST DATA".decode("hex")
         parsed = warp_command().parse(packet)
         assert_equal(parsed.warp_type,'WARP_DOWN')
         
@@ -174,6 +182,7 @@ Tests for packet types 0x0E: World Stop, Server -> Client
 class WorldStopTest(unittest.TestCase):
     def testParseBuild(self):
         packet = "0752656d6f766564".decode("hex")
-        parsed = world_stop().parse(packet)        
+        parsed = world_stop().parse(packet)
+        assert_equal(parsed.status,"Removed")
         assert_equal(world_stop().build(parsed), packet)
 
