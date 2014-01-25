@@ -107,8 +107,7 @@ class VLQ(Construct):
         _write_stream(stream, len(result), "".join([chr(x) for x in result]))
 
 
-def variant(name="variant"):
-    return  Struct(name,
+variant = lambda name="variant": Struct(name,
                 Enum(Byte("type"),
                     NULL = 1,
                     DOUBLE = 2,
@@ -140,6 +139,7 @@ def variant(name="variant"):
                 )
             )
 
+
 class HexAdapter(Adapter):
     def _encode(self, obj, context):
         return obj.decode(
@@ -149,79 +149,92 @@ class HexAdapter(Adapter):
         return obj.encode("hex")
 
 
-handshake_response = Struct("Handshake Response",
-                            PascalString("claim_response"),
-                            PascalString("hash"))
+handshake_response = lambda name="handshake_response":  Struct(name,
+                                                            PascalString("claim_response"),
+                                                            PascalString("hash")
+                                                        )
 
-packet = Struct("Base packet",
-                Byte("id"),
-                SignedVLQ("payload_size"),
-                Field("data", lambda ctx: abs(ctx.payload_size)))
+packet = lambda name="base_packet": Struct(name,
+                                        Byte("id"),
+                                        SignedVLQ("payload_size"),
+                                        Field("data", lambda ctx: abs(ctx.payload_size))
+                                    )
 
-start_packet = Struct("Interim Packet",
-                      Byte("id"),
-                      SignedVLQ("payload_size"),
-                      GreedyRange(String("data", 1)))
+start_packet = lambda name="interim_packet":    Struct(name,
+                                                    Byte("id"),
+                                                    SignedVLQ("payload_size"),
+                                                    GreedyRange(String("data", 1))
+                                                )
 
-protocol_version = Struct("Protocol Version",
-                          UBInt32("server_build"))
+protocol_version = lambda name="protocol_version":  Struct(name,
+                                                        UBInt32("server_build")
+                                                    )
 
 connection = Struct("Connection packet",
                     GreedyRange(Byte("compressed_data")))
 
-handshake_challenge = Struct("Handshake Challenge",
-                             PascalString("claim_message"),
-                             PascalString("salt"),
-                             SBInt32("round_count"))
+handshake_challenge = lambda name="handshake_challenge":    Struct(name,
+                                                                PascalString("claim_message"),
+                                                                PascalString("salt"),
+                                                                SBInt32("round_count")
+                                                            )
 
-connect_response = Struct("Connect Response",
-                          Flag("success"),
-                          VLQ("client_id"),
-                          PascalString("reject_reason"))
+connect_response = lambda name="connect_response":  Struct(name,
+                                                        Flag("success"),
+                                                        VLQ("client_id"),
+                                                        PascalString("reject_reason")
+                                                    )
 
-chat_receive = Struct("Chat Message Received",
-                      Byte("chat_channel"),
-                      PascalString("world"),
-                      UBInt32("client_id"),
-                      PascalString("name"),
-                      PascalString("message"))
+chat_received = lambda name="chat_received":    Struct("Chat Message Received",
+                                                    Byte("chat_channel"),
+                                                    PascalString("world"),
+                                                    UBInt32("client_id"),
+                                                    PascalString("name"),
+                                                    PascalString("message")
+                                                )
 
 chat_send = Struct("Chat Packet Send",
                    PascalString("message"),
                    Padding(1))
 
-client_connect = Struct("client_connect",
-                        VLQ("asset_digest_length"),
-                        String("asset_digest",
-                               lambda ctx: ctx.asset_digest_length),
-                        variant("claim"),
-                        Flag("uuid_exists"),
-                        If(lambda ctx: ctx.uuid_exists is True,
-                           HexAdapter(Field("uuid", 16))),
-                        PascalString("name"),
-                        PascalString("species"),
-                        VLQ("shipworld_length"),
-                        Field("shipworld", lambda ctx: ctx.shipworld_length),
-                        PascalString("account"))
+client_connect = lambda name="client_connect":  Struct(name,
+                                                    VLQ("asset_digest_length"),
+                                                    String("asset_digest",
+                                                           lambda ctx: ctx.asset_digest_length),
+                                                    variant("claim"),
+                                                    Flag("uuid_exists"),
+                                                    If(lambda ctx: ctx.uuid_exists is True,
+                                                       HexAdapter(Field("uuid", 16))),
+                                                    PascalString("name"),
+                                                    PascalString("species"),
+                                                    VLQ("shipworld_length"),
+                                                    Field("shipworld", lambda ctx: ctx.shipworld_length),
+                                                    PascalString("account")
+                                                )
 
-world_coordinate = Struct("world_coordinate",
-                          PascalString("sector"),
-                          SBInt32("x"),
-                          SBInt32("y"),
-                          SBInt32("z"),
-                          SBInt32("planet"),
-                          SBInt32("satelite")
-                          )
+world_coordinate = lambda name="world_coordinate":  Struct(name,
+                                                        PascalString("sector"),
+                                                        SBInt32("x"),
+                                                        SBInt32("y"),
+                                                        SBInt32("z"),
+                                                        SBInt32("planet"),
+                                                        SBInt32("satelite")
+                                                    )
 
-warp_command = Struct("warp_command",
-                      UBInt32("warp"),
-                      world_coordinate,
-                      PascalString("player")
-)
+warp_command = lambda name="warp_command":  Struct(name,
+                                                Enum(UBInt32("warp_type"),
+                                                    MOVE_SHIP = 1,
+                                                    WARP_UP = 2,
+                                                    WARP_OTHER_SHIP = 3,
+                                                    WARP_DOWN = 4
+                                                ),
+                                                world_coordinate(),
+                                                PascalString("player")
+                                            )
 
-warp_command_write = lambda t, sector=u'', x=0, y=0, z=0, planet=0,satelite=0, player=u'': warp_command.build(
+warp_command_write = lambda t, sector=u'', x=0, y=0, z=0, planet=0,satelite=0, player=u'': warp_command().build(
     Container(
-        warp=t,
+        warp_type=t,
         world_coordinate=Container(
             sector=sector,
             x=x,
