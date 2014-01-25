@@ -154,6 +154,10 @@ handshake_response = lambda name="handshake_response":  Struct(name,
                                                             PascalString("hash")
                                                         )
 
+universe_time_update = lambda name="universe_time": Struct(name,
+                                                        VLQ("unknown")
+                                                    )
+
 packet = lambda name="base_packet": Struct(name,
                                         Byte("id"),
                                         SignedVLQ("payload_size"),
