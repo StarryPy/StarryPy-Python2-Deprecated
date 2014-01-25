@@ -170,8 +170,9 @@ protocol_version = lambda name="protocol_version":  Struct(name,
                                                         UBInt32("server_build")
                                                     )
 
-connection = Struct("Connection packet",
-                    GreedyRange(Byte("compressed_data")))
+connection = lambda name="connection":  Struct(name,
+                                            GreedyRange(Byte("compressed_data"))
+                                        )
 
 handshake_challenge = lambda name="handshake_challenge":    Struct(name,
                                                                 PascalString("claim_message"),
@@ -193,9 +194,10 @@ chat_received = lambda name="chat_received":    Struct("Chat Message Received",
                                                     PascalString("message")
                                                 )
 
-chat_send = Struct("Chat Packet Send",
-                   PascalString("message"),
-                   Padding(1))
+chat_sent = lambda name="chat_sent":    Struct(name,
+                                            PascalString("message"),
+                                            Padding(1)
+                                        )
 
 client_connect = lambda name="client_connect":  Struct(name,
                                                     VLQ("asset_digest_length"),
@@ -248,25 +250,27 @@ warp_command_write = lambda t, sector=u'', x=0, y=0, z=0, planet=0,satelite=0, p
     )
 )
 
-world_started = Struct("world_start",
-                       VLQ("planet_size"),
-                       Bytes("planet", lambda ctx: ctx.planet_size),
-                       VLQ("world_structure_size"),
-                       Bytes("world_structure", lambda ctx: ctx.world_structure_size),
-                       VLQ("sky_size"),
-                       Bytes("sky", lambda ctx: ctx.sky_size),
-                       VLQ("server_weather_size"),
-                       Bytes("server_weather", lambda ctx: ctx.server_weather_size),
-                       BFloat32("spawn_x"),
-                       BFloat32("spawn_y"),
-)
-give_item = Struct("give_item",
-                   PascalString("name"),
-                   VLQ("count"),
-                   Byte("variant_type"),
-                   PascalString("description"))
+world_start = lambda name="world_start":    Struct(name,
+                                                VLQ("planet_size"),
+                                                Bytes("planet", lambda ctx: ctx.planet_size),
+                                                VLQ("world_structure_size"),
+                                                Bytes("world_structure", lambda ctx: ctx.world_structure_size),
+                                                VLQ("sky_size"),
+                                                Bytes("sky", lambda ctx: ctx.sky_size),
+                                                VLQ("server_weather_size"),
+                                                Bytes("server_weather", lambda ctx: ctx.server_weather_size),
+                                                BFloat32("spawn_x"),
+                                                BFloat32("spawn_y"),
+                                            )
 
-give_item_write = lambda name, count: give_item.build(
+give_item = lambda name="give_item":    Struct("give_item",
+                                            PascalString("name"),
+                                            VLQ("count"),
+                                            Byte("variant_type"),
+                                            PascalString("description")
+                                        )
+
+give_item_write = lambda name, count: give_item().build(
     Container(
         name=name,
         count=count,
@@ -275,17 +279,16 @@ give_item_write = lambda name, count: give_item.build(
     )
 )
 
-update_world_properties = Struct("world_properties",
-                        UBInt8("count"),
-                        Array(lambda ctx: ctx.count, Struct("properties",
-                           PascalString("key"),
-                           variant("value")
-                        ))
-)
+update_world_properties = lambda name="world_properties":   Struct("world_properties",
+                                                                UBInt8("count"),
+                                                                Array(lambda ctx: ctx.count, Struct("properties",
+                                                                   PascalString("key"),
+                                                                   variant("value")
+                                                                ))
+                                                            )
 
-def update_world_properties_write(dict):
-    return update_world_properties.build(Container(
-            count=len(dict),
-            properties=[Container(key=k, value=Container(type="SVLQ", data=v)) for k,v in dict.items()]
-        )
+update_world_properties_write = lambda dict: update_world_properties().build(Container(
+        count=len(dict),
+        properties=[Container(key=k, value=Container(type="SVLQ", data=v)) for k,v in dict.items()]
     )
+)

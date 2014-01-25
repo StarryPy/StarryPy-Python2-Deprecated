@@ -140,3 +140,40 @@ class WarpCommandTest(unittest.TestCase):
         built_packet = warp_command().build(parsed)        
         assert_equal(packet, built_packet)
 
+'''
+Tests for packet types 0x0B: Chat Sent, Client -> Server
+'''
+class ChatSentTest(unittest.TestCase):
+    def testParseBuild(self):
+        packet = "0b68656c6c6f20776f726c6400".decode("hex")
+        parsed = chat_sent().parse(packet)
+        assert_equal(parsed.message,"hello world")
+        assert_equal(chat_sent().build(parsed), packet)
+
+'''
+Tests for packet types  0x0C: Client Context Update , Client -> Server
+'''
+class ClientContextUpdateTest(unittest.TestCase):
+    def testParseBuild(self):
+        raise "not yet understood"
+
+'''
+Tests for packet types 0x0D: World Start, Server -> Client
+'''
+class WorldStartTest(unittest.TestCase):
+    def testParseBuild(self):
+        with open("tests/large_packets.json", "r+") as large_packets:
+            packet = json.load(large_packets)['world_start'].decode("hex")
+        parsed = world_start().parse(packet)
+        
+        assert_equal(world_start().build(parsed), packet)
+
+'''
+Tests for packet types 0x0E: World Stop, Server -> Client
+'''
+class WorldStopTest(unittest.TestCase):
+    def testParseBuild(self):
+        packet = "0752656d6f766564".decode("hex")
+        parsed = world_stop().parse(packet)        
+        assert_equal(world_stop().build(parsed), packet)
+

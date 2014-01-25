@@ -69,7 +69,7 @@ class PacketStream(object):
 
     def start_packet(self):
         if len(self._stream) > 0 and self.payload_size is None:
-            packet_header = packets.start_packet.parse(self._stream)
+            packet_header = packets.start_packet().parse(self._stream)
             self.id = packet_header.id
             self.payload_size = abs(packet_header.payload_size)
             if packet_header.payload_size < 0:
@@ -85,7 +85,7 @@ class PacketStream(object):
             p, self._stream = self._stream[:self.packet_size], self._stream[self.packet_size:]
             if not self._stream:
                 self._stream = ""
-            p_parsed = packets.packet.parse(p)
+            p_parsed = packets.packet().parse(p)
             packet = Packet(id=p_parsed.id, payload_size=p_parsed.payload_size, data=p_parsed.data, original_data=p)
             if self.compressed:
                 packet.data = zlib.decompress(packet.data)
@@ -294,7 +294,7 @@ class StarryPyServerProtocol(Protocol):
         :rtype : str
         """
         length = len(data)
-        return packets.packet.build(
+        return packets.packet().build(
             Container(id=packet_type, payload_size=length, data=data))
 
     def write(self, data):
