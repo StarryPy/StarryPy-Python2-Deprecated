@@ -214,6 +214,10 @@ client_connect = lambda name="client_connect":  Struct(name,
                                                     PascalString("account")
                                                 )
 
+client_disconnect = lambda name="client_disconnect":    Struct(name,
+                                                            Byte("data")
+                                                        )
+
 world_coordinate = lambda name="world_coordinate":  Struct(name,
                                                         PascalString("sector"),
                                                         SBInt32("x"),
