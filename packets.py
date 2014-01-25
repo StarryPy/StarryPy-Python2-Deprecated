@@ -265,9 +265,16 @@ world_start = lambda name="world_start":    Struct(name,
                                                 Bytes("server_weather", lambda ctx: ctx.server_weather_size),
                                                 BFloat32("spawn_x"),
                                                 BFloat32("spawn_y"),
+                                                update_world_properties("world_properties"),
+                                                SBInt32("unknown1"),
+                                                Flag("unknown2")
                                             )
 
-give_item = lambda name="give_item":    Struct("give_item",
+world_stop = lambda name="world_stop":  Struct(name,
+                                            PascalString("status")
+                                        )
+
+give_item = lambda name="give_item":    Struct(name,
                                             PascalString("name"),
                                             VLQ("count"),
                                             Byte("variant_type"),
@@ -283,7 +290,7 @@ give_item_write = lambda name, count: give_item().build(
     )
 )
 
-update_world_properties = lambda name="world_properties":   Struct("world_properties",
+update_world_properties = lambda name="world_properties":   Struct(name,
                                                                 UBInt8("count"),
                                                                 Array(lambda ctx: ctx.count, Struct("properties",
                                                                    PascalString("key"),
