@@ -149,7 +149,8 @@ warp_command = lambda name="warp_command": Struct(name,
                                                        MOVE_SHIP=1,
                                                        WARP_UP=2,
                                                        WARP_OTHER_SHIP=3,
-                                                       WARP_DOWN=4),
+                                                       WARP_DOWN=4,
+                                                       WARP_HOME=5),
                                                   world_coordinate(),
                                                   star_string("player"))
 

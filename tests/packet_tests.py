@@ -141,9 +141,9 @@ class WarpCommandTest(unittest.TestCase):
         assert_equal(packet, built_packet)
     
     def testWarpDownHomePlanet(self):
-        packet = "TODO: NO TEST DATA".decode("hex")
+        packet = "0000000500000000000000000000000000000000000000000000".decode("hex")
         parsed = warp_command().parse(packet)
-        assert_equal(parsed.warp_type,'WARP_DOWN')
+        assert_equal(parsed.warp_type,'WARP_HOME')
         
         built_packet = warp_command().build(parsed)        
         assert_equal(packet, built_packet)
