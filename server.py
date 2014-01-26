@@ -38,11 +38,12 @@ def route(func):
 
 
 class Packet(object):
-    def __init__(self, id, payload_size, data, original_data, compressed=False):
+    def __init__(self, id, payload_size, data, original_data,  direction, compressed=False):
         self.id = id
         self.payload_size = payload_size
         self.data = data
         self.original_data = original_data
+        self.direction = direction
         self.compressed = compressed
 
 
@@ -57,6 +58,7 @@ class PacketStream(object):
         self.compressed = False
         self.packet_size = None
         self.protocol = protocol
+        self.direction = None
 
     def __add__(self, other):
         self._stream += other
@@ -86,7 +88,7 @@ class PacketStream(object):
             if not self._stream:
                 self._stream = ""
             p_parsed = packets.packet().parse(p)
-            packet = Packet(id=p_parsed.id, payload_size=p_parsed.payload_size, data=p_parsed.data, original_data=p)
+            packet = Packet(id=p_parsed.id, payload_size=p_parsed.payload_size, data=p_parsed.data, original_data=p, direction=self.direction)
             if self.compressed:
                 packet.data = zlib.decompress(packet.data)
                 packet.compressed = True
@@ -133,6 +135,7 @@ class StarryPyServerProtocol(Protocol):
         """
         self.plugin_manager = self.factory.plugin_manager
         self.packet_stream = PacketStream(self)
+        self.packet_stream.direction = packets.Direction.SERVER
         logging.debug("Connection made in StarryPyServerProtocol with UUID %s" %
                       self.id)
         reactor.connectTCP(self.config.server_hostname, self.config.server_port, StarboundClientFactory(self))
@@ -240,7 +243,7 @@ class StarryPyServerProtocol(Protocol):
         """
         if p.id not in [48, 6] and p.id <= 48:
             self.debug_file.write(
-                '{"id": "%s", "data": "%s"}' % (str(packets.Packets(p.id)), p.data.encode("hex")))
+                '%s sent in %s\n' % (str(packets.Packets(p.id)), str(packets.Direction(p.direction))))
             self.debug_file.flush()
         if p.id == packets.Packets.CLIENT_CONNECT:
             return self.client_connect(p)
@@ -332,6 +335,7 @@ class ClientProtocol(Protocol):
 
     def __init__(self):
         self.packet_stream = PacketStream(self)
+        self.packet_stream.direction = packets.Direction.CLIENT
 
     def connectionMade(self):
         """
