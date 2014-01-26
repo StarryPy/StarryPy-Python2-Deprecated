@@ -26,21 +26,20 @@ class Warpy(SimpleCommandPlugin):
             target_protocol = self.protocol.factory.protocols[target_player.protocol]
             if target_player is not self.protocol.player:
                 warp_packet = self.protocol._build_packet(Packets.WARP_COMMAND,
-                                                          warp_command_write(t=3, player=target_player.name.encode('utf-8')))
+                                                          warp_command_write(t="WARP_OTHER_SHIP", player=target_player.name.encode('utf-8')))
             else:
                 warp_packet = self.protocol._build_packet(Packets.WARP_COMMAND,
-                                                          warp_command_write(t=2))
+                                                          warp_command_write(t='WARP_UP'))
             self.protocol.client_protocol.transport.write(warp_packet)
         else:
             self.protocol.send_chat_message("no such player. Usage: /warp Playername")
 
     @permissions(UserLevels.ADMIN)
     def move_ship(self, location):
-        print location
         try:
             x, y, z = map(int, location)
             warp_packet = self.protocol._build_packet(Packets.WARP_COMMAND,
-                                                      warp_command_write(t=4, x=x, y=y, z=z,
+                                                      warp_command_write(t="MOVE_SHIP", x=x, y=y, z=z,
                                                                          player="".encode('utf-8')))
             self.protocol.client_protocol.transport.write(warp_packet)
         except:
