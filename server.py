@@ -232,7 +232,7 @@ class StarryPyServerProtocol(Protocol):
         """
         Called when the players issues a warp.
 
-        :param player: The warp_command data.
+        :param data: The warp_command data.
         :rtype : bool
         """
         return True
