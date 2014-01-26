@@ -27,7 +27,7 @@ def route(func):
         res = self.plugin_manager.do(self, on, data)
         if res:
             res = func(self, data)
-            d = deferLater(reactor, .25, self.plugin_manager.do, self, after, data)
+            d = deferLater(reactor, 1, self.plugin_manager.do, self, after, data)
             d.addErrback(print_this_defered_failure)
         return res
 
@@ -38,7 +38,7 @@ def route(func):
 
 
 class Packet(object):
-    def __init__(self, id, payload_size, data, original_data,  direction, compressed=False):
+    def __init__(self, id, payload_size, data, original_data, direction, compressed=False):
         self.id = id
         self.payload_size = payload_size
         self.data = data
@@ -88,7 +88,8 @@ class PacketStream(object):
             if not self._stream:
                 self._stream = ""
             p_parsed = packets.packet().parse(p)
-            packet = Packet(id=p_parsed.id, payload_size=p_parsed.payload_size, data=p_parsed.data, original_data=p, direction=self.direction)
+            packet = Packet(id=p_parsed.id, payload_size=p_parsed.payload_size, data=p_parsed.data,
+                            original_data=p, direction=self.direction)
             if self.compressed:
                 packet.data = zlib.decompress(packet.data)
                 packet.compressed = True
@@ -276,13 +277,16 @@ class StarryPyServerProtocol(Protocol):
         if '\n' in text:
             lines = text.split('\n')
             for line in lines:
+                print line
                 self.send_chat_message(line)
             return
         chat_data = packets.chat_received().build(Container(chat_channel=channel,
-                                                         world=world,
-                                                         client_id=0,
-                                                         name=name,
-                                                         message=unicode(text)))
+                                                            world=world,
+                                                            client_id=0,
+                                                            name=name,
+                                                            message=unicode(text)))
+        print chat_data
+        print chat_data.encode("hex")
         chat_packet = self._build_packet(packets.Packets.CHAT_RECEIVED,
                                          chat_data)
         self.transport.write(chat_packet)
@@ -314,10 +318,10 @@ class StarryPyServerProtocol(Protocol):
         :param reason: The reason for the disconnection.
         :return: None
         """
-        if self.player:            
+        if self.player:
             if self.player.logged_in:
                 self.client_disconnect(self.player)
-            #logging.warning("Lost connection. Reason given: %s" % str(reason))
+                #logging.warning("Lost connection. Reason given: %s" % str(reason))
 
     def die(self):
         self.transport.loseConnection()
@@ -421,8 +425,12 @@ class StarryPyServerFactory(ServerFactory):
         :param name: The name to prepend before the message, format is <name>
         :return: None
         """
-        for p in self.protocols.itervalues():
-            p.send_chat_message(text)
+        try:
+            for p in self.protocols.itervalues():
+                print p
+                p.send_chat_message(text)
+        except Exception as e:
+            print e
 
     def buildProtocol(self, address):
         """
@@ -450,7 +458,7 @@ class StarboundClientFactory(ClientFactory):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
+    logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
     logging.info("Started server.")
     factory = StarryPyServerFactory()
     reactor.listenTCP(21025, factory)

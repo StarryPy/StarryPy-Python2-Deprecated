@@ -1,8 +1,5 @@
-import unittest
 import json
 from nose.tools import *
-
-from packets import *
 
 '''
 Tests for packet type 0x01: Protocol Version, Server -> Client 

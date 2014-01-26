@@ -95,6 +95,7 @@ class PluginManager(object):
         for plugin in self.plugins:
             if plugin.auto_activate:
                 plugin.activate()
+                #pass
 
     def deactivate_plugins(self):
         for plugin in self.plugins:
