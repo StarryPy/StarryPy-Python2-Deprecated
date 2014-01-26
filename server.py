@@ -1,6 +1,5 @@
 import logging
 from uuid import uuid4
-import zlib
 
 import construct
 from twisted.internet import reactor
@@ -61,7 +60,12 @@ class PacketStream(object):
         self.direction = None
 
     def __add__(self, other):
-        self._stream += other
+        #print other
+        try:
+            self._stream += other
+        except Exception as e:
+            print e
+            print "Whoops"
         try:
             self.start_packet()
             self.check_packet()
@@ -78,6 +82,8 @@ class PacketStream(object):
                 self.compressed = True
             else:
                 self.compressed = False
+            if self.compressed:
+                self.payload_size += 1
             self.header_length = 1 + len(packets.SignedVLQ("").build(self.payload_size))
             self.packet_size = self.payload_size + self.header_length
             return True
@@ -90,9 +96,7 @@ class PacketStream(object):
             p_parsed = packets.packet().parse(p)
             packet = Packet(id=p_parsed.id, payload_size=p_parsed.payload_size, data=p_parsed.data,
                             original_data=p, direction=self.direction)
-            if self.compressed:
-                packet.data = zlib.decompress(packet.data)
-                packet.compressed = True
+            self.compressed = False
             self.protocol.string_received(packet)
             self.reset()
             self.start_packet()
@@ -151,6 +155,7 @@ class StarryPyServerProtocol(Protocol):
         Processing of parsed data is handled in handle_starbound_packets()
         :rtype : None
     """
+        #print packet.original_data
         if 48 >= packet.id:
             if self.handle_starbound_packets(packet):
                 self.client_protocol.transport.write(
@@ -242,22 +247,22 @@ class StarryPyServerProtocol(Protocol):
         This function is the meat of it all. Every time a full packet with
         a derived ID <= 48, it is passed through here.
         """
-        if p.id not in [48, 6] and p.id <= 48:
-            self.debug_file.write(
-                '%s sent in %s\n' % (str(packets.Packets(p.id)), str(packets.Direction(p.direction))))
-            self.debug_file.flush()
-        if p.id == packets.Packets.CLIENT_CONNECT:
-            return self.client_connect(p)
-        elif p.id == packets.Packets.CLIENT_DISCONNECT:
-            return self.client_disconnect(self.player)
-        elif p.id == packets.Packets.CHAT_SENT:
-            return self.chat_sent(p)
-        elif p.id == packets.Packets.CONNECT_RESPONSE:
-            return self.connect_response(p)
-        elif p.id == packets.Packets.WORLD_START:
-            pass
-        elif p.id == packets.Packets.WARP_COMMAND:
-            return self.warp_command(p)
+
+        self.debug_file.write(
+            '%s sent in %s\nData: %s\n\n' % (str(packets.Packets(p.id)), str(packets.Direction(p.direction)), p.data.encode("hex")))
+        self.debug_file.flush()
+        #if p.id == packets.Packets.CLIENT_CONNECT:
+        #    return self.client_connect(p)
+        #elif p.id == packets.Packets.CLIENT_DISCONNECT:
+        #    return self.client_disconnect(self.player)
+        #elif p.id == packets.Packets.CHAT_SENT:
+        #    return self.chat_sent(p)
+        #elif p.id == packets.Packets.CONNECT_RESPONSE:
+        #    return self.connect_response(p)
+        #elif p.id == packets.Packets.WORLD_START:
+        #    pass
+        #elif p.id == packets.Packets.WARP_COMMAND:
+        #    return self.warp_command(p)
         return True
 
     def send_chat_message(self, text, channel=0, world='', name=''):
@@ -371,6 +376,12 @@ class ClientProtocol(Protocol):
             logging.error(str(e))
             self.server_protocol.write(
                 packet.original_data)
+        except Exception as e:
+            print "Exception!"
+            print e
+            self.server_protocol.write(
+                packet.original_data
+            )
 
 
     def dataReceived(self, data):
