@@ -275,7 +275,7 @@ class StarryPyServerProtocol(Protocol):
             for line in lines:
                 self.send_chat_message(line)
             return
-        chat_data = packets.chat_receive.build(Container(chat_channel=channel,
+        chat_data = packets.chat_received().build(Container(chat_channel=channel,
                                                          world=world,
                                                          client_id=0,
                                                          name=name,
