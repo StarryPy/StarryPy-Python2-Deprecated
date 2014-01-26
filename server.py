@@ -232,7 +232,7 @@ class StarryPyServerProtocol(Protocol):
         """
         Called when the players issues a warp.
 
-        :param player: The warp_command data.
+        :param data: The warp_command data.
         :rtype : bool
         """
         return True
@@ -277,7 +277,6 @@ class StarryPyServerProtocol(Protocol):
         if '\n' in text:
             lines = text.split('\n')
             for line in lines:
-                print line
                 self.send_chat_message(line)
             return
         chat_data = packets.chat_received().build(Container(chat_channel=channel,
@@ -285,8 +284,6 @@ class StarryPyServerProtocol(Protocol):
                                                             client_id=0,
                                                             name=name,
                                                             message=unicode(text)))
-        print chat_data
-        print chat_data.encode("hex")
         chat_packet = self._build_packet(packets.Packets.CHAT_RECEIVED,
                                          chat_data)
         self.transport.write(chat_packet)
@@ -427,7 +424,6 @@ class StarryPyServerFactory(ServerFactory):
         """
         try:
             for p in self.protocols.itervalues():
-                print p
                 p.send_chat_message(text)
         except Exception as e:
             print e

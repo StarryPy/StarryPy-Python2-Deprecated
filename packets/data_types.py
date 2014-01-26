@@ -1,6 +1,6 @@
 from construct import Construct, Struct, Enum, Byte, Switch, BFloat64, Flag, \
-    Array, LazyBound, Field
-from construct.core import _read_stream, _write_stream
+    Array, LazyBound, Field, String, Container
+from construct.core import _read_stream, _write_stream, Adapter
 
 
 class SignedVLQ(Construct):
@@ -36,27 +36,34 @@ class VLQ(Construct):
     def _build(self, obj, stream, context):
         result = bytearray()
         value = int(obj)
-        while value > 0:
-            byte = value & 0x7f
-            value >>= 7
-            if value != 0:
-                byte |= 0x80
-            result.insert(0, byte)
-        if len(result) > 1:
-            result[0] |= 0x80
-            result[-1] ^= 0x80
+        if value == 0:
+            result.insert(0,0)
+        else:
+            while value > 0:
+                byte = value & 0x7f
+                value >>= 7
+                if value != 0:
+                    byte |= 0x80
+                result.insert(0, byte)
+            if len(result) > 1:
+                result[0] |= 0x80
+                result[-1] ^= 0x80
         _write_stream(stream, len(result), "".join([chr(x) for x in result]))
 
 
-class StarString(Construct):
-    def _parse(self, stream, context):
-        l = VLQ("").parse_stream(stream)
-        return _read_stream(stream, l)
+star_string = lambda name="star_string": StarStringAdapter(star_string_struct(name))
 
-    def _build(self, obj, stream, context):
-        out = VLQ("").build(len(unicode(obj)))+obj
-        print out.encode("hex")
-        _write_stream(stream, len(out), out)
+class StarStringAdapter(Adapter):
+    def _encode(self, obj, context):
+        return Container(length=len(obj),string=unicode(obj))
+
+    def _decode(self, obj, context):
+        return obj.string
+
+star_string_struct = lambda name="star_string": Struct(name,
+                                            VLQ("length"),
+                                            String("string", lambda ctx: ctx.length)
+                                        )
 
 variant_variant = Struct("data",
                          VLQ("length"),
@@ -68,7 +75,7 @@ dict_variant = Struct("data",
                       VLQ("length"),
                       Array(lambda ctx: ctx.length,
                             Struct("dict",
-                                   StarString("key"),
+                                   star_string("key"),
                                    LazyBound("value", lambda: variant()))))
 
 variant = lambda name="variant": Struct(name,
@@ -86,7 +93,7 @@ variant = lambda name="variant": Struct(name,
                                                    "DOUBLE": BFloat64("data"),
                                                    "BOOL": Flag("data"),
                                                    "SVLQ": SignedVLQ("data"),
-                                                   "STRING": StarString(
+                                                   "STRING": star_string(
                                                        "data"),
                                                    "VARIANT": variant_variant,
                                                    "DICT": dict_variant

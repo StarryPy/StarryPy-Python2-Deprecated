@@ -10,7 +10,7 @@ class MOTDPlugin(SimpleCommandPlugin):
     """
     name = "motd_plugin"
     commands = ["motd", "set_motd"]
-    auto_activate = False
+    auto_activate = True
 
     def activate(self):
         super(MOTDPlugin, self).activate()
