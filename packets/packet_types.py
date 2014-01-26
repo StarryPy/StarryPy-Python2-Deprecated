@@ -1,6 +1,6 @@
 from construct import *
 from enum import IntEnum
-from data_types import SignedVLQ, VLQ, StarString, variant
+from data_types import SignedVLQ, VLQ, variant, star_string
 
 
 class Direction(IntEnum):
@@ -72,8 +72,8 @@ class HexAdapter(Adapter):
 
 
 handshake_response = lambda name="handshake_response": Struct(name,
-                                                              StarString("claim_response"),
-                                                              StarString("hash"))
+                                                              star_string("claim_response"),
+                                                              star_string("hash"))
 
 universe_time_update = lambda name="universe_time": Struct(name,
                                                            VLQ("unknown"))
@@ -97,24 +97,24 @@ connection = lambda name="connection": Struct(name,
                                               GreedyRange(Byte("compressed_data")))
 
 handshake_challenge = lambda name="handshake_challenge": Struct(name,
-                                                                StarString("claim_message"),
-                                                                StarString("salt"),
+                                                                star_string("claim_message"),
+                                                                star_string("salt"),
                                                                 SBInt32("round_count"))
 
 connect_response = lambda name="connect_response": Struct(name,
                                                           Flag("success"),
                                                           VLQ("client_id"),
-                                                          StarString("reject_reason"))
+                                                          star_string("reject_reason"))
 
 chat_received = lambda name="chat_received": Struct(name,
                                                     Byte("chat_channel"),
-                                                    StarString("world"),
+                                                    star_string("world"),
                                                     UBInt32("client_id"),
-                                                    StarString("name"),
-                                                    StarString("message"))
+                                                    star_string("name"),
+                                                    star_string("message"))
 
 chat_sent = lambda name="chat_sent": Struct(name,
-                                            StarString("message"),
+                                            star_string("message"),
                                             Padding(1))
 
 client_connect = lambda name="client_connect": Struct(name,
@@ -126,17 +126,17 @@ client_connect = lambda name="client_connect": Struct(name,
                                                       If(lambda ctx: ctx.uuid_exists is True,
                                                          HexAdapter(Field("uuid", 16))
                                                          ),
-                                                      StarString("name"),
-                                                      StarString("species"),
+                                                      star_string("name"),
+                                                      star_string("species"),
                                                       VLQ("shipworld_length"),
                                                       Field("shipworld", lambda ctx: ctx.shipworld_length),
-                                                      StarString("account"))
+                                                      star_string("account"))
 
 client_disconnect = lambda name="client_disconnect": Struct(name,
                                                             Byte("data"))
 
 world_coordinate = lambda name="world_coordinate": Struct(name,
-                                                          StarString("sector"),
+                                                          star_string("sector"),
                                                           SBInt32("x"),
                                                           SBInt32("y"),
                                                           SBInt32("z"),
@@ -150,7 +150,7 @@ warp_command = lambda name="warp_command": Struct(name,
                                                        WARP_OTHER_SHIP=3,
                                                        WARP_DOWN=4),
                                                   world_coordinate(),
-                                                  StarString("player"))
+                                                  star_string("player"))
 
 warp_command_write = lambda v, w=u'', x=0, y=0, z=0, a=0, b=0, c=u'': warp_command().build(
     Container(
@@ -183,13 +183,13 @@ world_start = lambda name="world_start": Struct(name,
                                                 Flag("unknown2"))
 
 world_stop = lambda name="world_stop": Struct(name,
-                                              StarString("status"))
+                                              star_string("status"))
 
 give_item = lambda name="give_item": Struct(name,
-                                            StarString("name"),
+                                            star_string("name"),
                                             VLQ("count"),
                                             Byte("variant_type"),
-                                            StarString("description"))
+                                            star_string("description"))
 
 give_item_write = lambda name, count: give_item().build(Container(name=name,
                                                                   count=count,
@@ -200,7 +200,7 @@ update_world_properties = lambda name="world_properties": Struct(name,
                                                                  UBInt8("count"),
                                                                  Array(lambda ctx: ctx.count,
                                                                        Struct("properties",
-                                                                              StarString("key"),
+                                                                              star_string("key"),
                                                                               variant("value"))))
 
 update_world_properties_write = lambda dictionary: update_world_properties().build(
