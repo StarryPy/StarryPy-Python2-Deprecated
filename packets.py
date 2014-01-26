@@ -135,7 +135,8 @@ variant = lambda name="variant": Struct(name,
                                 )
                             )
                         )
-                    }
+                    },
+                    default = Field("null",0)
                 )
             )
 
