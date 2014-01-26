@@ -2,3 +2,4 @@ sqlalchemy
 twisted
 enum34
 construct
+nose

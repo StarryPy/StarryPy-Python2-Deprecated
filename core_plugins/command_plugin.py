@@ -1,6 +1,6 @@
 import logging
 from base_plugin import BasePlugin
-from packets import chat_send
+from packets import chat_sent
 
 
 class CommandDispatchPlugin(BasePlugin):
@@ -12,7 +12,7 @@ class CommandDispatchPlugin(BasePlugin):
         self.command_prefix = self.config.command_prefix
 
     def on_chat_sent(self, data):
-        data = chat_send.parse(data.data)
+        data = chat_sent().parse(data.data)
         if data.message[0] == self.command_prefix:
             split_command = data.message[1:].split()
             command = split_command[0]

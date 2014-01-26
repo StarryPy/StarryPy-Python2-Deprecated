@@ -15,7 +15,7 @@ class PlayerManagerPlugin(BasePlugin):
         self.player_manager = PlayerManager(self.config)
 
     def on_client_connect(self, data):
-        client_data = client_connect.parse(data.data)
+        client_data = client_connect().parse(data.data)
         try:
             self.protocol.player = self.player_manager.fetch_or_create(
                 name=client_data.name,
@@ -26,7 +26,7 @@ class PlayerManagerPlugin(BasePlugin):
         except (AlreadyLoggedIn, Banned) as e:
             ban_packet = self.protocol._build_packet(
                 packets.Packets.CLIENT_DISCONNECT,
-                packets.connect_response.build(
+                packets.connect_response().build(
                     Container(
                         success=False,
                         client_id=0,
@@ -39,7 +39,7 @@ class PlayerManagerPlugin(BasePlugin):
             return False
 
     def after_connect_response(self, data):
-        connection_parameters = connect_response.parse(data.data)
+        connection_parameters = connect_response().parse(data.data)
         if not connection_parameters.success:
             logging.warning("Connection was unsuccessful.\
              Reason from Starbound Server: %s" % (
