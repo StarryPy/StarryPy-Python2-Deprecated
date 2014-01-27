@@ -87,7 +87,7 @@ class PacketStream(object):
                     #self.payload_size
                 else:
                     self.compressed = False
-                self.header_length = 1+len(packets.SignedVLQ("").build(self.payload_size))
+                self.header_length = 1+len(packets.SignedVLQ("").build(packet_header.payload_size))
                 self.packet_size = self.payload_size + self.header_length
                 return True
         except Exception as e:
