@@ -103,16 +103,13 @@ class UserCommandPlugin(SimpleCommandPlugin):
         name, item = self.extract_name(data)
         target_player = self.player_manager.get_by_name(name)
         if target_player is not None:
-            target_protocol = self.protocol.factory.protocols[target_player.protocol]
             if len(item) > 0:
                 item_name = item[0]
                 if len(item) > 1:
                     item_count = int(item[1])
                 else:
                     item_count = 1
-                item_packet = self.protocol._build_packet(packets.Packets.GIVE_ITEM,
-                                                          packets.give_item_write(item_name, item_count+1))
-                target_protocol.transport.write(item_packet)
+                self.give_item_to_player(target_player,item_name, item_count)
                 target_protocol.send_chat_message(
                     "%s has given you: %s (count: %d)" % (
                     self.protocol.player.name, item_name, item_count))
@@ -123,3 +120,9 @@ class UserCommandPlugin(SimpleCommandPlugin):
             self.protocol.send_chat_message("Couldn't find name: %s" % name)
         return False
 
+
+    def give_item_to_player(self,target_player, item_name, item_count):
+        item_packet = self.protocol._build_packet(packets.Packets.GIVE_ITEM,
+            packets.give_item_write(item_name, item_count+1))
+        target_protocol = self.protocol.factory.protocols[target_player.protocol]
+        target_protocol.transport.write(item_packet)
