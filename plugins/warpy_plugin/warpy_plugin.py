@@ -19,7 +19,7 @@ class Warpy(SimpleCommandPlugin):
     @permissions(UserLevels.ADMIN)
     def warp(self, name):
         name = " ".join(name)
-        target_player = self.player_manager.get_by_name(name)
+        target_player = self.player_manager.get_logged_in_by_name(name)
 
         if target_player is not None:
 

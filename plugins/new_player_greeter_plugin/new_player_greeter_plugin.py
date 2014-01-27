@@ -14,8 +14,8 @@ class NewPlayerGreeter(BasePlugin):
 
     def after_connect_response(self, data):
         my_storage = self.protocol.player.storage()
-        if not my_storage.has_key('given_coal') or my_storage['given_coal'] == "False":
-            my_storage['given_coal'] = "True"
+        if not my_storage.has_key('given_starter_items') or my_storage['given_starter_items'] == "False":
+            my_storage['given_starter_items'] = "True"
             self.protocol.player.storage(my_storage)
             self.give_items()
             self.send_greetings()
@@ -26,4 +26,5 @@ class NewPlayerGreeter(BasePlugin):
             give_item_to_player(self.protocol, item[0], item[1])
 
     def send_greetings(self):
-        self.protocol.send_chat_message("Welcome new player! Here, have some items as a welcoming present.")
+        self.protocol.send_chat_message(
+            "Welcome to the server new player! Have some items as a welcoming present.")

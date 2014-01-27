@@ -421,7 +421,7 @@ class StarryPyServerProtocol(Protocol):
         """
         if self.player:
             if self.player.logged_in:
-                self.client_disconnect(self.player)
+                self.client_disconnect(None)
                 logging.warning("Lost connection. Reason given: %s" % str(reason))
 
     def die(self):
