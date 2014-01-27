@@ -61,12 +61,7 @@ class PacketStream(object):
         self.direction = None
 
     def __add__(self, other):
-        #print other
-        try:
-            self._stream += other
-        except Exception as e:
-            print e
-            print "Whoops"
+        self._stream += other
         try:
             self.start_packet()
             self.check_packet()
@@ -81,17 +76,15 @@ class PacketStream(object):
                 packet_header = packets.start_packet().parse(self._stream)
                 self.id = packet_header.id
                 self.payload_size = abs(packet_header.payload_size)
-                #print self.payload_size
                 if packet_header.payload_size < 0:
                     self.compressed = True
-                    #self.payload_size
                 else:
                     self.compressed = False
                 self.header_length = 1+len(packets.SignedVLQ("").build(packet_header.payload_size))
                 self.packet_size = self.payload_size + self.header_length
                 return True
         except Exception as e:
-            print e
+            logging.exception(e)
 
     def check_packet(self):
         if len(self._stream) >= self.packet_size or self.id > 48:
@@ -104,9 +97,8 @@ class PacketStream(object):
                     z = zlib.decompressobj()
                     p_parsed.data = z.decompress(p_parsed.data)
                 except:
-                    print "Decompress error"
+                    logging.warning("Decompression error.")
                     pass
-                #self.data
             packet = Packet(id=p_parsed.id, payload_size=p_parsed.payload_size, data=p_parsed.data,
                             original_data=p, direction=self.direction)
 
@@ -170,31 +162,19 @@ class StarryPyServerProtocol(Protocol):
         Processing of parsed data is handled in handle_starbound_packets()
         :rtype : None
     """
-        #print packet.original_data
-        self.lp = packet
-        try:
-            if 48 >= packet.id:
-                if self.handle_starbound_packets(packet):
-                    self.client_protocol.transport.write(
-                        packet.original_data)
-                    if self.after_write_callback is not None:
-                        self.after_write_callback()
-            else:
-                # We received an unknown packet; send it along.
-                logging.warning(
-                    "Received unknown message ID (%d) from client." %
-                    packet.id)
-                print packet.data.encode("hex")
+        if 48 >= packet.id:
+            if self.handle_starbound_packets(packet):
                 self.client_protocol.transport.write(
                     packet.original_data)
-        except Exception as e:
-            print "Exception!"
-            print e
-            print packet.original_data.encode("hex")
-            self.client_protocol.write(
-                packet.original_data
-            )
-
+                if self.after_write_callback is not None:
+                    self.after_write_callback()
+        else:
+            # We received an unknown packet; send it along.
+            logging.warning(
+                "Received unknown message ID (%d) from client." %
+                packet.id)
+            self.client_protocol.transport.write(
+                packet.original_data)
 
     def dataReceived(self, data):
         """
@@ -209,12 +189,7 @@ class StarryPyServerProtocol(Protocol):
 
         :rtype : None
         """
-        #self.log.write(data.encode("hex"))
-        #self.client_protocol.transport.write(data)
-        try:
-            self.packet_stream += data
-        except Exception as e:
-            print e
+        self.packet_stream += data
 
     @route
     def connect_response(self, data):
@@ -232,7 +207,7 @@ class StarryPyServerProtocol(Protocol):
         """
         Called when the client attempts to send a chat message/command to the
         server.
-ddddddda
+
         :param data: Parsed chat packet.
         :rtype : bool
         """
@@ -277,22 +252,18 @@ ddddddda
         This function is the meat of it all. Every time a full packet with
         a derived ID <= 48, it is passed through here.
         """
-
-        self.debug_file.write(
-            '%s sent in %s\n' % (str(packets.Packets(p.id)), str(packets.Direction(p.direction))))
-        self.debug_file.flush()
-        #if p.id == packets.Packets.CLIENT_CONNECT:
-        #    return self.client_connect(p)
-        #elif p.id == packets.Packets.CLIENT_DISCONNECT:
-        #    return self.client_disconnect(self.player)
-        #elif p.id == packets.Packets.CHAT_SENT:
-        #    return self.chat_sent(p)
-        #elif p.id == packets.Packets.CONNECT_RESPONSE:
-        #    return self.connect_response(p)
-        #elif p.id == packets.Packets.WORLD_START:
-        #    pass
-        #elif p.id == packets.Packets.WARP_COMMAND:
-        #    return self.warp_command(p)
+        if p.id == packets.Packets.CLIENT_CONNECT:
+            return self.client_connect(p)
+        elif p.id == packets.Packets.CLIENT_DISCONNECT:
+            return self.client_disconnect(self.player)
+        elif p.id == packets.Packets.CHAT_SENT:
+            return self.chat_sent(p)
+        elif p.id == packets.Packets.CONNECT_RESPONSE:
+            return self.connect_response(p)
+        elif p.id == packets.Packets.WORLD_START:
+            pass
+        elif p.id == packets.Packets.WARP_COMMAND:
+            return self.warp_command(p)
         return True
 
     def send_chat_message(self, text, channel=0, world='', name=''):
@@ -353,7 +324,7 @@ ddddddda
         if self.player:
             if self.player.logged_in:
                 self.client_disconnect(self.player)
-                #logging.warning("Lost connection. Reason given: %s" % str(reason))
+                logging.warning("Lost connection. Reason given: %s" % str(reason))
 
     def die(self):
         self.transport.loseConnection()
@@ -407,13 +378,6 @@ class ClientProtocol(Protocol):
             logging.error(str(e))
             self.server_protocol.write(
                 packet.original_data)
-        except Exception as e:
-            print "Exception!"
-            print e
-            print packet.original_data.encode("hex")
-            self.server_protocol.write(
-                packet.original_data
-            )
 
 
     def dataReceived(self, data):
@@ -427,13 +391,7 @@ class ClientProtocol(Protocol):
         :param data: Raw packet data from the Starbound server.
         :return: None
         """
-        #self.log.write(data.encode("hex"))
-        #self.log.flush()
-        try:
-            self.packet_stream += data
-        except Exception as e:
-            print e
-        #self.server_protocol.write(data)
+        self.packet_stream += data
 
 
 class StarryPyServerFactory(ServerFactory):
