@@ -2,12 +2,9 @@ import logging
 import zlib
 import packets
 
-__author__ = 'ankhmorporkian'
-
-
 class Packet(object):
-    def __init__(self, id, payload_size, data, original_data, direction, compressed=False):
-        self.id = id
+    def __init__(self, packet_id, payload_size, data, original_data, direction, compressed=False):
+        self.id = packet_id
         self.payload_size = payload_size
         self.data = data
         self.original_data = original_data
@@ -65,10 +62,10 @@ class PacketStream(object):
                     try:
                         z = zlib.decompressobj()
                         p_parsed.data = z.decompress(p_parsed.data)
-                    except:
+                    except zlib.error:
                         logging.warning("Decompression error.")
                         pass
-                packet = Packet(id=p_parsed.id, payload_size=p_parsed.payload_size, data=p_parsed.data,
+                packet = Packet(packet_id=p_parsed.id, payload_size=p_parsed.payload_size, data=p_parsed.data,
                                 original_data=p, direction=self.direction)
 
                 self.compressed = False

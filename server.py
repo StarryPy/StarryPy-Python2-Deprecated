@@ -108,7 +108,7 @@ class StarryPyServerProtocol(Protocol):
 
         Processing of parsed data is handled in handle_starbound_packets()
         :rtype : None
-    """
+        """
         if 48 >= packet.id:
             if self.handle_starbound_packets(packet):
                 self.client_protocol.transport.write(
@@ -540,9 +540,9 @@ class StarboundClientFactory(ClientFactory):
         self.server_protocol = server_protocol
 
     def buildProtocol(self, address):
-        p = ClientFactory.buildProtocol(self, address)
-        p.server_protocol = self.server_protocol
-        return p
+        protocol = ClientFactory.buildProtocol(self, address)
+        protocol.server_protocol = self.server_protocol
+        return protocol
 
 
 if __name__ == '__main__':
