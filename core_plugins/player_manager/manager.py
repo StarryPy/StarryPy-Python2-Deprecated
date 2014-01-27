@@ -1,9 +1,11 @@
 import datetime
+import json
 from functools import wraps
+import inspect
 
 from enum import Enum
 
-from sqlalchemy.orm import Session, relationship, backref
+from sqlalchemy.orm import Session, relationship, backref, object_session
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, \
     ForeignKey, Boolean, func
 from sqlalchemy.ext.declarative import declarative_base
@@ -41,12 +43,29 @@ class Player(Base):
     protocol = Column(String)
     client_id = Column(Integer)
     ip = Column(String)
+    plugin_storage = Column(String)
     ips = relationship("IPAddress", order_by="IPAddress.id", backref="players")
 
     def colored_name(self, colors):
         color = colors[str(UserLevels(self.access_level)).split(".")[1].lower()]
         return color + self.name + colors["default"]
 
+    def storage(self,store=None):
+        caller = inspect.stack()[1][0].f_locals["self"].__class__.name
+        try:
+            plugin_storage = json.loads(self.plugin_storage)
+        except (ValueError, TypeError):
+            plugin_storage = {}
+
+        if store != None:
+            plugin_storage[caller] = store
+            self.plugin_storage = json.dumps(plugin_storage)
+            object_session(self).commit()
+        else:
+            try:
+                return plugin_storage[caller]
+            except (ValueError, KeyError, TypeError):
+                return {}
 
 class IPAddress(Base):
     __tablename__ = 'ips'
