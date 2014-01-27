@@ -11,6 +11,10 @@ class NewPlayerGreeter(BasePlugin):
 
     def activate(self):
         super(NewPlayerGreeter, self).activate()
+        self.starter_items = []
+        with open("plugins/new_player_greeter_plugin/starter_items.txt") as f:
+            for item, count in [x.split(" ") for x in f]:
+                self.starter_items.append((item,count))
 
     def after_connect_response(self, data):
         my_storage = self.protocol.player.storage()
@@ -21,8 +25,7 @@ class NewPlayerGreeter(BasePlugin):
             self.send_greetings()
 
     def give_items(self):
-        items = [["coalore", 200]]
-        for item in items:
+        for item in self.starter_items:
             give_item_to_player(self.protocol, item[0], item[1])
 
     def send_greetings(self):
