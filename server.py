@@ -71,8 +71,7 @@ class PacketStream(object):
 
     def start_packet(self):
         try:
-            if len(self._stream) > 0 and self.payload_size is None:
-
+            if len(self._stream) > 2 and self.payload_size is None:
                 packet_header = packets.start_packet().parse(self._stream)
                 self.id = packet_header.id
                 self.payload_size = abs(packet_header.payload_size)
@@ -85,28 +84,29 @@ class PacketStream(object):
                 return True
         except Exception as e:
             logging.exception(e)
+            return False
 
     def check_packet(self):
-        if len(self._stream) >= self.packet_size or self.id > 48:
-            p, self._stream = self._stream[:self.packet_size], self._stream[self.packet_size:]
-            if not self._stream:
-                self._stream = ""
-            p_parsed = packets.packet().parse(p)
-            if self.compressed and len(p_parsed.data) > 1000:
-                try:
-                    z = zlib.decompressobj()
-                    p_parsed.data = z.decompress(p_parsed.data)
-                except:
-                    logging.warning("Decompression error.")
-                    pass
-            packet = Packet(id=p_parsed.id, payload_size=p_parsed.payload_size, data=p_parsed.data,
-                            original_data=p, direction=self.direction)
+            if self.packet_size is not None and len(self._stream) >= self.packet_size or self.id > 48:
+                p, self._stream = self._stream[:self.packet_size], self._stream[self.packet_size:]
+                if not self._stream:
+                    self._stream = ""
+                p_parsed = packets.packet().parse(p)
+                if self.compressed and len(p_parsed.data) > 1000:
+                    try:
+                        z = zlib.decompressobj()
+                        p_parsed.data = z.decompress(p_parsed.data)
+                    except:
+                        logging.warning("Decompression error.")
+                        pass
+                packet = Packet(id=p_parsed.id, payload_size=p_parsed.payload_size, data=p_parsed.data,
+                                original_data=p, direction=self.direction)
 
-            self.compressed = False
-            self.protocol.string_received(packet)
-            self.reset()
-            self.start_packet()
-            self.check_packet()
+                self.compressed = False
+                self.protocol.string_received(packet)
+                self.reset()
+                if self.start_packet():
+                    self.check_packet()
 
     def reset(self):
         self.id = None
