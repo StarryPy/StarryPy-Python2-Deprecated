@@ -14,7 +14,6 @@ class NewPlayerGreeter(BasePlugin):
 
     def after_connect_response(self, data):
         my_storage = self.protocol.player.storage()
-        print my_storage
         if not my_storage.has_key('given_coal') or my_storage['given_coal'] == "False":
             my_storage['given_coal'] = "True"
             self.protocol.player.storage(my_storage)

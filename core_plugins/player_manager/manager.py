@@ -57,7 +57,7 @@ class Player(Base):
         except (ValueError, TypeError):
             plugin_storage = {}
 
-        if type(store) == dict:
+        if store != None:
             plugin_storage[caller] = store
             self.plugin_storage = json.dumps(plugin_storage)
             object_session(self).commit()
