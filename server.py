@@ -388,12 +388,12 @@ class StarryPyServerProtocol(Protocol):
                                                             client_id=0,
                                                             name=name,
                                                             message=unicode(text)))
-        chat_packet = self._build_packet(packets.Packets.CHAT_RECEIVED,
+        chat_packet = self.build_packet(packets.Packets.CHAT_RECEIVED,
                                          chat_data)
         self.transport.write(chat_packet)
 
     @staticmethod
-    def _build_packet(packet_type, data):
+    def build_packet(packet_type, data):
         """
         Convenience method to build packets for sending.
         :param packet_type: An integer 1 <= packet_type <= 48
