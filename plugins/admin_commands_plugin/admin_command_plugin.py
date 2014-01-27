@@ -55,6 +55,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.MODERATOR)
     def kick(self, data):
+        """Kicks a user from the server. Syntax: /kick [username] [reason]"""
         name, reason = self.extract_name(data)
         if reason is None:
             reason = "no reason given"
@@ -70,6 +71,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.ADMIN)
     def ban(self, data):
+        """Bans an IP. Syntax: /ban [ip address]"""
         ip = data[0]
         self.player_manager.ban(ip)
         self.protocol.send_chat_message("Banned IP: %s" % ip)
@@ -77,16 +79,19 @@ class UserCommandPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.ADMIN)
     def kickban(self, data):
+        """Kicks a player and then bans their IP. Syntax: /kickban [username] [reason]"""
         player, reason = self.extract_name(data)
         return False
 
     @permissions(UserLevels.ADMIN)
     def bans(self, data):
+        """Lists the currently banned IPs. Syntax: /bans"""
         self.protocol.send_chat_message("\n".join(
             "IP: %s " % self.player_manager.bans))
 
     @permissions(UserLevels.ADMIN)
     def unban(self, data):
+        """Unbans an IP. Syntax: /unban [ip address]"""
         ip = data[0]
         for ban in self.player_manager.bans:
             if ban.ip == ip:
@@ -110,13 +115,20 @@ class UserCommandPlugin(SimpleCommandPlugin):
                     item_count = int(item[1])
                 else:
                     item_count = 1
-                item_packet = self.protocol._build_packet(packets.Packets.GIVE_ITEM,
-                                                          packets.give_item_write(item_name, item_count+1))
-                target_protocol.transport.write(item_packet)
+                maximum = 1000
+                total = item_count
+                while item_count > 0:
+                    x = item_count
+                    if x > maximum:
+                        x = maximum
+                    item_packet = self.protocol._build_packet(packets.Packets.GIVE_ITEM,
+                                                          packets.give_item_write(item_name, x+1))
+                    target_protocol.transport.write(item_packet)
+                    item_count -= x
                 target_protocol.send_chat_message(
                     "%s has given you: %s (count: %d)" % (
-                    self.protocol.player.name, item_name, item_count))
-                self.protocol.send_chat_message("Sent the item.")
+                    self.protocol.player.name, item_name, total))
+                self.protocol.send_chat_message("Sent the item(s).")
             else:
                 self.protocol.send_chat_message("You have to give an item name.")
         else:

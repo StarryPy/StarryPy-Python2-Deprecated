@@ -14,7 +14,7 @@ class SignedVLQ(Construct):
         if (value & 1) == 0x00:
             return value >> 1
         else:
-            return -((value >> 1)+1)
+            return -((value >> 1) + 1)
 
     def _build(self, obj, stream, context):
         try:
@@ -53,25 +53,28 @@ class VLQ(Construct):
             result[-1] ^= 0x80
         _write_stream(stream, len(result), "".join([chr(x) for x in result]))
 
+
 star_string = lambda name="star_string": StarStringAdapter(star_string_struct(name))
+
 
 class StarStringAdapter(Adapter):
     def _encode(self, obj, context):
-        return Container(length=len(obj),string=unicode(obj))
+        return Container(length=len(obj), string=unicode(obj))
 
     def _decode(self, obj, context):
         return obj.string
 
+
 star_string_struct = lambda name="star_string": Struct(name,
-                                            VLQ("length"),
-                                            String("string", lambda ctx: ctx.length)
-                                        )
+                                                       VLQ("length"),
+                                                       String("string", lambda ctx: ctx.length)
+)
 
 variant_variant = Struct("data",
                          VLQ("length"),
                          Array(lambda ctx: ctx.length,
-                         LazyBound("data",
-                         lambda: variant())))
+                               LazyBound("data",
+                                         lambda: variant())))
 
 dict_variant = Struct("data",
                       VLQ("length"),
