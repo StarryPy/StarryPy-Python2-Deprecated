@@ -13,7 +13,7 @@ class Announcer(BasePlugin):
 
     def after_connect_response(self, data):
         try:
-            self.protocol.factory.broadcast(
+            self.protocol.factory.broadcast (
                 self.protocol.player.colored_name(self.config.colors) + " joined.", 0, "", "Announcer")
         except AttributeError as e:
             print "Attribute error: %s" % str(e)

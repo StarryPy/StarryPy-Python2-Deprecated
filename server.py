@@ -36,7 +36,7 @@ def route(func):
 
     return wrapped_function
 
-
+fh = open("outputs.log", "w")
 class Packet(object):
     def __init__(self, id, payload_size, data, original_data, direction, compressed=False):
         self.id = id
@@ -70,29 +70,39 @@ class PacketStream(object):
         return self
 
     def start_packet(self):
-        if len(self._stream) > 0 and self.payload_size is None:
-            packet_header = packets.start_packet().parse(self._stream)
-            self.id = packet_header.id
-            self.payload_size = abs(packet_header.payload_size)
-            if packet_header.payload_size < 0:
-                self.compressed = True
-            else:
-                self.compressed = False
-            self.header_length = 1 + len(packets.SignedVLQ("").build(self.payload_size))
-            self.packet_size = self.payload_size + self.header_length
-            return True
+        try:
+            if len(self._stream) > 0 and self.payload_size is None:
+
+                packet_header = packets.start_packet().parse(self._stream)
+                self.id = packet_header.id
+                self.payload_size = abs(packet_header.payload_size)
+                if packet_header.payload_size < 0:
+                    self.compressed = True
+                else:
+                    self.compressed = False
+                self.header_length = 1+len(packets.SignedVLQ("").build(packet_header.payload_size))
+                self.packet_size = self.payload_size + self.header_length
+                return True
+        except Exception as e:
+            logging.exception(e)
 
     def check_packet(self):
-        if len(self._stream) >= self.packet_size:
+        if len(self._stream) >= self.packet_size or self.id > 48:
             p, self._stream = self._stream[:self.packet_size], self._stream[self.packet_size:]
             if not self._stream:
                 self._stream = ""
             p_parsed = packets.packet().parse(p)
+            if self.compressed and len(p_parsed.data) > 1000:
+                try:
+                    z = zlib.decompressobj()
+                    p_parsed.data = z.decompress(p_parsed.data)
+                except:
+                    logging.warning("Decompression error.")
+                    pass
             packet = Packet(id=p_parsed.id, payload_size=p_parsed.payload_size, data=p_parsed.data,
                             original_data=p, direction=self.direction)
-            if self.compressed:
-                packet.data = zlib.decompress(packet.data)
-                packet.compressed = True
+
+            self.compressed = False
             self.protocol.string_received(packet)
             self.reset()
             self.start_packet()
@@ -123,6 +133,7 @@ class StarryPyServerProtocol(Protocol):
         self.after_write_callback = None
         self.plugin_manager = None
         self.debug_file = open(self.config.debug_file, 'w')
+        self.log = open("server.log", "w")
         logging.info("Created StarryPyServerProtocol with UUID %s" % self.id)
 
     def connectionMade(self):
@@ -164,7 +175,6 @@ class StarryPyServerProtocol(Protocol):
                 packet.id)
             self.client_protocol.transport.write(
                 packet.original_data)
-
 
     def dataReceived(self, data):
         """
@@ -242,10 +252,6 @@ class StarryPyServerProtocol(Protocol):
         This function is the meat of it all. Every time a full packet with
         a derived ID <= 48, it is passed through here.
         """
-        if p.id not in [48, 6] and p.id <= 48:
-            self.debug_file.write(
-                '%s sent in %s\n' % (str(packets.Packets(p.id)), str(packets.Direction(p.direction))))
-            self.debug_file.flush()
         if p.id == packets.Packets.CLIENT_CONNECT:
             return self.client_connect(p)
         elif p.id == packets.Packets.CLIENT_DISCONNECT:
@@ -318,7 +324,7 @@ class StarryPyServerProtocol(Protocol):
         if self.player:
             if self.player.logged_in:
                 self.client_disconnect(self.player)
-                #logging.warning("Lost connection. Reason given: %s" % str(reason))
+                logging.warning("Lost connection. Reason given: %s" % str(reason))
 
     def die(self):
         self.transport.loseConnection()
@@ -337,6 +343,7 @@ class ClientProtocol(Protocol):
     def __init__(self):
         self.packet_stream = PacketStream(self)
         self.packet_stream.direction = packets.Direction.CLIENT
+        self.log = open("client.log", "w")
 
     def connectionMade(self):
         """
