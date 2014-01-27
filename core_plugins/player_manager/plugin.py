@@ -24,7 +24,7 @@ class PlayerManagerPlugin(BasePlugin):
                 protocol=self.protocol.id)
             return True
         except (AlreadyLoggedIn, Banned) as e:
-            ban_packet = self.protocol._build_packet(
+            ban_packet = self.protocol.build_packet(
                 packets.Packets.CLIENT_DISCONNECT,
                 packets.connect_response().build(
                     Container(

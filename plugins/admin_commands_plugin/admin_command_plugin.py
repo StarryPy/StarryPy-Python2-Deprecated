@@ -1,6 +1,7 @@
 from base_plugin import SimpleCommandPlugin
 from core_plugins.player_manager import permissions, UserLevels
 import packets
+from utility_functions import give_item_to_player
 
 
 class UserCommandPlugin(SimpleCommandPlugin):
@@ -104,30 +105,21 @@ class UserCommandPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.ADMIN)
     def give_item(self, data):
-        "Gives an item to a player. Syntax: /give [target player] [item name] [optional: item count]"
+        """Gives an item to a player. Syntax: /give [target player] [item name] [optional: item count]"""
         name, item = self.extract_name(data)
         target_player = self.player_manager.get_by_name(name)
+        target_protocol = self.protocol.factory.protocols[target_player.protocol]
         if target_player is not None:
-            target_protocol = self.protocol.factory.protocols[target_player.protocol]
             if len(item) > 0:
                 item_name = item[0]
                 if len(item) > 1:
-                    item_count = int(item[1])
+                    item_count = item[1]
                 else:
                     item_count = 1
-                maximum = 1000
-                total = item_count
-                while item_count > 0:
-                    x = item_count
-                    if x > maximum:
-                        x = maximum
-                    item_packet = self.protocol._build_packet(packets.Packets.GIVE_ITEM,
-                                                          packets.give_item_write(item_name, x+1))
-                    target_protocol.transport.write(item_packet)
-                    item_count -= x
+                give_item_to_player(target_protocol, item_name, item_count)
                 target_protocol.send_chat_message(
-                    "%s has given you: %s (count: %d)" % (
-                    self.protocol.player.name, item_name, total))
+                    "%s has given you: %s (count: %s)" % (
+                    self.protocol.player.name, item_name, item_count))
                 self.protocol.send_chat_message("Sent the item(s).")
             else:
                 self.protocol.send_chat_message("You have to give an item name.")
