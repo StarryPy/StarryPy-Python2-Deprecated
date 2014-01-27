@@ -34,3 +34,9 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
+
+# Project specific
+*config.json
+*.db
+*.db-journal
+*.log
