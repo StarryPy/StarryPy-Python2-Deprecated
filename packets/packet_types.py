@@ -132,7 +132,6 @@ client_connect = lambda name="client_connect": Struct(name,
                                                       Field("shipworld", lambda ctx: ctx.shipworld_length),
                                                       star_string("account"))
 
-
 client_disconnect = lambda name="client_disconnect": Struct(name,
                                                             Byte("data"))
 
