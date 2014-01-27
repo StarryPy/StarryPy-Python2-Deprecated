@@ -86,9 +86,7 @@ packet = lambda name="base_packet": Struct(name,
 
 start_packet = lambda name="interim_packet": Struct(name,
                                                     Byte("id"),
-                                                    SignedVLQ("payload_size"),
-                                                    GreedyRange(
-                                                        String("data", 1)))
+                                                    SignedVLQ("payload_size"))
 
 protocol_version = lambda name="protocol_version": Struct(name,
                                                           UBInt32("server_build"))
