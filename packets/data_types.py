@@ -14,13 +14,16 @@ class SignedVLQ(Construct):
         if (value & 1) == 0x00:
             return value >> 1
         else:
-            return -(value >> 1)
+            return -((value >> 1)+1)
 
     def _build(self, obj, stream, context):
-        value = abs(obj * 2)
-        if obj < 0:
-            value += 1
-        VLQ("")._build(value, stream, context)
+        try:
+            value = abs(obj * 2)
+            if obj < 0:
+                value -= 1
+            VLQ("")._build(value, stream, context)
+        except Exception as e:
+            print e
 
 
 class VLQ(Construct):
@@ -36,20 +39,19 @@ class VLQ(Construct):
     def _build(self, obj, stream, context):
         result = bytearray()
         value = int(obj)
-        if value == 0:
-            result.insert(0,0)
-        else:
-            while value > 0:
-                byte = value & 0x7f
-                value >>= 7
-                if value != 0:
-                    byte |= 0x80
-                result.insert(0, byte)
-            if len(result) > 1:
-                result[0] |= 0x80
-                result[-1] ^= 0x80
+        if obj == 0:
+            _write_stream(stream, 1, chr(0))
+            return
+        while value > 0:
+            byte = value & 0x7f
+            value >>= 7
+            if value != 0:
+                byte |= 0x80
+            result.insert(0, byte)
+        if len(result) > 1:
+            result[0] |= 0x80
+            result[-1] ^= 0x80
         _write_stream(stream, len(result), "".join([chr(x) for x in result]))
-
 
 star_string = lambda name="star_string": StarStringAdapter(star_string_struct(name))
 

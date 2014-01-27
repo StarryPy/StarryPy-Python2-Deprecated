@@ -111,11 +111,11 @@ class UserCommandPlugin(SimpleCommandPlugin):
                 else:
                     item_count = 1
                 item_packet = self.protocol._build_packet(packets.Packets.GIVE_ITEM,
-                                                          packets.give_item_write(item_name, item_count))
+                                                          packets.give_item_write(item_name, item_count+1))
                 target_protocol.transport.write(item_packet)
                 target_protocol.send_chat_message(
                     "%s has given you: %s (count: %d)" % (
-                    self.protocol.player.name, item_name, item_count - 1))
+                    self.protocol.player.name, item_name, item_count))
                 self.protocol.send_chat_message("Sent the item.")
             else:
                 self.protocol.send_chat_message("You have to give an item name.")
