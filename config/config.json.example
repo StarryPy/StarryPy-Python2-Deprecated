@@ -7,7 +7,7 @@
     "player_db": "config/player.db",
     "server_port": 21024,
     "plugin_path": "./plugins",
-    "command_prefix": "/"
+    "command_prefix": "/",
     "colors": {
     	"default": "^#F7EB43;",
     	"guest": "^#F7EB43;",
