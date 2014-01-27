@@ -9,7 +9,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
     """
     name = "user_management_commands"
     depends = ['command_dispatcher', 'player_manager']
-    commands = ["who", "whois", "kick", "ban", "kickban", "give_item"]
+    commands = ["who", "whois", "promote", "kick", "ban", "kickban", "give_item"]
     auto_activate = True
 
     def activate(self):
@@ -52,6 +52,57 @@ class UserCommandPlugin(SimpleCommandPlugin):
         else:
             self.protocol.send_chat_message("Player not found!")
         return False
+
+    @permissions(UserLevels.MODERATOR)
+    def promote(self, data):
+        usage = "Usage: /promote playername rank (where rank is in one of registered, moderator, admin[, guest])"
+        name = " ".join(data[:-1])
+        rank = data[-1].lower()
+        print name
+        player = self.player_manager.get_by_name(name)
+        print player
+        if player != None:
+            old_rank = player.access_level
+            if rank == "admin":
+                self.make_admin(player)
+            elif rank == "moderator":
+                self.make_mod(player)
+            elif rank == "registered":
+                self.make_registered(player)
+            elif rank == "guest":
+                self.make_guest(player)
+            else:
+                self.protocol.send_chat_message("No such rank!\n"+usage)
+                return
+        else:
+            self.protocol.send_chat_message("Player not found!\n"+usage)
+            return
+
+        self.protocol.send_chat_message(
+                "%s: %s -> %s\n" % (
+                    player.colored_name(self.config.colors), str(UserLevels(old_rank)), str(UserLevels(player.access_level))))
+
+    @permissions(UserLevels.OWNER)
+    def make_guest(self, player):
+        player.access_level = UserLevels.GUEST
+        self.player_manager.session.commit()
+
+    @permissions(UserLevels.MODERATOR)
+    def make_registered(self, player):
+        if player.access_level < UserLevels.REGISTERED:
+            player.access_level = UserLevels.REGISTERED
+            self.player_manager.session.commit()
+
+    @permissions(UserLevels.ADMIN)
+    def make_mod(self, player):
+        if player.access_level < UserLevels.MODERATOR:
+            player.access_level = UserLevels.MODERATOR
+            self.player_manager.session.commit()
+
+    @permissions(UserLevels.OWNER)
+    def make_admin(self, player):
+        player.access_level = UserLevels.ADMIN
+        self.player_manager.session.commit()
 
     @permissions(UserLevels.MODERATOR)
     def kick(self, data):
@@ -106,7 +157,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
     def give_item(self, data):
         "Gives an item to a player. Syntax: /give [target player] [item name] [optional: item count]"
         name, item = self.extract_name(data)
-        target_player = self.player_manager.get_by_name(name)
+        target_player = self.player_manager.get_logged_in_by_name(name)
         if target_player is not None:
             target_protocol = self.protocol.factory.protocols[target_player.protocol]
             if len(item) > 0:
