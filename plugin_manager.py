@@ -6,6 +6,8 @@ import inspect
 import logging
 import os
 import sys
+from twisted.internet import reactor
+from twisted.internet.task import deferLater
 
 from base_plugin import BasePlugin
 from config import ConfigurationManager
@@ -137,3 +139,25 @@ class PluginManager(object):
             if plugin.name.lower() == name.lower():
                 return plugin
         raise PluginNotFound("No plugin with name=%s found." % name.lower())
+
+
+def route(func):
+    """
+    This decorator is used to map methods to appropriate plugin calls.
+    """
+
+    def wrapped_function(self, data):
+        name = func.__name__
+        on = "on_%s" % name
+        after = "after_%s" % name
+        res = self.plugin_manager.do(self, on, data)
+        if res:
+            res = func(self, data)
+            d = deferLater(reactor, 1, self.plugin_manager.do, self, after, data)
+            d.addErrback(print_this_defered_failure)
+        return res
+
+    def print_this_defered_failure(f):
+        print(f)
+
+    return wrapped_function

@@ -1,123 +1,21 @@
 import logging
 from uuid import uuid4
-import zlib
 
 import construct
 from twisted.internet import reactor
-from twisted.internet.protocol import ClientFactory, ServerFactory, Protocol, \
-    connectionDone
+from twisted.internet.protocol import ClientFactory, ServerFactory, Protocol, connectionDone
 from construct import Container
 import construct.core
-from twisted.internet.task import deferLater
 
 from config import ConfigurationManager
+from packet_stream import PacketStream
 import packets
-from plugin_manager import PluginManager
-
-
-def route(func):
-    """
-    This decorator is used to map methods to appropriate plugin calls.
-    """
-
-    def wrapped_function(self, data):
-        name = func.__name__
-        on = "on_%s" % name
-        after = "after_%s" % name
-        res = self.plugin_manager.do(self, on, data)
-        if res:
-            res = func(self, data)
-            d = deferLater(reactor, 1, self.plugin_manager.do, self, after, data)
-            d.addErrback(print_this_defered_failure)
-        return res
-
-    def print_this_defered_failure(f):
-        print(f)
-
-    return wrapped_function
-
-fh = open("outputs.log", "w")
-class Packet(object):
-    def __init__(self, id, payload_size, data, original_data, direction, compressed=False):
-        self.id = id
-        self.payload_size = payload_size
-        self.data = data
-        self.original_data = original_data
-        self.direction = direction
-        self.compressed = compressed
-
-
-class PacketStream(object):
-    def __init__(self, protocol):
-        self._stream = ""
-        self.id = None
-        self.payload_size = None
-        self.header_length = None
-        self.ready = False
-        self.payload = None
-        self.compressed = False
-        self.packet_size = None
-        self.protocol = protocol
-        self.direction = None
-
-    def __add__(self, other):
-        self._stream += other
-        try:
-            self.start_packet()
-            self.check_packet()
-        except:
-            pass
-        return self
-
-    def start_packet(self):
-        try:
-            if len(self._stream) > 2 and self.payload_size is None:
-                packet_header = packets.start_packet().parse(self._stream)
-                self.id = packet_header.id
-                self.payload_size = abs(packet_header.payload_size)
-                if packet_header.payload_size < 0:
-                    self.compressed = True
-                else:
-                    self.compressed = False
-                self.header_length = 1+len(packets.SignedVLQ("").build(packet_header.payload_size))
-                self.packet_size = self.payload_size + self.header_length
-                return True
-        except Exception as e:
-            logging.exception(e)
-            return False
-
-    def check_packet(self):
-            if self.packet_size is not None and len(self._stream) >= self.packet_size or self.id > 48:
-                p, self._stream = self._stream[:self.packet_size], self._stream[self.packet_size:]
-                if not self._stream:
-                    self._stream = ""
-                p_parsed = packets.packet().parse(p)
-                if self.compressed and len(p_parsed.data) > 1000:
-                    try:
-                        z = zlib.decompressobj()
-                        p_parsed.data = z.decompress(p_parsed.data)
-                    except:
-                        logging.warning("Decompression error.")
-                        pass
-                packet = Packet(id=p_parsed.id, payload_size=p_parsed.payload_size, data=p_parsed.data,
-                                original_data=p, direction=self.direction)
-
-                self.compressed = False
-                self.protocol.string_received(packet)
-                self.reset()
-                if self.start_packet():
-                    self.check_packet()
-
-    def reset(self):
-        self.id = None
-        self.payload_size = None
-        self.packet_size = None
-        self.compressed = False
+from plugin_manager import PluginManager, route
 
 
 class StarryPyServerProtocol(Protocol):
     """
-    The main protocol class for handling connections related to StarryPy.
+    The main protocol class for handling connections from Starbound clients.
     """
 
     def __init__(self):
@@ -133,7 +31,55 @@ class StarryPyServerProtocol(Protocol):
         self.after_write_callback = None
         self.plugin_manager = None
         self.debug_file = open(self.config.debug_file, 'w')
-        self.log = open("server.log", "w")
+        self.call_mapping = {
+            packets.Packets.PROTOCOL_VERSION: self.protocol_version,
+            packets.Packets.CONNECT_RESPONSE: self.connect_response,
+            packets.Packets.SERVER_DISCONNECT: self.server_disconnect,
+            packets.Packets.HANDSHAKE_CHALLENGE: self.handshake_challenge,
+            packets.Packets.CHAT_RECEIVED: self.chat_received,
+            packets.Packets.UNIVERSE_TIME_UPDATE: self.universe_time_update,
+            packets.Packets.CLIENT_CONNECT: self.client_connect,
+            packets.Packets.CLIENT_DISCONNECT: self.client_disconnect,
+            packets.Packets.HANDSHAKE_RESPONSE: self.handshake_response,
+            packets.Packets.WARP_COMMAND: self.warp_command,
+            packets.Packets.CHAT_SENT: self.chat_sent,
+            packets.Packets.CLIENT_CONTEXT_UPDATE: self.client_context_update,
+            packets.Packets.WORLD_START: self.world_start,
+            packets.Packets.WORLD_STOP: self.world_stop,
+            packets.Packets.TILE_ARRAY_UPDATE: self.tile_array_update,
+            packets.Packets.TILE_UPDATE: self.tile_update,
+            packets.Packets.TILE_LIQUID_UPDATE: self.tile_liquid_update,
+            packets.Packets.TILE_DAMAGE_UPDATE: self.tile_damage_update,
+            packets.Packets.TILE_MODIFICATION_FAILURE: self.tile_modification_failure,
+            packets.Packets.GIVE_ITEM: self.give_item,
+            packets.Packets.SWAP_IN_CONTAINER_RESULT: self.swap_in_container_result,
+            packets.Packets.ENVIRONMENT_UPDATE: self.environment_update,
+            packets.Packets.ENTITY_INTERACT_RESULT: self.entity_interact_result,
+            packets.Packets.MODIFY_TILE_LIST: self.modify_tile_list,
+            packets.Packets.DAMAGE_TILE: self.damage_tile,
+            packets.Packets.DAMAGE_TILE_GROUP: self.damage_tile_group,
+            packets.Packets.REQUEST_DROP: self.request_drop,
+            packets.Packets.SPAWN_ENTITY: self.spawn_entity,
+            packets.Packets.ENTITY_INTERACT: self.entity_interact,
+            packets.Packets.CONNECT_WIRE: self.connect_wire,
+            packets.Packets.DISCONNECT_ALL_WIRES: self.disconnect_all_wires,
+            packets.Packets.OPEN_CONTAINER: self.open_container,
+            packets.Packets.CLOSE_CONTAINER: self.close_container,
+            packets.Packets.SWAP_IN_CONTAINER: self.swap_in_container,
+            packets.Packets.ITEM_APPLY_IN_CONTAINER: self.item_apply_in_container,
+            packets.Packets.START_CRAFTING_IN_CONTAINER: self.start_crafting_in_container,
+            packets.Packets.STOP_CRAFTING_IN_CONTAINER: self.stop_crafting_in_container,
+            packets.Packets.BURN_CONTAINER: self.burn_container,
+            packets.Packets.CLEAR_CONTAINER: self.clear_container,
+            packets.Packets.WORLD_UPDATE: self.world_update,
+            packets.Packets.ENTITY_CREATE: self.entity_create,
+            packets.Packets.ENTITY_UPDATE: self.entity_update,
+            packets.Packets.ENTITY_DESTROY: self.entity_destroy,
+            packets.Packets.DAMAGE_NOTIFICATION: self.damage_notification,
+            packets.Packets.STATUS_EFFECT_REQUEST: self.status_effect_request,
+            packets.Packets.UPDATE_WORLD_PROPERTIES: self.update_world_properties,
+            packets.Packets.HEARTBEAT: self.heartbeat,
+        }
         logging.info("Created StarryPyServerProtocol with UUID %s" % self.id)
 
     def connectionMade(self):
@@ -147,7 +93,7 @@ class StarryPyServerProtocol(Protocol):
         """
         self.plugin_manager = self.factory.plugin_manager
         self.packet_stream = PacketStream(self)
-        self.packet_stream.direction = packets.Direction.SERVER
+        self.packet_stream.direction = packets.Direction.CLIENT
         logging.debug("Connection made in StarryPyServerProtocol with UUID %s" %
                       self.id)
         reactor.connectTCP(self.config.server_hostname, self.config.server_port, StarboundClientFactory(self))
@@ -190,6 +136,170 @@ class StarryPyServerProtocol(Protocol):
         :rtype : None
         """
         self.packet_stream += data
+
+    @route
+    def protocol_version(self, data):
+        return True
+
+    @route
+    def server_disconnect(self, data):
+        return True
+
+    @route
+    def handshake_challenge(self, data):
+        return True
+
+    @route
+    def chat_received(self, data):
+        return True
+
+    @route
+    def universe_time_update(self, data):
+        return True
+
+    @route
+    def handshake_response(self, data):
+        return True
+
+    @route
+    def client_context_update(self, data):
+        return True
+
+    @route
+    def world_start(self, data):
+        return True
+
+    @route
+    def world_stop(self, data):
+        return True
+
+    @route
+    def tile_array_update(self, data):
+        return True
+
+    @route
+    def tile_update(self, data):
+        return True
+
+    @route
+    def tile_liquid_update(self, data):
+        return True
+
+    @route
+    def tile_damage_update(self, data):
+        return True
+
+    @route
+    def tile_modification_failure(self, data):
+        return True
+
+    @route
+    def give_item(self, data):
+        return True
+
+    @route
+    def swap_in_container_result(self, data):
+        return True
+
+    @route
+    def environment_update(self, data):
+        return True
+
+    @route
+    def entity_interact_result(self, data):
+        return True
+
+    @route
+    def modify_tile_list(self, data):
+        return True
+
+    @route
+    def damage_tile(self, data):
+        return True
+
+    @route
+    def damage_tile_group(self, data):
+        return True
+
+    @route
+    def request_drop(self, data):
+        return True
+
+    @route
+    def spawn_entity(self, data):
+        return True
+
+    @route
+    def entity_interact(self, data):
+        return True
+
+    @route
+    def connect_wire(self, data):
+        return True
+
+    @route
+    def disconnect_all_wires(self, data):
+        return True
+
+    @route
+    def open_container(self, data):
+        return True
+
+    @route
+    def close_container(self, data):
+        return True
+
+    @route
+    def swap_in_container(self, data):
+        return True
+
+    @route
+    def item_apply_in_container(self, data):
+        return True
+
+    @route
+    def start_crafting_in_container(self, data):
+        return True
+
+    @route
+    def stop_crafting_in_container(self, data):
+        return True
+
+    @route
+    def burn_container(self, data):
+        return True
+
+    @route
+    def clear_container(self, data):
+        return True
+
+    @route
+    def world_update(self, data):
+        return True
+
+    @route
+    def entity_create(self, data):
+        return True
+
+    @route
+    def entity_update(self, data):
+        return True
+
+    @route
+    def entity_destroy(self, data):
+        return True
+
+    @route
+    def status_effect_request(self, data):
+        return True
+
+    @route
+    def update_world_properties(self, data):
+        return True
+
+    @route
+    def heartbeat(self, data):
+        return True
 
     @route
     def connect_response(self, data):
@@ -252,19 +362,7 @@ class StarryPyServerProtocol(Protocol):
         This function is the meat of it all. Every time a full packet with
         a derived ID <= 48, it is passed through here.
         """
-        if p.id == packets.Packets.CLIENT_CONNECT:
-            return self.client_connect(p)
-        elif p.id == packets.Packets.CLIENT_DISCONNECT:
-            return self.client_disconnect(self.player)
-        elif p.id == packets.Packets.CHAT_SENT:
-            return self.chat_sent(p)
-        elif p.id == packets.Packets.CONNECT_RESPONSE:
-            return self.connect_response(p)
-        elif p.id == packets.Packets.WORLD_START:
-            pass
-        elif p.id == packets.Packets.WARP_COMMAND:
-            return self.warp_command(p)
-        return True
+        return self.call_mapping[p.id](p)
 
     def send_chat_message(self, text, channel=0, world='', name=''):
         """
@@ -342,8 +440,7 @@ class ClientProtocol(Protocol):
 
     def __init__(self):
         self.packet_stream = PacketStream(self)
-        self.packet_stream.direction = packets.Direction.CLIENT
-        self.log = open("client.log", "w")
+        self.packet_stream.direction = packets.Direction.SERVER
 
     def connectionMade(self):
         """

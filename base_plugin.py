@@ -43,280 +43,286 @@ class BasePlugin(object):
         return True
 
     def on_protocol_version(self, data):
-        """
-        Called when the server sends the initial version packet.
-
-        :return: Whether the packet should be sent or not.
-        :rtype: bool
-        """
         return True
 
-    def on_connect_response(self, data):
-        """
-        Called when the client responds with their version information.
-
-        Data is the parsed connect_response packet.
-
-        :return: Whether the packet should be sent or not.
-        :rtype: bool
-        """
+    def on_server_disconnect(self, data):
         return True
 
-    def on_handshake_challenge_received(self, data):
-        """
-        Called when the handshake challenge is received.
-
-        :return: Whether the packet should be sent or not.
-        :rtype: bool
-        """
+    def on_handshake_challenge(self, data):
         return True
 
     def on_chat_received(self, data):
-        """
-        Called when a chat packet is received from the server.
-
-        :return: Whether the packet should be sent or not.
-        :rtype: bool
-        """
         return True
 
     def on_universe_time_update(self, data):
-        """
-        Called when a universe time update is received from the server.
-
-        :return: Whether the packet should be sent or not.
-        :rtype: bool
-        """
-        return True
-
-    def on_client_connect(self, data):
-        """
-        Called when the server responds with either a successful client connect
-        packet or with a rejection reason.
-
-        :return: Whether the packet should be sent or not.
-        :rtype: bool
-        """
-        return True
-
-    def on_client_disconnect(self, player):
-        """        
-        Called when the player sends a disconnect packet.
-        
-        :return: Whether the packet should be sent or not.
-        :return : None
-        """         
         return True
 
     def on_handshake_response(self, data):
-        """
-        Called when a handshake response packet is sent by the client.
-        :return: Whether the packet should be sent or not.
-        :rtype: bool
-        """
         return True
 
-    def on_warp_command(self, data):
-        """
-        Called when a warp command packet is received.
-        :return: Whether the packet should be sent or not.
-        :rtype: bool
-        """
+    def on_client_context_update(self, data):
         return True
 
-    def on_chat_sent(self, data):
-        """
-        Called when the client attempts to send a chat message or command.
-        :return: Whether the packet should be sent or not.
-        :rtype: bool
-        """
+    def on_world_start(self, data):
         return True
 
-    def on_context_update(self, data):
-        """
-        Called when a context_update packet is sent or received.
+    def on_world_stop(self, data):
+        return True
 
-        :return: Whether the packet should be sent or not.
-        :rtype: bool
-        """
+    def on_tile_array_update(self, data):
+        return True
+
+    def on_tile_update(self, data):
+        return True
+
+    def on_tile_liquid_update(self, data):
+        return True
+
+    def on_tile_damage_update(self, data):
+        return True
+
+    def on_tile_modification_failure(self, data):
+        return True
+
+    def on_give_item(self, data):
+        return True
+
+    def on_swap_in_container_result(self, data):
+        return True
+
+    def on_environment_update(self, data):
+        return True
+
+    def on_entity_interact_result(self, data):
+        return True
+
+    def on_modify_tile_list(self, data):
+        return True
+
+    def on_damage_tile(self, data):
+        return True
+
+    def on_damage_tile_group(self, data):
+        return True
+
+    def on_request_drop(self, data):
+        return True
+
+    def on_spawn_entity(self, data):
         return True
 
     def on_entity_interact(self, data):
-        """
-        Called when an entity_interact packet is sent or received.
+        return True
 
-        :return: Whether the packet should be sent or not.
-        :rtype: bool
-        """
+    def on_connect_wire(self, data):
+        return True
+
+    def on_disconnect_all_wires(self, data):
         return True
 
     def on_open_container(self, data):
-        """
-        Called when the client opens a container.
-        :return: Whether the packet should be sent or not.
-        :rtype: bool
-        """
         return True
 
     def on_close_container(self, data):
-        """
-        Called when the client closes a container.
-        :return: Whether the packet should be sent or not.
-        :rtype: bool
-        """
         return True
 
     def on_swap_in_container(self, data):
-        """
-        Called when the client swaps items in a container.
-        :return: Whether the packet should be sent or not.
-        :rtype: bool
-        """
+        return True
+
+    def on_item_apply_in_container(self, data):
+        return True
+
+    def on_start_crafting_in_container(self, data):
+        return True
+
+    def on_stop_crafting_in_container(self, data):
+        return True
+
+    def on_burn_container(self, data):
         return True
 
     def on_clear_container(self, data):
-        """
-        Called when the client clears a container.
-        :return: Whether the packet should be sent or not.
-        :rtype: bool
-        """
         return True
 
     def on_world_update(self, data):
-        """
-        Called when the a world_update packet is sent or received.
-        :return: Whether the packet should be sent or not.
-        :rtype: bool
-        """
+        return True
+
+    def on_entity_create(self, data):
+        return True
+
+    def on_entity_update(self, data):
+        return True
+
+    def on_entity_destroy(self, data):
+        return True
+
+    def on_status_effect_request(self, data):
+        return True
+
+    def on_update_world_properties(self, data):
         return True
 
     def on_heartbeat(self, data):
-        """
-        Called when a heartbeat packet is sent or received.
-        :return: Whether the packet should be sent or not.
-        :rtype: bool
-        """
+        return True
+
+    def on_connect_response(self, data):
+        return True
+
+    def on_chat_sent(self, data):
+        return True
+
+    def on_damage_notification(self, data):
+        return True
+
+    def on_client_connect(self, data):
+        return True
+
+    def on_client_disconnect(self, player):
+        return True
+
+    def on_warp_command(self, data):
         return True
 
     def after_protocol_version(self, data):
-        """
-        Called after the protocol_version packet is sent successfully.
-        """
+        return True
 
-    def after_connect_response(self, data):
-        """
-        Called after the connect_response packet is sent successfully.
-        :return : None
-        """
+    def after_server_disconnect(self, data):
+        return True
 
     def after_handshake_challenge(self, data):
-        """
-        Called after the handshake_challenge packet is sent successfully.
-        :return : None
-        """
+        return True
 
     def after_chat_received(self, data):
-        """
-        Called after the chat_received packet is sent successfully.
-        :return : None
-        """
+        return True
 
     def after_universe_time_update(self, data):
-        """
-        Called after the universe_time_update packet is sent successfully.
-        :return : None
-        """
-
-    def after_client_connect(self, data):
-        """
-        Called after the client_connect packet is sent successfully.
-        :return : None
-        """
-    def after_client_disconnect(self, player):
-        """
-        Called after the player sends a disconnect packet.
-        :return : None
-        """         
+        return True
 
     def after_handshake_response(self, data):
-        """
-        Called after the handshake_response packet is sent successfully.
-        :return : None
-        """
+        return True
 
-    def after_warp_command(self, data):
-        """
-        Called after the warp_command packet is sent successfully.
-        :return : None
-        """
+    def after_client_context_update(self, data):
+        return True
 
-    def after_chat_sent(self, data):
-        """
-        Called after the chat_sent packet is sent successfully.
-        :return : None
-        """
+    def after_world_start(self, data):
+        return True
 
-    def after_context_update(self, data):
-        """
-        Called after the context_update packet is sent successfully.
-        :return : None
-        """
+    def after_world_stop(self, data):
+        return True
+
+    def after_tile_array_update(self, data):
+        return True
+
+    def after_tile_update(self, data):
+        return True
+
+    def after_tile_liquid_update(self, data):
+        return True
+
+    def after_tile_damage_update(self, data):
+        return True
+
+    def after_tile_modification_failure(self, data):
+        return True
+
+    def after_give_item(self, data):
+        return True
+
+    def after_swap_in_container_result(self, data):
+        return True
+
+    def after_environment_update(self, data):
+        return True
+
+    def after_entity_interact_result(self, data):
+        return True
+
+    def after_modify_tile_list(self, data):
+        return True
+
+    def after_damage_tile(self, data):
+        return True
+
+    def after_damage_tile_group(self, data):
+        return True
+
+    def after_request_drop(self, data):
+        return True
+
+    def after_spawn_entity(self, data):
+        return True
 
     def after_entity_interact(self, data):
-        """
-        Called after the entity_interact packet is sent successfully.
-        :return : None
-        """
+        return True
+
+    def after_connect_wire(self, data):
+        return True
+
+    def after_disconnect_all_wires(self, data):
+        return True
 
     def after_open_container(self, data):
-        """
-        Called after the open_container packet is sent successfully.
-        :return : None
-        """
+        return True
 
     def after_close_container(self, data):
-        """
-        Called after the close_container packet is sent successfully.
-        :return : None
-        """
+        return True
 
     def after_swap_in_container(self, data):
-        """
-        Called after the swap_in_container packet is sent successfully.
-        :return : None
-        """
+        return True
+
+    def after_item_apply_in_container(self, data):
+        return True
+
+    def after_start_crafting_in_container(self, data):
+        return True
+
+    def after_stop_crafting_in_container(self, data):
+        return True
+
+    def after_burn_container(self, data):
+        return True
 
     def after_clear_container(self, data):
-        """
-        Called after the clear_container packet is sent successfully.
-        :return : None
-        """
+        return True
 
     def after_world_update(self, data):
-        """
-        Called after the world_update packet is sent successfully.
-        :return : None
-        """
+        return True
+
+    def after_entity_create(self, data):
+        return True
+
+    def after_entity_update(self, data):
+        return True
+
+    def after_entity_destroy(self, data):
+        return True
+
+    def after_status_effect_request(self, data):
+        return True
+
+    def after_update_world_properties(self, data):
+        return True
 
     def after_heartbeat(self, data):
-        """
-        Called after the heartbeat  packet is sent successfully.
-        :return : None
-        """
+        return True
 
-    def on_damage_notification(self, data):
-        """
-        Called when a damage notification packet is sent from the server.
+    def after_connect_response(self, data):
+        return True
 
-        :rtype : bool
-        """
+    def after_chat_sent(self, data):
+        return True
 
     def after_damage_notification(self, data):
-        """
-        Called after a damage notication packet is sent successfully.
+        return True
 
-        :return : None
-        """
+    def after_client_connect(self, data):
+        return True
+
+    def after_client_disconnect(self, data):
+        return True
+
+    def after_warp_command(self, data):
+        return True
 
     def __repr__(self):
         return "<Plugin instance: %s (version %s)>" % (self.name, self.version)
@@ -335,6 +341,7 @@ class SimpleCommandPlugin(BasePlugin):
     version = "0.1"
     depends = ["command_dispatcher"]
     commands = []
+    command_aliases = {}
     auto_activate = True
 
     def __init__(self, config):
@@ -348,6 +355,11 @@ class SimpleCommandPlugin(BasePlugin):
             if not callable(f):
                 raise CommandNameError("Could not find a method called %s" % command)
             self.plugins['command_dispatcher'].register(f, command)
+        for command, alias_list in self.command_aliases.iteritems():
+            for alias in alias_list:
+                self.plugins['command_dispatcher'].register(alias, command)
+
+
 
     def deactivate(self):
         super(SimpleCommandPlugin, self).deactivate()
