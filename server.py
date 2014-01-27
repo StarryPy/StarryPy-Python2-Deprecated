@@ -11,6 +11,7 @@ from config import ConfigurationManager
 from packet_stream import PacketStream
 import packets
 from plugin_manager import PluginManager, route
+from utility_functions import build_packet
 
 
 class StarryPyServerProtocol(Protocol):
@@ -388,22 +389,9 @@ class StarryPyServerProtocol(Protocol):
                                                             client_id=0,
                                                             name=name,
                                                             message=unicode(text)))
-        chat_packet = self.build_packet(packets.Packets.CHAT_RECEIVED,
-                                         chat_data)
+        chat_packet = build_packet(packets.Packets.CHAT_RECEIVED,
+                                   chat_data)
         self.transport.write(chat_packet)
-
-    @staticmethod
-    def build_packet(packet_type, data):
-        """
-        Convenience method to build packets for sending.
-        :param packet_type: An integer 1 <= packet_type <= 48
-        :param data: Data to send.
-        :return: The build packet.
-        :rtype : str
-        """
-        length = len(data)
-        return packets.packet().build(
-            Container(id=packet_type, payload_size=length, data=data))
 
     def write(self, data):
         """
