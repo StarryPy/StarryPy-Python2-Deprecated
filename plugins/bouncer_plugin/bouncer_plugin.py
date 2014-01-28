@@ -20,7 +20,8 @@ class BouncerPlugin(BasePlugin):
             "DAMAGE_TILE",
             "DAMAGE_TILE_GROUP",
             "REQUEST_DROP",
-            "ENTITY_INTERACT"
+            "ENTITY_INTERACT",
+            "MODIFY_TILE_LIST"
         ]
         for n in ["on_" + n.lower() for n in bad_packets]:
             setattr(self, n,
