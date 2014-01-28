@@ -1,6 +1,6 @@
 from construct import *
 from enum import IntEnum
-from data_types import SignedVLQ, VLQ, variant, star_string
+from data_types import SignedVLQ, VLQ, Variant, star_string
 
 
 class Direction(IntEnum):
@@ -119,7 +119,7 @@ client_connect = lambda name="client_connect": Struct(name,
                                                       VLQ("asset_digest_length"),
                                                       String("asset_digest",
                                                              lambda ctx: ctx.asset_digest_length),
-                                                      variant("claim"),
+                                                      Variant("claim"),
                                                       Flag("uuid_exists"),
                                                       If(lambda ctx: ctx.uuid_exists is True,
                                                          HexAdapter(Field("uuid", 16))
@@ -200,7 +200,7 @@ update_world_properties = lambda name="world_properties": Struct(name,
                                                                  Array(lambda ctx: ctx.count,
                                                                        Struct("properties",
                                                                               star_string("key"),
-                                                                              variant("value"))))
+                                                                              Variant("value"))))
 
 update_world_properties_write = lambda dictionary: update_world_properties().build(
     Container(

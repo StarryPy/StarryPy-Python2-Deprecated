@@ -1,6 +1,7 @@
 from base_plugin import SimpleCommandPlugin
 from core_plugins.player_manager import permissions, UserLevels
 from packets import warp_command_write, Packets
+from utility_functions import build_packet
 
 
 class Warpy(SimpleCommandPlugin):
@@ -25,10 +26,10 @@ class Warpy(SimpleCommandPlugin):
 
             target_protocol = self.protocol.factory.protocols[target_player.protocol]
             if target_player is not self.protocol.player:
-                warp_packet = self.protocol.build_packet(Packets.WARP_COMMAND,
+                warp_packet = build_packet(Packets.WARP_COMMAND,
                                                           warp_command_write(t="WARP_OTHER_SHIP", player=target_player.name.encode('utf-8')))
             else:
-                warp_packet = self.protocol.build_packet(Packets.WARP_COMMAND,
+                warp_packet = build_packet(Packets.WARP_COMMAND,
                                                           warp_command_write(t='WARP_UP'))
             self.protocol.client_protocol.transport.write(warp_packet)
         else:
@@ -38,7 +39,7 @@ class Warpy(SimpleCommandPlugin):
     def move_ship(self, location):
         try:
             x, y, z = map(int, location)
-            warp_packet = self.protocol.build_packet(Packets.WARP_COMMAND,
+            warp_packet = build_packet(Packets.WARP_COMMAND,
                                                       warp_command_write(t="MOVE_SHIP", x=x, y=y, z=z,
                                                                          player="".encode('utf-8')))
             self.protocol.client_protocol.transport.write(warp_packet)
