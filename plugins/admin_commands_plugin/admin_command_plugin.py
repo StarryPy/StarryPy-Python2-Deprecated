@@ -71,6 +71,9 @@ class UserCommandPlugin(SimpleCommandPlugin):
             player = self.player_manager.get_by_name(name)
             if player is not None:
                 old_rank = player.access_level
+                if old_rank >= self.protocol.player.access_level:
+                    self.protocol.send_chat_message("You cannot change that user's access level as they are at least at an equal level as you.")
+                    return
                 if rank == "admin":
                     self.make_admin(player)
                 elif rank == "moderator":
