@@ -4,6 +4,10 @@ from core_plugins.player_manager import UserLevels, permissions
 
 
 class PlanetProtectPlugin(SimpleCommandPlugin):
+    """
+    Allows planets to be either protector or unprotected. On protected planets,
+    only admins can build. Planets are unprotected by default.
+    """
     name = "planet_protect"
     description = "Protects planets."
     commands = ["protect", "unprotect"]
