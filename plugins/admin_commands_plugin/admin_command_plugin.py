@@ -66,7 +66,6 @@ class UserCommandPlugin(SimpleCommandPlugin):
         """Promotes a player to a given UserLevel.
         Usage: /promote playername rank (where rank is in one of registered, moderator, admin[, guest])
         """
-        usage = self.promote.__doc__
         if len(data) > 0:
             name = " ".join(data[:-1])
             rank = data[-1].lower()
