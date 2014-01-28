@@ -40,6 +40,7 @@ class PlanetProtectPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.ADMIN)
     def protect(self, data):
+        """Protects the current planet. Only admins can build on protected planets."""
         planet = self.protocol.player.planet
         on_ship = self.protocol.player.on_ship
         if on_ship:
@@ -54,6 +55,7 @@ class PlanetProtectPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.ADMIN)
     def unprotect(self, data):
+        """Removes the protection from the current planet."""
         planet = self.protocol.player.planet
         on_ship = self.protocol.player.on_ship
         if on_ship:
