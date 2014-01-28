@@ -15,5 +15,6 @@
     	"moderator": "^#4385F7;",
     	"admin": "^#C443F7;",
     	"owner": "^#F7434C;"    
-    }
+    },
+    "passthrough": false
 }

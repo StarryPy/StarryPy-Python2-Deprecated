@@ -151,7 +151,7 @@ warp_command = lambda name="warp_command": Struct(name,
                                                   world_coordinate(),
                                                   star_string("player"))
 
-warp_command_write = lambda t, sector=u'', x=0, y=0, z=0, planet=0, satelite=0, player=u'': warp_command().build(
+warp_command_write = lambda t, sector=u'', x=0, y=0, z=0, planet=0, satellite=0, player=u'': warp_command().build(
     Container(
         warp_type=t,
         world_coordinate=Container(
@@ -160,7 +160,7 @@ warp_command_write = lambda t, sector=u'', x=0, y=0, z=0, planet=0, satelite=0, 
             y=y,
             z=z,
             planet=planet,
-            satellite=satelite
+            satellite=satellite
         ),
         player=player))
 
