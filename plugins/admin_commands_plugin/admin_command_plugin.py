@@ -88,7 +88,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
                     rank.upper()))
                 self.protocol.factory.protocols[player.protocol].send_chat_message(
                     "%s has promoted you to %s" % (
-                        player.colored_name(self.config.colors), rank.upper()))
+                        self.protocol.player.colored_name(self.config.colors), rank.upper()))
             else:
                 self.protocol.send_chat_message("Player not found!\n" + self.promote.__doc__)
                 return
