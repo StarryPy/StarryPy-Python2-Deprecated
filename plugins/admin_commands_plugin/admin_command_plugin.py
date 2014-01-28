@@ -43,7 +43,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
         return False
 
     def planet(self, data):
-        """Displays who is on your current planet"""
+        """Displays who is on your current planet."""
         who = [w.colored_name(self.config.colors) for w in self.player_manager.who() if w.planet == self.protocol.player.planet and not w.on_ship]
         self.protocol.send_chat_message("Players on your current planet: %s" % " ".join(who))
 
@@ -117,7 +117,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.MODERATOR)
     def kick(self, data):
-        """Kicks a user from the server. Syntax: /kick [username] [reason]"""
+        """Kicks a user from the server. Usage: /kick [username] [reason]"""
         name, reason = self.extract_name(data)
         if reason is None:
             reason = "no reason given"
