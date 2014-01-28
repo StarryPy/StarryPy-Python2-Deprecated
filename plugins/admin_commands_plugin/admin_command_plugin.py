@@ -105,15 +105,13 @@ class UserCommandPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.MODERATOR)
     def make_registered(self, player):
-        if player.access_level < UserLevels.REGISTERED:
-            player.access_level = UserLevels.REGISTERED
-            self.player_manager.session.commit()
+        player.access_level = UserLevels.REGISTERED
+        self.player_manager.session.commit()
 
     @permissions(UserLevels.ADMIN)
     def make_mod(self, player):
-        if player.access_level < UserLevels.MODERATOR:
-            player.access_level = UserLevels.MODERATOR
-            self.player_manager.session.commit()
+        player.access_level = UserLevels.MODERATOR
+        self.player_manager.session.commit()
 
     @permissions(UserLevels.OWNER)
     def make_admin(self, player):
