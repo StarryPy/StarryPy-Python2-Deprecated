@@ -1,6 +1,5 @@
 from base_plugin import SimpleCommandPlugin
 from core_plugins.player_manager import permissions, UserLevels
-import packets
 from utility_functions import give_item_to_player
 
 
@@ -10,7 +9,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
     """
     name = "user_management_commands"
     depends = ['command_dispatcher', 'player_manager']
-    commands = ["who", "whois", "promote", "kick", "ban", "kickban", "give_item"]
+    commands = ["who", "whois", "promote", "kick", "ban", "kickban", "give_item", "planet"]
     auto_activate = True
 
     def activate(self):
@@ -53,8 +52,9 @@ class UserCommandPlugin(SimpleCommandPlugin):
         info = self.player_manager.whois(name)
         if info:
             self.protocol.send_chat_message(
-                "Name: %s\nUserlevel: %s\nUUID: %s\nIP address: %s""" % (
-                    info.colored_name(self.config.colors), UserLevels(info.access_level), info.uuid, info.ip))
+                "Name: %s\nUserlevel: %s\nUUID: %s\nIP address: %s\nCurrent planet: %s""" % (
+                    info.colored_name(self.config.colors), UserLevels(info.access_level), info.uuid, info.ip,
+                info.planet))
         else:
             self.protocol.send_chat_message("Player not found!")
         return False
