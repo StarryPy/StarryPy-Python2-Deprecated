@@ -116,13 +116,16 @@ class PluginManager(object):
         """
         return_values = []
         for plugin in self.plugins:
-            if not plugin.active:
+            try:
+                if not plugin.active:
+                    continue
+                plugin.protocol = protocol
+                res = getattr(plugin, command, lambda _: True)(data)
+                if res is None:
+                    res = True
+                return_values.append(res)
+            except:
                 continue
-            plugin.protocol = protocol
-            res = getattr(plugin, command, lambda _: True)(data)
-            if res is None:
-                res = True
-            return_values.append(res)
         return all(return_values)
 
     def get_by_name(self, name):
