@@ -42,6 +42,11 @@ class UserCommandPlugin(SimpleCommandPlugin):
         self.protocol.send_chat_message("Players online: %s" % " ".join(who))
         return False
 
+    def planet(self, data):
+        """Displays who is on your current planet"""
+        who = [w.colored_name(self.config.colors) for w in self.player_manager.who() if w.planet == self.protocol.player.planet and not w.on_ship]
+        self.protocol.send_chat_message("Players on your current planet: %s" % " ".join(who))
+
     @permissions(UserLevels.ADMIN)
     def whois(self, data):
         name = " ".join(data)
@@ -61,7 +66,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
             name = " ".join(data[:-1])
             rank = data[-1].lower()
             player = self.player_manager.get_by_name(name)
-            if player != None:
+            if player is not None:
                 old_rank = player.access_level
                 if rank == "admin":
                     self.make_admin(player)
@@ -75,9 +80,11 @@ class UserCommandPlugin(SimpleCommandPlugin):
                     self.protocol.send_chat_message("No such rank!\n"+usage)
                     return
 
-                self.protocol.send_chat_message("%s: %s -> %s\n" % (
+                self.protocol.send_chat_message("%s: %s -> %s" % (
                     player.colored_name(self.config.colors), str(UserLevels(old_rank)).split(".")[1],
                     rank.upper()))
+                self.protocol.factory.protocols[player.protocol].send_chat_message("%s has promoted you to %s" % (
+                    player.colored_name(self.config.colors), rank.upper()))
             else:
                 self.protocol.send_chat_message("Player not found!\n"+usage)
                 return

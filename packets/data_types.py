@@ -1,5 +1,5 @@
-from construct import Construct, Struct, Enum, Byte, Switch, BFloat64, Flag, \
-    Array, LazyBound, Field, String, Container
+from construct import Construct, Struct, Byte, BFloat64, Flag, \
+    Array, LazyBound, String, Container
 from construct.core import _read_stream, _write_stream, Adapter
 
 
@@ -74,33 +74,32 @@ variant_variant = Struct("data",
                          VLQ("length"),
                          Array(lambda ctx: ctx.length,
                                LazyBound("data",
-                                         lambda: variant())))
+                                         lambda: Variant(""))))
 
-dict_variant = Struct("data",
-                      VLQ("length"),
-                      Array(lambda ctx: ctx.length,
-                            Struct("dict",
-                                   star_string("key"),
-                                   LazyBound("value", lambda: variant()))))
+class dict_variant(Construct):
+    def _parse(self, stream, context):
+        l = VLQ("").parse_stream(stream)
+        c = {}
+        for x in range(l):
+            key = star_string("").parse_stream(stream)
+            value = Variant("").parse_stream(stream)
+            c[key] = value
+        return c
 
-variant = lambda name="variant": Struct(name,
-                                        Enum(Byte("type"),
-                                             NULL=1,
-                                             DOUBLE=2,
-                                             BOOL=3,
-                                             SVLQ=4,
-                                             STRING=5,
-                                             VARIANT=6,
-                                             DICT=7
-                                        ),
-                                        Switch("data", lambda ctx: ctx.type,
-                                               {
-                                                   "DOUBLE": BFloat64("data"),
-                                                   "BOOL": Flag("data"),
-                                                   "SVLQ": SignedVLQ("data"),
-                                                   "STRING": star_string(
-                                                       "data"),
-                                                   "VARIANT": variant_variant,
-                                                   "DICT": dict_variant
-                                               },
-                                               default=Field("null", 0)))
+class Variant(Construct):
+    def _parse(self, stream, context):
+        x = Byte("").parse_stream(stream)
+        if x == 1:
+            return None
+        elif x == 2:
+            return BFloat64("").parse_stream(stream)
+        elif x == 3:
+            return Flag("").parse_stream(stream)
+        elif x == 4:
+            return SignedVLQ("").parse_stream(stream)
+        elif x == 5:
+            return star_string().parse_stream(stream)
+        elif x == 6:
+            return variant_variant.parse_stream(stream)
+        elif x == 7:
+            return dict_variant("").parse_stream(stream)
