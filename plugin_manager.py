@@ -56,7 +56,7 @@ class PluginManager(object):
         self.load_plugins(self.plugin_dir)
 
         logging.info("Loaded plugins: %s" % "\n".join(
-            ["%s, Active: %s" % (plugin.name, plugin.active) for plugin in self.plugins]))
+            ["%s, Active: %s" % (plugin.name, plugin.auto_activate) for plugin in self.plugins]))
 
     def load_plugins(self, plugin_dir):
         """
