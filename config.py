@@ -1,4 +1,5 @@
 import json
+import logging
 
 
 class Singleton(type):
@@ -13,15 +14,24 @@ class Singleton(type):
 
 class ConfigurationManager(object):
     __metaclass__ = Singleton
+    logger = logging.getLogger("starrypy.config.ConfigurationManager")
 
     def __init__(self):
-        with open("config/config.json", "r+") as config:
-            self.config = json.load(config)
+        try:
+            with open("config/config.json", "r+") as config:
+                self.config = json.load(config)
+        except Exception as e:
+            self.logger.critical("Tried to save the configuration file, failed.\n%s", str(e))
+            raise
+        self.logger.debug("Created configuration manager.")
 
     def save(self):
-        with open("config/config.json", "w") as config:
-            config.write(json.dumps(self.config, indent=4, separators=(',', ': ')))
-
+        try:
+            with open("config/config.json", "w") as config:
+                config.write(json.dumps(self.config, indent=4, separators=(',', ': ')))
+        except Exception as e:
+            self.logger.critical("Tried to save the configuration file, failed.\n%s", str(e))
+            raise
     def __getattr__(self, item):
         if item != "config":
             if item in self.config:

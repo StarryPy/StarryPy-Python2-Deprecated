@@ -127,6 +127,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
                                             (self.protocol.player.name,
                                              info.name,
                                              " ".join(reason)))
+            self.logger.info("%s kicked %s (reason: %s", self.protocol.player.name, info.name, " ".join(reason))
         return False
 
     @permissions(UserLevels.ADMIN)
@@ -135,6 +136,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
         ip = data[0]
         self.player_manager.ban(ip)
         self.protocol.send_chat_message("Banned IP: %s" % ip)
+        self.logger.warning("%s banned IP: %s", self.protocol.player.name, ip)
         return False
 
     @permissions(UserLevels.ADMIN)
@@ -180,6 +182,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
                     "%s has given you: %s (count: %s)" % (
                     self.protocol.player.name, item_name, item_count))
                 self.protocol.send_chat_message("Sent the item(s).")
+                self.logger.info("%s gave %s %s (count: %s)", self.protocol.player.name, name, item_name, item_count)
             else:
                 self.protocol.send_chat_message("You have to give an item name.")
         else:

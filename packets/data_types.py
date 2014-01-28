@@ -1,9 +1,11 @@
+import logging
 from construct import Construct, Struct, Byte, BFloat64, Flag, \
     Array, LazyBound, String, Container
 from construct.core import _read_stream, _write_stream, Adapter
 
 
 class SignedVLQ(Construct):
+    logger = logging.getLogger('starrypy.packets.SignedVLQ')
     def _parse(self, stream, context):
         value = 0
         while True:
@@ -22,11 +24,14 @@ class SignedVLQ(Construct):
             if obj < 0:
                 value -= 1
             VLQ("")._build(value, stream, context)
-        except Exception as e:
-            print e
+        except:
+            self.logger.exception("Error building SignedVLQ.", exc_info=True)
+            raise
+
 
 
 class VLQ(Construct):
+    logger = logging.getLogger('starrypy.packets.SignedVLQ')
     def _parse(self, stream, context):
         value = 0
         while True:
@@ -59,7 +64,7 @@ star_string = lambda name="star_string": StarStringAdapter(star_string_struct(na
 
 class StarStringAdapter(Adapter):
     def _encode(self, obj, context):
-        return Container(length=len(obj), string=unicode(obj))
+        return Container(length=len(obj), string=obj)
 
     def _decode(self, obj, context):
         return obj.string

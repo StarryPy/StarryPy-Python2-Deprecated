@@ -1,8 +1,15 @@
+import logging
+
 from construct import Container
+
 import packets
 
 
+logger = logging.getLogger("starrypy.utility_functions")
+
+
 def give_item_to_player(player_protocol, item, count=1):
+    logger.debug("Giving item %s (count: %d) to %s", item, count, player_protocol.player.name)
     item_count = int(count)
     maximum = 1000
     total = item_count
@@ -42,6 +49,8 @@ class Planet(object):
 
 
 def move_ship_to_coords(protocol, sector, x, y, z, planet, satellite):
+    logger.info("Moving %s's ship to coordinates: %s", protocol.player.name,
+                ":".join((sector, x, y, z, planet, satellite)))
     x, y, z, planet, satellite = map(int, (x, y, z, planet, satellite))
     warp_packet = build_packet(packets.Packets.WARP_COMMAND,
                                packets.warp_command_write(t="MOVE_SHIP", sector=sector, x=x, y=y, z=z,

@@ -1,4 +1,3 @@
-import logging
 from base_plugin import BasePlugin
 from packets import chat_sent
 
@@ -24,8 +23,9 @@ class CommandDispatchPlugin(BasePlugin):
                     self.protocol.send_chat_message(
                         "Couldn't find a command called %s%s" % (self.command_prefix, command))
                 return False
-            except Exception as e:
-                logging.exception(e)
+            except:
+                self.logger.exception("Error in on_chat_sent.", exc_info=True)
+                raise
 
     def register(self, f, names):
         if not callable(f):

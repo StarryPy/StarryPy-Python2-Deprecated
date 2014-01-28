@@ -1,4 +1,3 @@
-import logging
 from construct import Container
 from twisted.words.ewords import AlreadyLoggedIn
 from base_plugin import BasePlugin
@@ -24,7 +23,7 @@ class PlayerManagerPlugin(BasePlugin):
                 ip=self.protocol.transport.getHost().host,
                 protocol=self.protocol.id)
             return True
-        except (AlreadyLoggedIn, Banned) as e:
+        except (AlreadyLoggedIn, Banned):
             ban_packet = build_packet(
                 packets.Packets.CLIENT_DISCONNECT,
                 packets.connect_response().build(
@@ -37,18 +36,18 @@ class PlayerManagerPlugin(BasePlugin):
             )
             self.protocol.transport.write(ban_packet)
             self.protocol.transport.loseConnection()
+            self.logger.info("Banned user tried to log in.")
             return False
 
     def after_connect_response(self, data):
         connection_parameters = connect_response().parse(data.data)
         if not connection_parameters.success:
-            logging.warning("Connection was unsuccessful.\
-             Reason from Starbound Server: %s" % (
-                connection_parameters.reject_reason))
+            self.logger.warning("Connection from IP: %s was unsuccessful. Reason from Starbound Server: %s",
+                                self.protocol.transport.getHost().host, connection_parameters.reject_reason)
             self.protocol.transport.loseConnection()
         self.protocol.player.client_id = connection_parameters.client_id
         self.protocol.player.logged_in = True
-        logging.info("Player %s (UUID: %s, IP: %s) logged in" % (
+        self.logger.info("Player %s (UUID: %s, IP: %s) logged in" % (
             self.protocol.player.name, self.protocol.player.uuid,
             self.protocol.transport.getHost().host))
 
@@ -63,8 +62,11 @@ class PlayerManagerPlugin(BasePlugin):
             planet = Planet(parent_system['sector'], l[0], l[1], l[2],
                             coords['planetaryOrbitNumber'], coords['satelliteOrbitNumber'])
             self.protocol.player.planet = str(planet)
+            self.logger.debug("Player %s is now at planet: %s", self.protocol.player.name, str(planet))
         else:
+            self.logger.info("Player %s is now on a ship.", self.protocol.player.name)
             self.protocol.player.on_ship = True
 
     def on_client_disconnect(self, player):
+        self.logger.info("Player disconnected: %s", self.protocol.player.name)
         self.protocol.player.logged_in = False

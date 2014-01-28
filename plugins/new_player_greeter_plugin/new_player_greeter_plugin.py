@@ -23,6 +23,7 @@ class NewPlayerGreeter(BasePlugin):
             self.protocol.player.storage(my_storage)
             self.give_items()
             self.send_greetings()
+            self.logger.info("Gave starter items to %s.", self.protocol.player.name)
 
     def give_items(self):
         for item in self.starter_items:

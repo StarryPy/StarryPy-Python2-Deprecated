@@ -48,6 +48,7 @@ class PlanetProtectPlugin(SimpleCommandPlugin):
         if planet not in self.protected_planets:
             self.protected_planets.append(planet)
             self.protocol.send_chat_message("Planet successfully protected.")
+            self.logger.info("Protected planet %s", planet)
         else:
             self.protocol.send_chat_message("Planet is already protected!")
         self.save()
@@ -62,11 +63,16 @@ class PlanetProtectPlugin(SimpleCommandPlugin):
         if planet in self.protected_planets:
             self.protected_planets.remove(planet)
             self.protocol.send_chat_message("Planet successfully unprotected.")
+            self.logger.info("Unprotected planet %s", planet)
         else:
             self.protocol.send_chat_message("Planet is not protected!")
         self.save()
 
     def save(self):
-        with open("plugins/planet_protect/protected_planets.json", "w") as f:
-            json.dump(self.protected_planets,f)
+        try:
+            with open("plugins/planet_protect/protected_planets.json", "w") as f:
+                json.dump(self.protected_planets,f)
+        except:
+            self.logger.exception("Couldn't save protected planets.", exc_info=True)
+            raise
 

@@ -1,3 +1,6 @@
+import logging
+
+
 class BasePlugin(object):
     """
     Defines an interface for all plugins to inherit from. Note that the __init__
@@ -26,12 +29,15 @@ class BasePlugin(object):
         self.protocol = None
         self.plugins = {}
         self.active = False
+        self.logger = logging.getLogger('starrypy.plugin.%s' % self.name)
+        self.logger.debug("%s plugin object created.", self.name)
 
     def activate(self):
         """
         Called when the plugins are activated, do any setup work here.
         """
         self.active = True
+        self.logger.debug("%s plugin object activated.", self.name)
         return True
 
     def deactivate(self):
@@ -40,6 +46,7 @@ class BasePlugin(object):
         as it is likely that the plugin will soon be destroyed.
         """
         self.active = False
+        self.logger.debug("%s plugin object deactivated", self.name)
         return True
 
     def on_protocol_version(self, data):

@@ -19,6 +19,7 @@ class Warpy(SimpleCommandPlugin):
 
     @permissions(UserLevels.ADMIN)
     def warp(self, name):
+        self.logger.debug("Warp command called by %s to %s", self.protocol.player.name, name)
         name = " ".join(name)
         target_player = self.player_manager.get_logged_in_by_name(name)
         if target_player is not None:
@@ -36,6 +37,7 @@ class Warpy(SimpleCommandPlugin):
 
     @permissions(UserLevels.ADMIN)
     def move_ship(self, location):
+        self.logger.debug("move_ship called by %s to %s", self.protocol.player.name, ":".join(location))
         try:
             if len(location) == 0:
                 raise
@@ -61,13 +63,14 @@ class Warpy(SimpleCommandPlugin):
                                                               planet=planet,
                                                               satellite=satellite, player="".encode('utf-8')))
                 self.protocol.client_protocol.transport.write(warp_packet)
-        except Exception as e:
-            print e
-            self.protocol.send_chat_message("Usage: /teleport 42 23 10")
+        except:
+            self.logger.exception("Unknown error in move_ship command.", exc_info=True)
+            self.protocol.send_chat_message(self.__doc__)
 
     @permissions(UserLevels.ADMIN)
     def move_other_ship(self, data):
         """Moves another players ship. Usage: /move_other_ship [player] [coordinates in format alpha:12345:122:5:0] OR /move_other_ship [player] (to warp the players ship to your current location."""
+        self.logger.debug("move_other_ship called by %s to %s", self.protocol.player.name, ":".join(data))
         try:
             if len(data) < 6 and len(data) != 1: raise
             if len(data) >= 6:
@@ -93,6 +96,6 @@ class Warpy(SimpleCommandPlugin):
                 self.protocol.factory.protocols[target_player.protocol].send_chat_message(
                     "You have been moved to a different planet by %s" % self.protocol.player.colored_name(
                         self.config.colors))
-        except Exception as e:
-            print e
+        except:
+            self.logger.exception("Unknown error in move_other_ship command.", exc_info=True)
             self.protocol.send_chat_message(self.__doc__)

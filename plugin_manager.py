@@ -12,7 +12,6 @@ from twisted.internet.task import deferLater
 from base_plugin import BasePlugin
 from config import ConfigurationManager
 
-
 class DuplicatePluginError(Exception):
     """
     Raised when there is a plugin of the same name/class already instantiated.
@@ -33,6 +32,7 @@ class MissingDependency(PluginNotFound):
 
 
 class PluginManager(object):
+    logger = logging.getLogger('starrypy.plugin_manager.PluginManager')
     def __init__(self, base_class=BasePlugin):
         """
         Initializes the plugin manager. When called, with will first attempt
@@ -55,7 +55,7 @@ class PluginManager(object):
         sys.path.append(self.plugin_dir)
         self.load_plugins(self.plugin_dir)
 
-        logging.info("Loaded plugins: %s" % "\n".join(
+        self.logger.info("Loaded plugins: %s" % "\n".join(
             ["%s, Active: %s" % (plugin.name, plugin.auto_activate) for plugin in self.plugins]))
 
     def load_plugins(self, plugin_dir):
@@ -90,14 +90,13 @@ class PluginManager(object):
                                 else:
                                     plugin_instance.plugins[dependency] = dependency_instance
                         self.plugins.append(plugin_instance)
-            except ImportError as e:
-                pass
+            except ImportError:
+                self.logger.debug("Import error for %s", name)
 
     def activate_plugins(self):
         for plugin in self.plugins:
             if plugin.auto_activate:
                 plugin.activate()
-                #pass
 
     def deactivate_plugins(self):
         for plugin in self.plugins:
@@ -125,7 +124,7 @@ class PluginManager(object):
                     res = True
                 return_values.append(res)
             except Exception as e:
-                print "Error in plugin %s with function %s: %s" % (str(plugin), command, str(e))
+                self.logger.exception("Error in plugin %s with function %s.", str(plugin), command, exc_info=True)
         return all(return_values)
 
     def get_by_name(self, name):
@@ -148,6 +147,7 @@ def route(func):
     """
     This decorator is used to map methods to appropriate plugin calls.
     """
+    logger = logging.getLogger('starrypy.plugin_manager.route')
 
     def wrapped_function(self, data):
         name = func.__name__
@@ -161,6 +161,6 @@ def route(func):
         return res
 
     def print_this_defered_failure(f):
-        logging.error(f)
+        logger.error("Deferred function failure. %s", f)
 
     return wrapped_function

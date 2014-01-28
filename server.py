@@ -1,5 +1,7 @@
+# -*- coding: UTF-8 -*-
 import logging
 from uuid import uuid4
+import sys
 
 import construct
 from twisted.internet import reactor
@@ -81,7 +83,7 @@ class StarryPyServerProtocol(Protocol):
             packets.Packets.UPDATE_WORLD_PROPERTIES: self.update_world_properties,
             packets.Packets.HEARTBEAT: self.heartbeat,
         }
-        logging.info("Created StarryPyServerProtocol with UUID %s" % self.id)
+        logger.info("Created StarryPyServerProtocol with UUID %s" % self.id)
 
     def connectionMade(self):
         """
@@ -95,7 +97,7 @@ class StarryPyServerProtocol(Protocol):
         self.plugin_manager = self.factory.plugin_manager
         self.packet_stream = PacketStream(self)
         self.packet_stream.direction = packets.Direction.CLIENT
-        logging.debug("Connection made in StarryPyServerProtocol with UUID %s" %
+        logger.debug("Connection made in StarryPyServerProtocol with UUID %s" %
                       self.id)
         reactor.connectTCP(self.config.server_hostname, self.config.server_port, StarboundClientFactory(self))
 
@@ -117,7 +119,7 @@ class StarryPyServerProtocol(Protocol):
                     self.after_write_callback()
         else:
             # We received an unknown packet; send it along.
-            logging.warning(
+            logger.warning(
                 "Received unknown message ID (%d) from client." %
                 packet.id)
             self.client_protocol.transport.write(
@@ -379,6 +381,7 @@ class StarryPyServerProtocol(Protocol):
         brackets, otherwise it will be displayed as `<name>`.
         :return: None
         """
+        logger.debug("Sent chat message with text: %s", text)
         if '\n' in text:
             lines = text.split('\n')
             for line in lines:
@@ -388,7 +391,7 @@ class StarryPyServerProtocol(Protocol):
                                                             world=world,
                                                             client_id=0,
                                                             name=name,
-                                                            message=unicode(text)))
+                                                            message=text))
         chat_packet = build_packet(packets.Packets.CHAT_RECEIVED,
                                    chat_data)
         self.transport.write(chat_packet)
@@ -414,7 +417,7 @@ class StarryPyServerProtocol(Protocol):
                 except:
                     pass
                 finally:
-                    logging.warning("Lost connection. Reason given: %s" % str(reason))
+                    logger.warning("Lost connection. Reason given: %s" % str(reason))
 
     def die(self):
         self.transport.loseConnection()
@@ -433,6 +436,7 @@ class ClientProtocol(Protocol):
     def __init__(self):
         self.packet_stream = PacketStream(self)
         self.packet_stream.direction = packets.Direction.SERVER
+        logger.debug("Client protocol instantiated.")
 
     def connectionMade(self):
         """
@@ -463,8 +467,8 @@ class ClientProtocol(Protocol):
                     packet):
                 self.server_protocol.write(
                     packet.original_data)
-        except construct.core.FieldError as e:
-            logging.error(str(e))
+        except construct.core.FieldError:
+            logger.exception("Construct field error in string_received.", exc_info=True)
             self.server_protocol.write(
                 packet.original_data)
 
@@ -518,11 +522,11 @@ class StarryPyServerFactory(ServerFactory):
         :param name: The name to prepend before the message, format is <name>
         :return: None
         """
-        try:
-            for p in self.protocols.itervalues():
+        for p in self.protocols.itervalues():
+            try:
                 p.send_chat_message(text)
-        except Exception as e:
-            logging.error(e)
+            except:
+                logger.exception("Exception in broadcast.", exc_info=True)
 
     def buildProtocol(self, address):
         """
@@ -530,6 +534,7 @@ class StarryPyServerFactory(ServerFactory):
 
         :rtype : Protocol
         """
+        logger.debug("Building protocol to address %s", address)
         p = ServerFactory.buildProtocol(self, address)
         return p
 
@@ -550,8 +555,24 @@ class StarboundClientFactory(ClientFactory):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(format='[%(asctime)-15s] %(levelname)s:%(message)s', level=logging.DEBUG)
-    logging.info("Started server.")
+    logger = logging.getLogger('starrypy')
+    logger.setLevel(logging.DEBUG)
+    fh_d = logging.FileHandler("debug.log")
+    fh_d.setLevel(logging.DEBUG)
+    fh_w = logging.FileHandler("server.log")
+    fh_w.setLevel(logging.INFO)
+    sh = logging.StreamHandler(sys.stdout)
+    sh.setLevel(logging.INFO)
+
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    fh_d.setFormatter(formatter)
+    fh_w.setFormatter(formatter)
+    sh.setFormatter(formatter)
+    logger.addHandler(sh)
+    logger.addHandler(fh_d)
+    logger.addHandler(fh_w)
+    logger.debug("test")
+    logger.info("Started server.")
     factory = StarryPyServerFactory()
     reactor.listenTCP(21025, factory)
     reactor.run()

@@ -2,6 +2,7 @@ import datetime
 import json
 from functools import wraps
 import inspect
+import logging
 
 from enum import Enum
 
@@ -9,9 +10,8 @@ from sqlalchemy.orm import Session, relationship, backref, object_session
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, \
     ForeignKey, Boolean, func
 from sqlalchemy.ext.declarative import declarative_base
-from twisted.python import log
 from twisted.words.ewords import AlreadyLoggedIn
-
+logger = logging.getLogger("starrypy.player_manager.manager")
 
 Base = declarative_base()
 
@@ -102,19 +102,19 @@ class PlayerManager(object):
         if self.check_bans(ip):
             raise Banned
         while self.whois(name):
-            log.msg("Got a duplicate player, affixing _ to name")
+            logger.info("Got a duplicate player, affixing _ to name")
             name += "_"
         player = self.session.query(Player).filter_by(uuid=uuid).first()
         if player:
             if player.name != name:
-                log.msg("Detected username change.")
+                logger.info("Detected username change.")
                 player.name = name
             if ip not in player.ips:
                 player.ips.append(IPAddress(ip=ip))
                 player.ip = ip
             player.protocol = protocol
         else:
-            log.msg("Adding new player with name: %s" % name)
+            logger.info("Adding new player with name: %s" % name)
             player = Player(uuid=uuid, name=name,
                             last_seen=datetime.datetime.now(),
                             access_level=int(UserLevels.GUEST),

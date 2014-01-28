@@ -13,6 +13,7 @@ class Packet(object):
 
 
 class PacketStream(object):
+    logger = logging.getLogger('starrypy.packet_stream.PacketStream')
     def __init__(self, protocol):
         self._stream = ""
         self.id = None
@@ -47,8 +48,8 @@ class PacketStream(object):
                 self.header_length = 1+len(packets.SignedVLQ("").build(packet_header.payload_size))
                 self.packet_size = self.payload_size + self.header_length
                 return True
-        except Exception as e:
-            print e
+        except:
+            self.logger.exception("Unknown error in start_packet.", exc_info=True)
             return False
 
     def check_packet(self):
@@ -63,7 +64,7 @@ class PacketStream(object):
                         z = zlib.decompressobj()
                         p_parsed.data = z.decompress(p_parsed.data)
                     except zlib.error:
-                        logging.warning("Decompression error.")
+                        self.logger.warning("Decompression error in check_packet.")
                         pass
                 packet = Packet(packet_id=p_parsed.id, payload_size=p_parsed.payload_size, data=p_parsed.data,
                                 original_data=p, direction=self.direction)
@@ -73,8 +74,8 @@ class PacketStream(object):
                 self.reset()
                 if self.start_packet():
                     self.check_packet()
-        except Exception as e:
-            print e
+        except:
+            self.logger.exception("Unknown error in check_packet", exc_info=True)
 
     def reset(self):
         self.id = None

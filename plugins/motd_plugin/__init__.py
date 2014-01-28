@@ -1,1 +1,1 @@
-#from motd_plugin import MOTDPlugin
+from motd_plugin import MOTDPlugin
