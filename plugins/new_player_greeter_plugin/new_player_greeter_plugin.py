@@ -1,3 +1,4 @@
+
 from base_plugin import BasePlugin
 from utility_functions import give_item_to_player
 
@@ -14,11 +15,11 @@ class NewPlayerGreeter(BasePlugin):
         self.starter_items = []
         with open("plugins/new_player_greeter_plugin/starter_items.txt") as f:
             for item, count in [x.split(" ") for x in f]:
-                self.starter_items.append((item,count))
+                self.starter_items.append((item, count))
 
     def after_connect_response(self, data):
         my_storage = self.protocol.player.storage()
-        if not my_storage.has_key('given_starter_items') or my_storage['given_starter_items'] == "False":
+        if not 'given_starter_items' in my_storage or my_storage['given_starter_items'] == "False":
             my_storage['given_starter_items'] = "True"
             self.protocol.player.storage(my_storage)
             self.give_items()
@@ -30,5 +31,5 @@ class NewPlayerGreeter(BasePlugin):
             give_item_to_player(self.protocol, item[0], item[1])
 
     def send_greetings(self):
-        self.protocol.send_chat_message(
-            "Welcome to the server new player! Have some items as a welcoming present.")
+        with open("plugins/new_player_greeter_plugin/new_player_message.txt") as f:
+            self.protocol.send_chat_message(f.read())
