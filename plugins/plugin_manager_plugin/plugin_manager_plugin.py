@@ -5,7 +5,7 @@ from plugin_manager import PluginNotFound
 
 class PluginManagerPlugin(SimpleCommandPlugin):
     name = "plugin_manager"
-    commands = ["list_plugins", "enable_plugin", "disable_plugin", "help"]
+    commands = ["list_plugins", "enable_plugin", "disable_plugin", "help", "reload_plugins"]
     auto_activate = True
 
     @property
@@ -61,6 +61,11 @@ class PluginManagerPlugin(SimpleCommandPlugin):
             return
         plugin.activate()
         self.protocol.send_chat_message("Successfully activated plugin.")
+
+    @permissions(UserLevels.ADMIN)
+    def reload_plugins(self, data):
+        """Reloads all active plugins. Syntax: /reload_plugins"""
+        self.plugin_manager.reload_plugins()
 
     def help(self, data):
         """Prints help messages for plugin commands. Syntax: /help [command]"""

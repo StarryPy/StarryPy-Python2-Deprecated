@@ -93,6 +93,21 @@ class PluginManager(object):
             except ImportError:
                 self.logger.debug("Import error for %s", name)
 
+    def reload_plugins(self):
+        self.logger.warning("Reloading plugins.")
+        for x in self.plugins:
+            del x
+        self.plugins = []
+        try:
+            self.load_plugins(self.core_plugin_dir)
+            self.load_plugins(self.plugin_dir)
+            self.activate_plugins()
+        except:
+            self.logger.exception("Couldn't reload plugins!")
+            raise
+
+
+
     def activate_plugins(self):
         for plugin in self.plugins:
             if plugin.auto_activate:

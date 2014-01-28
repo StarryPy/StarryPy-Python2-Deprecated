@@ -1,6 +1,5 @@
 from base_plugin import BasePlugin
 
-
 class Announcer(BasePlugin):
     """
     Broadcasts a message whenever a player joins or leaves the server.
@@ -10,6 +9,7 @@ class Announcer(BasePlugin):
 
     def activate(self):
         super(Announcer, self).activate()
+        print "Boop"
 
     def after_connect_response(self, data):
         try:
