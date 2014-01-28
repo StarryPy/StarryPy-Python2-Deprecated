@@ -21,12 +21,9 @@ class Warpy(SimpleCommandPlugin):
     def warp(self, name):
         name = " ".join(name)
         target_player = self.player_manager.get_logged_in_by_name(name)
-        print name
-        print target_player
         if target_player is not None:
             target_protocol = self.protocol.factory.protocols[target_player.protocol]
             if target_player is not self.protocol.player:
-                print "Got here"
                 warp_packet = build_packet(Packets.WARP_COMMAND,
                                            warp_command_write(t="WARP_OTHER_SHIP",
                                                               player=target_player.name.encode('utf-8')))
