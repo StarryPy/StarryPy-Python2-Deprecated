@@ -20,7 +20,7 @@ class Announcer(BasePlugin):
         except Exception as e:
             print e
 
-    def after_client_disconnect(self, data):
+    def on_client_disconnect(self, data):
         self.protocol.factory.broadcast(self.protocol.player.colored_name(self.config.colors) + " left.", 0,
                                         "", "Announcer")
 
