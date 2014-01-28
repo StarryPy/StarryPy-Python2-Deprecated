@@ -24,3 +24,15 @@ def build_packet(packet_type, data):
     length = len(data)
     return packets.packet().build(
         Container(id=packet_type, payload_size=length, data=data))
+
+class Planet(object):
+    def __init__(self, sector, x, y, z, planet, satellite):
+        self.sector = sector
+        self.x = x
+        self.y = y
+        self.z = z
+        self.planet = planet
+        self.satellite = satellite
+
+    def __str__(self):
+        return "%s:%d:%d:%d:%d:%d" % (self.sector, self.x, self.y, self.z, self.planet, self.satellite)

@@ -1,6 +1,5 @@
 from base_plugin import SimpleCommandPlugin
 from core_plugins.player_manager import permissions, UserLevels
-import packets
 from utility_functions import give_item_to_player
 
 
@@ -10,7 +9,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
     """
     name = "user_management_commands"
     depends = ['command_dispatcher', 'player_manager']
-    commands = ["who", "whois", "promote", "kick", "ban", "kickban", "give_item"]
+    commands = ["who", "whois", "promote", "kick", "ban", "kickban", "give_item", "planet"]
     auto_activate = True
 
     def activate(self):
@@ -42,14 +41,20 @@ class UserCommandPlugin(SimpleCommandPlugin):
         self.protocol.send_chat_message("Players online: %s" % " ".join(who))
         return False
 
+    def planet(self, data):
+        """Displays who is on your current planet"""
+        who = [w.colored_name(self.config.colors) for w in self.player_manager.who() if w.planet == self.protocol.player.planet and not w.on_ship]
+        self.protocol.send_chat_message("Players on your current planet: %s" % " ".join(who))
+
     @permissions(UserLevels.ADMIN)
     def whois(self, data):
         name = " ".join(data)
         info = self.player_manager.whois(name)
         if info:
             self.protocol.send_chat_message(
-                "Name: %s\nUserlevel: %s\nUUID: %s\nIP address: %s""" % (
-                    info.colored_name(self.config.colors), UserLevels(info.access_level), info.uuid, info.ip))
+                "Name: %s\nUserlevel: %s\nUUID: %s\nIP address: %s\nCurrent planet: %s""" % (
+                    info.colored_name(self.config.colors), UserLevels(info.access_level), info.uuid, info.ip,
+                info.planet))
         else:
             self.protocol.send_chat_message("Player not found!")
         return False
@@ -60,10 +65,8 @@ class UserCommandPlugin(SimpleCommandPlugin):
         if len(data) > 0:
             name = " ".join(data[:-1])
             rank = data[-1].lower()
-            print name
             player = self.player_manager.get_by_name(name)
-            print player
-            if player != None:
+            if player is not None:
                 old_rank = player.access_level
                 self.protocol.send_chat_message(
                 "%s: %s -> %s\n" % (

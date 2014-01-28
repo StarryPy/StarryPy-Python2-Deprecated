@@ -44,13 +44,17 @@ class Player(Base):
     client_id = Column(Integer)
     ip = Column(String)
     plugin_storage = Column(String)
+    planet = Column(String)
+    on_ship = Column(Boolean)
+
+
     ips = relationship("IPAddress", order_by="IPAddress.id", backref="players")
 
     def colored_name(self, colors):
         color = colors[str(UserLevels(self.access_level)).split(".")[1].lower()]
         return color + self.name + colors["default"]
 
-    def storage(self,store=None):
+    def storage(self, store=None):
         caller = inspect.stack()[1][0].f_locals["self"].__class__.name
         try:
             plugin_storage = json.loads(self.plugin_storage)
@@ -66,6 +70,7 @@ class Player(Base):
                 return plugin_storage[caller]
             except (ValueError, KeyError, TypeError):
                 return {}
+
 
 class IPAddress(Base):
     __tablename__ = 'ips'
@@ -116,7 +121,9 @@ class PlayerManager(object):
                             logged_in=False,
                             protocol=protocol,
                             client_id=-1,
-                            ip=ip)
+                            ip=ip,
+                            planet="",
+                            on_ship=True)
             player.ips = [IPAddress(ip=ip)]
             self.session.add(player)
         if uuid == self.config.owner_uuid:
