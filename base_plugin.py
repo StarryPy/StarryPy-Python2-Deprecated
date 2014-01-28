@@ -367,7 +367,6 @@ class SimpleCommandPlugin(BasePlugin):
                 self.plugins['command_dispatcher'].register(alias, command)
 
 
-
     def deactivate(self):
         super(SimpleCommandPlugin, self).deactivate()
         for command in self.commands:

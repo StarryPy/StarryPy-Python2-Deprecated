@@ -2,6 +2,7 @@ import logging
 import zlib
 import packets
 
+
 class Packet(object):
     def __init__(self, packet_id, payload_size, data, original_data, direction, compressed=False):
         self.id = packet_id
@@ -14,6 +15,7 @@ class Packet(object):
 
 class PacketStream(object):
     logger = logging.getLogger('starrypy.packet_stream.PacketStream')
+
     def __init__(self, protocol):
         self._stream = ""
         self.id = None
@@ -45,7 +47,7 @@ class PacketStream(object):
                     self.compressed = True
                 else:
                     self.compressed = False
-                self.header_length = 1+len(packets.SignedVLQ("").build(packet_header.payload_size))
+                self.header_length = 1 + len(packets.SignedVLQ("").build(packet_header.payload_size))
                 self.packet_size = self.payload_size + self.header_length
                 return True
         except:
@@ -59,13 +61,13 @@ class PacketStream(object):
                 if not self._stream:
                     self._stream = ""
                 p_parsed = packets.packet().parse(p)
-                if self.compressed and len(p_parsed.data) > 1000:
+                if self.compressed:
                     try:
                         z = zlib.decompressobj()
                         p_parsed.data = z.decompress(p_parsed.data)
                     except zlib.error:
                         self.logger.warning("Decompression error in check_packet.")
-                        pass
+                        raise
                 packet = Packet(packet_id=p_parsed.id, payload_size=p_parsed.payload_size, data=p_parsed.data,
                                 original_data=p, direction=self.direction)
 

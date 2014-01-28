@@ -123,7 +123,7 @@ client_connect = lambda name="client_connect": Struct(name,
                                                       Flag("uuid_exists"),
                                                       If(lambda ctx: ctx.uuid_exists is True,
                                                          HexAdapter(Field("uuid", 16))
-                                                         ),
+                                                      ),
                                                       star_string("name"),
                                                       star_string("species"),
                                                       VLQ("shipworld_length"),

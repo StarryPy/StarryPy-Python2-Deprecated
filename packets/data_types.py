@@ -6,6 +6,7 @@ from construct.core import _read_stream, _write_stream, Adapter
 
 class SignedVLQ(Construct):
     logger = logging.getLogger('starrypy.packets.SignedVLQ')
+
     def _parse(self, stream, context):
         value = 0
         while True:
@@ -29,9 +30,9 @@ class SignedVLQ(Construct):
             raise
 
 
-
 class VLQ(Construct):
     logger = logging.getLogger('starrypy.packets.SignedVLQ')
+
     def _parse(self, stream, context):
         value = 0
         while True:
@@ -81,6 +82,7 @@ variant_variant = Struct("data",
                                LazyBound("data",
                                          lambda: Variant(""))))
 
+
 class dict_variant(Construct):
     def _parse(self, stream, context):
         l = VLQ("").parse_stream(stream)
@@ -90,6 +92,7 @@ class dict_variant(Construct):
             value = Variant("").parse_stream(stream)
             c[key] = value
         return c
+
 
 class Variant(Construct):
     def _parse(self, stream, context):

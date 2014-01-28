@@ -44,7 +44,8 @@ class UserCommandPlugin(SimpleCommandPlugin):
 
     def planet(self, data):
         """Displays who is on your current planet."""
-        who = [w.colored_name(self.config.colors) for w in self.player_manager.who() if w.planet == self.protocol.player.planet and not w.on_ship]
+        who = [w.colored_name(self.config.colors) for w in self.player_manager.who() if
+               w.planet == self.protocol.player.planet and not w.on_ship]
         self.protocol.send_chat_message("Players on your current planet: %s" % " ".join(who))
 
     @permissions(UserLevels.ADMIN)
@@ -56,7 +57,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
             self.protocol.send_chat_message(
                 "Name: %s\nUserlevel: %s\nUUID: %s\nIP address: %s\nCurrent planet: %s""" % (
                     info.colored_name(self.config.colors), UserLevels(info.access_level), info.uuid, info.ip,
-                info.planet))
+                    info.planet))
         else:
             self.protocol.send_chat_message("Player not found!")
         return False
@@ -79,16 +80,17 @@ class UserCommandPlugin(SimpleCommandPlugin):
                 elif rank == "guest":
                     self.make_guest(player)
                 else:
-                    self.protocol.send_chat_message("No such rank!\n"+self.promote.__doc__)
+                    self.protocol.send_chat_message("No such rank!\n" + self.promote.__doc__)
                     return
 
                 self.protocol.send_chat_message("%s: %s -> %s" % (
                     player.colored_name(self.config.colors), str(UserLevels(old_rank)).split(".")[1],
                     rank.upper()))
-                self.protocol.factory.protocols[player.protocol].send_chat_message("%s has promoted you to %s" % (
-                    player.colored_name(self.config.colors), rank.upper()))
+                self.protocol.factory.protocols[player.protocol].send_chat_message(
+                    "%s has promoted you to %s" % (
+                        player.colored_name(self.config.colors), rank.upper()))
             else:
-                self.protocol.send_chat_message("Player not found!\n"+self.promote.__doc__)
+                self.protocol.send_chat_message("Player not found!\n" + self.promote.__doc__)
                 return
         else:
             self.protocol.send_chat_message(self.promote.__doc__)
@@ -129,7 +131,8 @@ class UserCommandPlugin(SimpleCommandPlugin):
                                             (self.protocol.player.name,
                                              info.name,
                                              " ".join(reason)))
-            self.logger.info("%s kicked %s (reason: %s", self.protocol.player.name, info.name, " ".join(reason))
+            self.logger.info("%s kicked %s (reason: %s", self.protocol.player.name, info.name,
+                             " ".join(reason))
         return False
 
     @permissions(UserLevels.ADMIN)
@@ -176,9 +179,10 @@ class UserCommandPlugin(SimpleCommandPlugin):
                 give_item_to_player(target_protocol, item_name, item_count)
                 target_protocol.send_chat_message(
                     "%s has given you: %s (count: %s)" % (
-                    self.protocol.player.name, item_name, item_count))
+                        self.protocol.player.name, item_name, item_count))
                 self.protocol.send_chat_message("Sent the item(s).")
-                self.logger.info("%s gave %s %s (count: %s)", self.protocol.player.name, name, item_name, item_count)
+                self.logger.info("%s gave %s %s (count: %s)", self.protocol.player.name, name, item_name,
+                                 item_count)
             else:
                 self.protocol.send_chat_message("You have to give an item name.")
         else:

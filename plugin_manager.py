@@ -12,6 +12,7 @@ from twisted.internet.task import deferLater
 from base_plugin import BasePlugin
 from config import ConfigurationManager
 
+
 class DuplicatePluginError(Exception):
     """
     Raised when there is a plugin of the same name/class already instantiated.
@@ -33,6 +34,7 @@ class MissingDependency(PluginNotFound):
 
 class PluginManager(object):
     logger = logging.getLogger('starrypy.plugin_manager.PluginManager')
+
     def __init__(self, base_class=BasePlugin):
         """
         Initializes the plugin manager. When called, with will first attempt
@@ -107,7 +109,6 @@ class PluginManager(object):
             raise
 
 
-
     def activate_plugins(self):
         for plugin in self.plugins:
             if plugin.auto_activate:
@@ -139,7 +140,8 @@ class PluginManager(object):
                     res = True
                 return_values.append(res)
             except Exception as e:
-                self.logger.exception("Error in plugin %s with function %s.", str(plugin), command, exc_info=True)
+                self.logger.exception("Error in plugin %s with function %s.", str(plugin), command,
+                                      exc_info=True)
         return all(return_values)
 
     def get_by_name(self, name):

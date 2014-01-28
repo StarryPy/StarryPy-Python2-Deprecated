@@ -15,18 +15,18 @@ class PlanetProtectPlugin(SimpleCommandPlugin):
 
     def activate(self):
         super(PlanetProtectPlugin, self).activate()
-        bad_packets =   [
-                        "CONNECT_WIRE",
-                        "DISCONNECT_ALL_WIRES",
-                        "OPEN_CONTAINER",
-                        "CLOSE_CONTAINER",
-                        "SWAP_IN_CONTAINER",
-                        "DAMAGE_TILE",
-                        "DAMAGE_TILE_GROUP",
-                        "REQUEST_DROP",
-                        "ENTITY_INTERACT"
-                        ]
-        for n in ["on_"+n.lower() for n in bad_packets]:
+        bad_packets = [
+            "CONNECT_WIRE",
+            "DISCONNECT_ALL_WIRES",
+            "OPEN_CONTAINER",
+            "CLOSE_CONTAINER",
+            "SWAP_IN_CONTAINER",
+            "DAMAGE_TILE",
+            "DAMAGE_TILE_GROUP",
+            "REQUEST_DROP",
+            "ENTITY_INTERACT"
+        ]
+        for n in ["on_" + n.lower() for n in bad_packets]:
             setattr(self, n, (lambda x: self.planet_check()))
         try:
             with open("plugins/planet_protect/protected_planets.json") as f:
@@ -77,7 +77,7 @@ class PlanetProtectPlugin(SimpleCommandPlugin):
     def save(self):
         try:
             with open("plugins/planet_protect/protected_planets.json", "w") as f:
-                json.dump(self.protected_planets,f)
+                json.dump(self.protected_planets, f)
         except:
             self.logger.exception("Couldn't save protected planets.", exc_info=True)
             raise

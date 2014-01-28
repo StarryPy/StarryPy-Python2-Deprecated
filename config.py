@@ -32,6 +32,7 @@ class ConfigurationManager(object):
         except Exception as e:
             self.logger.critical("Tried to save the configuration file, failed.\n%s", str(e))
             raise
+
     def __getattr__(self, item):
         if item != "config":
             if item in self.config:

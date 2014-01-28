@@ -80,5 +80,6 @@ class PluginManagerPlugin(SimpleCommandPlugin):
             commands = self.plugins['command_dispatcher'].commands
             level = self.protocol.player.access_level
             #accessible_commands = [x for x,y in commands if y.level >= level]
-            self.protocol.send_chat_message("Available commands: %s\nAlso try /help command" % ", ".join(self.plugins['command_dispatcher'].commands.keys()))
+            self.protocol.send_chat_message("Available commands: %s\nAlso try /help command" % ", ".join(
+                self.plugins['command_dispatcher'].commands.keys()))
             return True

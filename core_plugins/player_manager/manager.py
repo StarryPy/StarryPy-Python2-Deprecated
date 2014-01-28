@@ -11,6 +11,7 @@ from sqlalchemy import create_engine, Column, Integer, String, DateTime, \
     ForeignKey, Boolean, func
 from sqlalchemy.ext.declarative import declarative_base
 from twisted.words.ewords import AlreadyLoggedIn
+
 logger = logging.getLogger("starrypy.player_manager.manager")
 
 Base = declarative_base()
@@ -46,7 +47,6 @@ class Player(Base):
     plugin_storage = Column(String)
     planet = Column(String)
     on_ship = Column(Boolean)
-
 
     ips = relationship("IPAddress", order_by="IPAddress.id", backref="players")
 
