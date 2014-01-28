@@ -60,15 +60,9 @@ class UserCommandPlugin(SimpleCommandPlugin):
         if len(data) > 0:
             name = " ".join(data[:-1])
             rank = data[-1].lower()
-            print name
             player = self.player_manager.get_by_name(name)
-            print player
             if player != None:
                 old_rank = player.access_level
-                self.protocol.send_chat_message(
-                "%s: %s -> %s\n" % (
-                    player.colored_name(self.config.colors), str(UserLevels(old_rank)),
-                    str(UserLevels(player.access_level))))
                 if rank == "admin":
                     self.make_admin(player)
                 elif rank == "moderator":
@@ -80,9 +74,12 @@ class UserCommandPlugin(SimpleCommandPlugin):
                 else:
                     self.protocol.send_chat_message("No such rank!\n"+usage)
                     return
+
+                self.protocol.send_chat_message("%s: %s -> %s\n" % (
+                    player.colored_name(self.config.colors), str(UserLevels(old_rank)).split(".")[1],
+                    rank.upper()))
             else:
                 self.protocol.send_chat_message("Player not found!\n"+usage)
-
                 return
         else:
             self.protocol.send_chat_message(usage)
