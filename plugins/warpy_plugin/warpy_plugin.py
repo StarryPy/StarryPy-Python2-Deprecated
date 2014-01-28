@@ -19,6 +19,7 @@ class Warpy(SimpleCommandPlugin):
 
     @permissions(UserLevels.ADMIN)
     def warp(self, name):
+        """Warps you to a player. Syntax: /warp [player name]"""
         self.logger.debug("Warp command called by %s to %s", self.protocol.player.name, name)
         name = " ".join(name)
         target_player = self.player_manager.get_logged_in_by_name(name)
@@ -33,10 +34,12 @@ class Warpy(SimpleCommandPlugin):
                                            warp_command_write(t='WARP_UP'))
             self.protocol.client_protocol.transport.write(warp_packet)
         else:
-            self.protocol.send_chat_message("no such player. Usage: /warp Playername")
+            self.protocol.send_chat_message("No player by the name %s found." % name)
+            self.protocol.send_chat_message(self.warp.__doc__)
 
     @permissions(UserLevels.ADMIN)
     def move_ship(self, location):
+        """Move your ship to another player or specific coordinates. Syntax: /move_ship [player_name] OR /move_ship [sector] [x] [y] [z] [planet_number] [satellite_number]"""
         self.logger.debug("move_ship called by %s to %s", self.protocol.player.name, ":".join(location))
         try:
             if len(location) == 0:
@@ -65,7 +68,7 @@ class Warpy(SimpleCommandPlugin):
                 self.protocol.client_protocol.transport.write(warp_packet)
         except:
             self.logger.exception("Unknown error in move_ship command.", exc_info=True)
-            self.protocol.send_chat_message(self.__doc__)
+            self.protocol.send_chat_message(self.move_ship.__doc__)
 
     @permissions(UserLevels.ADMIN)
     def move_other_ship(self, data):
@@ -98,4 +101,4 @@ class Warpy(SimpleCommandPlugin):
                         self.config.colors))
         except:
             self.logger.exception("Unknown error in move_other_ship command.", exc_info=True)
-            self.protocol.send_chat_message(self.__doc__)
+            self.protocol.send_chat_message(self.move_other_ship.__doc__)

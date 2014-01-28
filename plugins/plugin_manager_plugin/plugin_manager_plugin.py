@@ -14,6 +14,7 @@ class PluginManagerPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.ADMIN)
     def list_plugins(self, data):
+        """Lists all currently loaded plugins. Syntax: /list_plugins"""
         self.protocol.send_chat_message("Currently loaded plugins: %s" % " ".join(
             [plugin.name for plugin in self.plugin_manager.plugins if plugin.active]))
         inactive = [plugin.name for plugin in self.plugin_manager.plugins if not plugin.active]
@@ -23,9 +24,7 @@ class PluginManagerPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.ADMIN)
     def disable_plugin(self, data):
-        """
-        Disables a currently activated plugin. Syntax: /disable_plugin [plugin name]
-        """
+        """Disables a currently activated plugin. Syntax: /disable_plugin [plugin name]"""
         self.logger.debug("disable_plugin called: %s" " ".join(data))
         if len(data) == 0:
             self.protocol.send_chat_message("You have to specify a plugin.")
