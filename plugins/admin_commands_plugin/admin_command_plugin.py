@@ -80,9 +80,11 @@ class UserCommandPlugin(SimpleCommandPlugin):
                     self.protocol.send_chat_message("No such rank!\n"+usage)
                     return
 
-                self.protocol.send_chat_message("%s: %s -> %s\n" % (
+                self.protocol.send_chat_message("%s: %s -> %s" % (
                     player.colored_name(self.config.colors), str(UserLevels(old_rank)).split(".")[1],
                     rank.upper()))
+                self.protocol.factory.protocols[player.protocol].send_chat_message("%s has promoted you to %s" % (
+                    player.colored_name(self.config.colors), rank.upper()))
             else:
                 self.protocol.send_chat_message("Player not found!\n"+usage)
                 return
