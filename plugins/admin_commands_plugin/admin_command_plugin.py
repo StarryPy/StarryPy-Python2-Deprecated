@@ -37,17 +37,19 @@ class UserCommandPlugin(SimpleCommandPlugin):
                          terminator)
 
     def who(self, data):
+        """Displays who is on currently connected to this server."""
         who = [w.colored_name(self.config.colors) for w in self.player_manager.who()]
         self.protocol.send_chat_message("Players online: %s" % " ".join(who))
         return False
 
     def planet(self, data):
-        """Displays who is on your current planet"""
+        """Displays who is on your current planet."""
         who = [w.colored_name(self.config.colors) for w in self.player_manager.who() if w.planet == self.protocol.player.planet and not w.on_ship]
         self.protocol.send_chat_message("Players on your current planet: %s" % " ".join(who))
 
     @permissions(UserLevels.ADMIN)
     def whois(self, data):
+        """Displays information on a given user.\nUsage: /whois username"""
         name = " ".join(data)
         info = self.player_manager.whois(name)
         if info:
@@ -61,7 +63,9 @@ class UserCommandPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.MODERATOR)
     def promote(self, data):
-        usage = "Usage: /promote playername rank (where rank is in one of registered, moderator, admin[, guest])"
+        """Promotes a player to a given UserLevel.
+        Usage: /promote playername rank (where rank is in one of registered, moderator, admin[, guest])
+        """
         if len(data) > 0:
             name = " ".join(data[:-1])
             rank = data[-1].lower()
@@ -77,7 +81,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
                 elif rank == "guest":
                     self.make_guest(player)
                 else:
-                    self.protocol.send_chat_message("No such rank!\n"+usage)
+                    self.protocol.send_chat_message("No such rank!\n"+self.promote.__doc__)
                     return
 
                 self.protocol.send_chat_message("%s: %s -> %s" % (
@@ -86,10 +90,10 @@ class UserCommandPlugin(SimpleCommandPlugin):
                 self.protocol.factory.protocols[player.protocol].send_chat_message("%s has promoted you to %s" % (
                     player.colored_name(self.config.colors), rank.upper()))
             else:
-                self.protocol.send_chat_message("Player not found!\n"+usage)
+                self.protocol.send_chat_message("Player not found!\n"+self.promote.__doc__)
                 return
         else:
-            self.protocol.send_chat_message(usage)
+            self.protocol.send_chat_message(self.promote.__doc__)
 
     @permissions(UserLevels.OWNER)
     def make_guest(self, player):
@@ -115,7 +119,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.MODERATOR)
     def kick(self, data):
-        """Kicks a user from the server. Syntax: /kick [username] [reason]"""
+        """Kicks a user from the server. Usage: /kick [username] [reason]"""
         name, reason = self.extract_name(data)
         if reason is None:
             reason = "no reason given"

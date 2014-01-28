@@ -4,6 +4,7 @@ from plugin_manager import PluginNotFound
 
 
 class PluginManagerPlugin(SimpleCommandPlugin):
+    """ Provides a simple chat interface to the PluginManager"""
     name = "plugin_manager"
     commands = ["list_plugins", "enable_plugin", "disable_plugin", "help"]
     auto_activate = True
