@@ -7,7 +7,7 @@ class BouncerPlugin(BasePlugin):
     Prohibits players with a UserLevel < REGISTRED from destructive actions.
     """
     name = "bouncer"
-    auto_activate = True
+    auto_activate = False
 
     def activate(self):
         super(BouncerPlugin, self).activate()
@@ -25,3 +25,8 @@ class BouncerPlugin(BasePlugin):
         for n in ["on_" + n.lower() for n in bad_packets]:
             setattr(self, n,
                     (lambda x: False if self.protocol.player.access_level < UserLevels.REGISTERED else True))
+
+    def after_connect_response(self, data):
+        if self.protocol.player.access_level < UserLevels.REGISTERED:
+            self.protocol.send_chat_message(
+                "^#FF0000;This server is protected. You can't build or perform any destructive actions. Speak to an administrator about becoming a registered user.^#F7EB43;")
