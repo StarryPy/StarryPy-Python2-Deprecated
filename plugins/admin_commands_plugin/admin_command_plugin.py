@@ -37,6 +37,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
                          terminator)
 
     def who(self, data):
+        """Returns all current users on the server. Syntax: /who"""
         who = [w.colored_name(self.config.colors) for w in self.player_manager.who()]
         self.protocol.send_chat_message("Players online: %s" % " ".join(who))
         return False
@@ -48,6 +49,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.ADMIN)
     def whois(self, data):
+        """Returns client data about the specified user. Syntax: /whois [user name]"""
         name = " ".join(data)
         info = self.player_manager.whois(name)
         if info:
@@ -61,7 +63,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.MODERATOR)
     def promote(self, data):
-        usage = "Usage: /promote playername rank (where rank is in one of registered, moderator, admin[, guest])"
+        """Promotes/demoates a user to a specific rank. Syntax: /promote [username] [rank] (where rank is either: registered, moderator, admin, or guest))"""
         if len(data) > 0:
             name = " ".join(data[:-1])
             rank = data[-1].lower()
@@ -77,7 +79,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
                 elif rank == "guest":
                     self.make_guest(player)
                 else:
-                    self.protocol.send_chat_message("No such rank!\n"+usage)
+                    self.protocol.send_chat_message("No such rank!\n"+self.promote.__doc__)
                     return
 
                 self.protocol.send_chat_message("%s: %s -> %s" % (
@@ -86,10 +88,10 @@ class UserCommandPlugin(SimpleCommandPlugin):
                 self.protocol.factory.protocols[player.protocol].send_chat_message("%s has promoted you to %s" % (
                     player.colored_name(self.config.colors), rank.upper()))
             else:
-                self.protocol.send_chat_message("Player not found!\n"+usage)
+                self.protocol.send_chat_message("Player not found!\n"+self.promote.__doc__)
                 return
         else:
-            self.protocol.send_chat_message(usage)
+            self.protocol.send_chat_message(self.promote.__doc__)
 
     @permissions(UserLevels.OWNER)
     def make_guest(self, player):
@@ -132,17 +134,11 @@ class UserCommandPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.ADMIN)
     def ban(self, data):
-        """Bans an IP. Syntax: /ban [ip address]"""
+        """Bans an IP (retrieved by /whois). Syntax: /ban [ip address]"""
         ip = data[0]
         self.player_manager.ban(ip)
         self.protocol.send_chat_message("Banned IP: %s" % ip)
         self.logger.warning("%s banned IP: %s", self.protocol.player.name, ip)
-        return False
-
-    @permissions(UserLevels.ADMIN)
-    def kickban(self, data):
-        """Kicks a player and then bans their IP. Syntax: /kickban [username] [reason]"""
-        player, reason = self.extract_name(data)
         return False
 
     @permissions(UserLevels.ADMIN)
