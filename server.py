@@ -518,7 +518,7 @@ class StarryPyServerFactory(ServerFactory):
             for p in self.protocols.itervalues():
                 p.send_chat_message(text)
         except Exception as e:
-            print e
+            logging.error(e)
 
     def buildProtocol(self, address):
         """
@@ -546,7 +546,7 @@ class StarboundClientFactory(ClientFactory):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
+    logging.basicConfig(format='[%(asctime)-15s] %(levelname)s:%(message)s', level=logging.DEBUG)
     logging.info("Started server.")
     factory = StarryPyServerFactory()
     reactor.listenTCP(21025, factory)

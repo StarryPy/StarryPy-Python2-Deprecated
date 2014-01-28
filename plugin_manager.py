@@ -158,6 +158,6 @@ def route(func):
         return res
 
     def print_this_defered_failure(f):
-        print(f)
+        logging.error(f)
 
     return wrapped_function
