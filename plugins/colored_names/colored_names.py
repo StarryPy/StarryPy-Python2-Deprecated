@@ -23,7 +23,7 @@ class ColoredNames(BasePlugin):
             self.protocol.transport.write(build_packet(Packets.CHAT_RECEIVED, chat_received().build(p)))
         except:
             self.logger.exception("Unknown error in on_chat_received.", exc_info=True)
-            return True
+            raise
 
         return False
 
