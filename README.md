@@ -50,6 +50,8 @@ The admin commands plugin implements player management from in game. It is a Sim
 * **/ban**: Bans an IP address. Best fetched with /whois. It does not support usernames. `Access: Admin`
 * **/bans**: Lists all active IP bans. `Access: Admin`
 * **/unban**: Unbans an IP address. `Access: Admin`
+* **/mute**: Mutes a player. `Access: Moderator`
+* **/unmute**: Unmutes a player. `Access: Moderator`
 * **/give\_item**: Gives an item to a player. Syntax is /give\_item player (enclosed in quotes if it has spaces) itemname count. The default limit for number of items to give to a player is 1000. `Access: Admin`
 
 ### Admin Messenger
