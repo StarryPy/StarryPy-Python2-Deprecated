@@ -99,7 +99,7 @@ class StarryPyServerProtocol(Protocol):
         self.packet_stream.direction = packets.Direction.CLIENT
         logger.debug("Connection made in StarryPyServerProtocol with UUID %s" %
                      self.id)
-        reactor.connectTCP(self.config.server_hostname, self.config.server_port, StarboundClientFactory(self))
+        reactor.connectTCP(self.config.upstream_hostname, self.config.upstream_port, StarboundClientFactory(self))
 
     def string_received(self, packet):
         """
@@ -585,5 +585,5 @@ if __name__ == '__main__':
     logger.debug("test")
     logger.info("Started server.")
     factory = StarryPyServerFactory()
-    reactor.listenTCP(21025, factory)
+    reactor.listenTCP(factory.config.bind_port, factory)
     reactor.run()

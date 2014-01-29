@@ -1,10 +1,11 @@
 {
-    "server_hostname": "localhost",
+    "upstream_hostname": "localhost",
+    "upstream_port": 21024,
     "debug_file": "debug.log",
     "core_plugin_path": "./core_plugins",
     "owner_uuid": "",
     "player_db": "config/player.db",
-    "server_port": 21024,
+    "bind_port": 21025,
     "plugin_path": "./plugins",
     "command_prefix": "/",
     "passthrough" : false,
