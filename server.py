@@ -420,7 +420,6 @@ class StarryPyServerProtocol(Protocol):
             if self.player and self.player.logged_in:
                 self.client_disconnect(x)
             self.client_protocol.transport.write(x)
-            print self.factory.protocols
         except:
             logger.error("Couldn't disconnect protocol.")
         finally:

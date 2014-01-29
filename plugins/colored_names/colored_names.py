@@ -22,6 +22,6 @@ class ColoredNames(BasePlugin):
             p.name = sender.colored_name(self.config.colors)
             self.protocol.transport.write(build_packet(Packets.CHAT_RECEIVED, chat_received().build(p)))
         except AttributeError:
-            pass
+            self.protocol.transport.write(data.original_data)
         return False
 

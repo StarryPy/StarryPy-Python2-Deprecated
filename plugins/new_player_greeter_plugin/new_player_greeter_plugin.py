@@ -17,7 +17,11 @@ class NewPlayerGreeter(BasePlugin):
                 self.starter_items.append((item, count))
 
     def after_connect_response(self, data):
-        my_storage = self.protocol.player.storage()
+        try:
+            my_storage = self.protocol.player.storage()
+        except AttributeError:
+            self.logger.debug("Tried to give item to non-existent protocol.")
+            return
         if not 'given_starter_items' in my_storage or my_storage['given_starter_items'] == "False":
             my_storage['given_starter_items'] = "True"
             self.protocol.player.storage(my_storage)
