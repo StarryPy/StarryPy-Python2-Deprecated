@@ -130,6 +130,8 @@ class PluginManager(object):
         :rtype: bool
         """
         return_values = []
+        if protocol is None:
+            return True
         for plugin in self.plugins:
             try:
                 if not plugin.active:

@@ -138,7 +138,11 @@ class StarryPyServerProtocol(Protocol):
 
         :rtype : None
         """
-        self.packet_stream += data
+        if self.config.passthrough:
+            self.client_protocol.transport.write(data)
+
+        else:
+            self.packet_stream += data
 
     @route
     def protocol_version(self, data):
@@ -343,7 +347,7 @@ class StarryPyServerProtocol(Protocol):
     @route
     def client_disconnect(self, player):
         """
-        Called when the client singnals that it is about to disconnect from the Starbound server.
+        Called when the client signals that it is about to disconnect from the Starbound server.
 
         :param player: The Player.
         :rtype : bool
@@ -410,19 +414,26 @@ class StarryPyServerProtocol(Protocol):
         :param reason: The reason for the disconnection.
         :return: None
         """
-        if self.player:
-            if self.player.logged_in:
-                try:
-                    self.client_disconnect(None)
-                except:
-                    pass
-    def die(self):
-        self.transport.loseConnection()
         try:
-            self.client_protocol.transport.loseConnection()
+            x = build_packet(packets.Packets.CLIENT_DISCONNECT, packets.client_disconnect().build(Container(data=0)))
+
+            if self.player and self.player.logged_in:
+                self.client_disconnect(x)
+            self.client_protocol.transport.write(x)
+            print self.factory.protocols
+        except:
+            logger.error("Couldn't disconnect protocol.")
+        finally:
+            self.die()
+
+    def die(self):
+        self.transport.abortConnection()
+        self.factory.protocols.pop(self.id)
+        try:
+            self.client_protocol.transport.abortConnection()
         except AttributeError:
             pass
-        self.factory.protocols.pop(self.id, None)
+
 
 
 class ClientProtocol(Protocol):
@@ -481,7 +492,10 @@ class ClientProtocol(Protocol):
         :param data: Raw packet data from the Starbound server.
         :return: None
         """
-        self.packet_stream += data
+        if self.server_protocol.config.passthrough:
+            self.server_protocol.write(data)
+        else:
+            self.packet_stream += data
 
 
 class StarryPyServerFactory(ServerFactory):

@@ -10,7 +10,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
     """
     name = "user_management_commands"
     depends = ['command_dispatcher', 'player_manager']
-    commands = ["who", "whois", "promote", "kick", "ban", "give_item", "planet", "mute", "unmute"]
+    commands = ["who", "whois", "promote", "kick", "ban", "give_item", "planet", "mute", "unmute", "passthrough"]
     auto_activate = True
 
     def activate(self):
@@ -217,6 +217,10 @@ class UserCommandPlugin(SimpleCommandPlugin):
         target_protocol.send_chat_message("You have been unmuted.")
         self.protocol.send_chat_message("%s has been unmuted." % name)
 
+    @permissions(UserLevels.OWNER)
+    def passthrough(self, data):
+        """Sets the server to passthrough mode. *This is irreversible without restart.* Syntax: /passthrough"""
+        self.config.passthrough = True
 
 class MuteManager(BasePlugin):
     name = "mute_manager"
