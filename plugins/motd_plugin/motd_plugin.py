@@ -15,10 +15,9 @@ class MOTDPlugin(SimpleCommandPlugin):
     def activate(self):
         super(MOTDPlugin, self).activate()
         try:
-            with open("plugins/motd_plugin/motd.txt") as motd:
-                self._motd = motd.read()
+            self._motd = self.config.plugin_config
         except:
-            self.logger.error("Couldn't read message of the day from file.")
+            self.logger.error("Couldn't read message of the day from config.")
             raise
 
     def after_connect_response(self, data):
@@ -39,8 +38,7 @@ class MOTDPlugin(SimpleCommandPlugin):
         """Sets the message of the day to a new value. Usage: /set_motd [New message of the day]"""
         try:
             self._motd = " ".join(motd)
-            with open("plugins/motd_plugin/motd.txt", "w") as f:
-                f.write(self._motd.encode("utf-8"))
+            self.config.plugin_config = self._motd
             self.logger.info("MOTD changed to: %s", self._motd)
             self.send_motd()
         except:
