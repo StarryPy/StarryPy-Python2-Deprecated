@@ -21,7 +21,7 @@ class ConfigurationManager(object):
             with open("config/config.json", "r+") as config:
                 self.config = json.load(config)
         except Exception as e:
-            self.logger.critical("Tried to save the configuration file, failed.\n%s", str(e))
+            self.logger.critical("Tried to read the configuration file, failed.\n%s", str(e))
             raise
         self.logger.debug("Created configuration manager.")
 
