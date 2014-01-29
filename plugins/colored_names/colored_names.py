@@ -21,9 +21,7 @@ class ColoredNames(BasePlugin):
             sender = self.player_manager.get_logged_in_by_name(p.name)
             p.name = sender.colored_name(self.config.colors)
             self.protocol.transport.write(build_packet(Packets.CHAT_RECEIVED, chat_received().build(p)))
-        except:
-            self.logger.exception("Unknown error in on_chat_received.", exc_info=True)
-            raise
-
+        except AttributeError:
+            pass
         return False
 
