@@ -63,11 +63,6 @@ class PluginManagerPlugin(SimpleCommandPlugin):
         plugin.activate()
         self.protocol.send_chat_message("Successfully activated plugin.")
 
-    @permissions(UserLevels.ADMIN)
-    def reload_plugins(self, data):
-        """Reloads all active plugins. Syntax: /reload_plugins"""
-        self.plugin_manager.reload_plugins()
-
     def help(self, data):
         """Prints help messages for plugin commands. Syntax: /help [command]"""
         if len(data) > 0:
