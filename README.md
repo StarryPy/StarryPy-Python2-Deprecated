@@ -18,7 +18,7 @@ With the built-in plugins (which are removable):
 
 StarryPy runs on Python 2.7. It has been tested with Python 2.7.6, 2.7.5, 2.7.2, and PyPy.
 
-After installing Python and pip, simply run `pip install -r requirements.txt` in the root directory of StarryPy. This will install all of the components needed for use. I recommend running it in a virtualenv.
+This requires Python and pip to install, and on *nix systems the python development headers (python-dev in apt, python-devel in yum.) After installing those, simply run `pip install -r requirements.txt` in the root directory of StarryPy. This will install all of the components needed for use. I recommend running it in a virtualenv.
 
 Create a configuration file using the config.json.example. The most important things to note are owner\_uuid, which should be set to a character's UUID that you possess and have never shared; server\_address and server\_port, which should be set to the proxied server. StarryPy will default to port 21025 for normal clients to connect to. Select a good random port, or set it to 21024 and firewall it off from the outside.
 
