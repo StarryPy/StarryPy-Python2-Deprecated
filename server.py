@@ -138,7 +138,11 @@ class StarryPyServerProtocol(Protocol):
 
         :rtype : None
         """
-        self.packet_stream += data
+        if self.config.passthrough:
+            self.client_protocol.transport.write(data)
+
+        else:
+            self.packet_stream += data
 
     @route
     def protocol_version(self, data):
@@ -481,7 +485,10 @@ class ClientProtocol(Protocol):
         :param data: Raw packet data from the Starbound server.
         :return: None
         """
-        self.packet_stream += data
+        if self.server_protocol.config.passthrough:
+            self.server_protocol.write(data)
+        else:
+            self.packet_stream += data
 
 
 class StarryPyServerFactory(ServerFactory):
