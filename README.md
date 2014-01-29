@@ -52,6 +52,9 @@ The admin commands plugin implements player management from in game. It is a Sim
 * **/unban**: Unbans an IP address. `Access: Admin`
 * **/give\_item**: Gives an item to a player. Syntax is /give\_item player (enclosed in quotes if it has spaces) itemname count. The default limit for number of items to give to a player is 1000. `Access: Admin`
 
+### Admin Messenger
+This command forwards a message to all active moderators or greater. Any command prefixed with ## will be sent to moderators+ only. `Access: Everyone`
+
 ### Announcer
 This plugin simply announces whenever a player joins or quits the server.
 
@@ -82,14 +85,14 @@ This plugin provides a method of enabling/disabling plugins. I know it's silly t
 * **/list\_plugins**: Sends you a list of all loaded plugins. `Access: Admin`
 * **/disable\_plugin**: Disables a plugin by name. `Access: Admin`
 * **/enable\_plugin**: Enables a plugin by name. `Access: Admin`
-* **/help**: This command provides a list of commands if called by itself, and the help string for a command if given a name. Example syntax: /help enable\_plugin.
+* **/help**: This command provides a list of commands if called by itself, and the help string for a command if given a name. Example syntax: /help enable\_plugin. `Access: Everyone`
 
 ### Warpy
 This plugin provides various methods for warping players and ships around.
 
 * **/warp**: Warps you to another player's ship. `Access: Admin`
 * **/move\_ship**: Moves your ship to the location of another player, or coordinates in the form of `alpha 514180 -82519336 -23964461 4` `Access: Admin`
-* **/move\_other\_ship**: Same as above, but another player's ship.
+* **/move\_other\_ship**: Same as above, but another player's ship. `Access: Admin`
 
 # Plugin development
 
@@ -106,7 +109,7 @@ We have quite a roadmap, here are some of the highlights you can expect in the n
 
 * Spawn networks. Free transportation between admin-designated planets, so your new players can get a leg up in the world.
 * Loot rolling. So a rare item dropped and you don't think it's fair your friend got it? Soon you'll be able to get good items without ending friendships and going to prison on the inevitable murder charge.
-* Lotteries. Because what is like without a little risk?
+* Lotteries. Because what is life without a little risk?
 * Creature spawning. Want to spawn a couple dozen bone dragons? So do we!
 * Projectile blacklist. This should be coming very soon.
 * Internationalization. Translate plugins and core messages with ease to your preferred language.
