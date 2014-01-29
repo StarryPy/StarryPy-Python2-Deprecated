@@ -416,9 +416,6 @@ class StarryPyServerProtocol(Protocol):
                     self.client_disconnect(None)
                 except:
                     pass
-                finally:
-                    logger.warning("Lost connection. Reason given: %s" % str(reason))
-
     def die(self):
         self.transport.loseConnection()
         try:
