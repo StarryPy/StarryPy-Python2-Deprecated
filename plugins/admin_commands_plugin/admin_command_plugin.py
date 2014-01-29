@@ -168,29 +168,32 @@ class UserCommandPlugin(SimpleCommandPlugin):
     @permissions(UserLevels.ADMIN)
     def give_item(self, data):
         """Gives an item to a player. Syntax: /give [target player] [item name] [optional: item count]"""
-        name, item = self.extract_name(data)
-        target_player = self.player_manager.get_logged_in_by_name(name)
-        target_protocol = self.protocol.factory.protocols[target_player.protocol]
-        if target_player is not None:
-            if len(item) > 0:
-                item_name = item[0]
-                if len(item) > 1:
-                    item_count = item[1]
+        if len(data) >= 2:
+            name, item = self.extract_name(data)
+            target_player = self.player_manager.get_logged_in_by_name(name)
+            target_protocol = self.protocol.factory.protocols[target_player.protocol]
+            if target_player is not None:
+                if len(item) > 0:
+                    item_name = item[0]
+                    if len(item) > 1:
+                        item_count = item[1]
+                    else:
+                        item_count = 1
+                    give_item_to_player(target_protocol, item_name, item_count)
+                    target_protocol.send_chat_message(
+                        "%s has given you: %s (count: %s)" % (
+                            self.protocol.player.name, item_name, item_count))
+                    self.protocol.send_chat_message("Sent the item(s).")
+                    self.logger.info("%s gave %s %s (count: %s)", self.protocol.player.name, name, item_name,
+                                     item_count)
                 else:
-                    item_count = 1
-                give_item_to_player(target_protocol, item_name, item_count)
-                target_protocol.send_chat_message(
-                    "%s has given you: %s (count: %s)" % (
-                        self.protocol.player.name, item_name, item_count))
-                self.protocol.send_chat_message("Sent the item(s).")
-                self.logger.info("%s gave %s %s (count: %s)", self.protocol.player.name, name, item_name,
-                                 item_count)
+                    self.protocol.send_chat_message("You have to give an item name.")
             else:
-                self.protocol.send_chat_message("You have to give an item name.")
+                self.protocol.send_chat_message("Couldn't find name: %s" % name)
+            return False
         else:
-            self.protocol.send_chat_message("Couldn't find name: %s" % name)
-        return False
-
+            self.protocol.send_chat_message(self.give_item.__doc__)
+            
     @permissions(UserLevels.MODERATOR)
     def mute(self, data):
         """Mute a player. Syntax: /mute [player name]"""
