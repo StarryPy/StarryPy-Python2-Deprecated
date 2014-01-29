@@ -191,7 +191,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
             self.protocol.send_chat_message("Couldn't find name: %s" % name)
         return False
 
-    @permissions(UserLevels.ADMIN)
+    @permissions(UserLevels.MODERATOR)
     def mute(self, data):
         """Mute a player. Syntax: /mute [player name]"""
         name = " ".join(data)
@@ -204,7 +204,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
         target_protocol.send_chat_message("You have been muted.")
         self.protocol.send_chat_message("%s has been muted." % name)
 
-    @permissions(UserLevels.ADMIN)
+    @permissions(UserLevels.MODERATOR)
     def unmute(self, data):
         """Unmute a currently muted player. Syntax: /unmute [player name]"""
         name = " ".join(data)
