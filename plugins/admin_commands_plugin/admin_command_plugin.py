@@ -1,5 +1,6 @@
-from base_plugin import SimpleCommandPlugin
+from base_plugin import SimpleCommandPlugin, BasePlugin
 from core_plugins.player_manager import permissions, UserLevels
+from packets import chat_sent
 from utility_functions import give_item_to_player
 
 
@@ -9,7 +10,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
     """
     name = "user_management_commands"
     depends = ['command_dispatcher', 'player_manager']
-    commands = ["who", "whois", "promote", "kick", "ban", "give_item", "planet"]
+    commands = ["who", "whois", "promote", "kick", "ban", "give_item", "planet", "mute", "unmute"]
     auto_activate = True
 
     def activate(self):
@@ -189,4 +190,41 @@ class UserCommandPlugin(SimpleCommandPlugin):
         else:
             self.protocol.send_chat_message("Couldn't find name: %s" % name)
         return False
+
+    @permissions(UserLevels.ADMIN)
+    def mute(self, data):
+        """Mute a player. Syntax: /mute [player name]"""
+        name = " ".join(data)
+        player = self.player_manager.get_logged_in_by_name(name)
+        target_protocol = self.protocol.factory.protocols[player.protocol]
+        if player is None:
+            self.protocol.send_chat_message("Couldn't find name: %s" % name)
+            return
+        player.muted = True
+        target_protocol.send_chat_message("You have been muted.")
+        self.protocol.send_chat_message("%s has been muted." % name)
+
+    @permissions(UserLevels.ADMIN)
+    def unmute(self, data):
+        """Unmute a currently muted player. Syntax: /unmute [player name]"""
+        name = " ".join(data)
+        player = self.player_manager.get_logged_in_by_name(name)
+        target_protocol = self.protocol.factory.protocols[player.protocol]
+        if player is None:
+            self.protocol.send_chat_message("Couldn't find name: %s" % name)
+            return
+        player.muted = False
+        target_protocol.send_chat_message("You have been unmuted.")
+        self.protocol.send_chat_message("%s has been unmuted." % name)
+
+
+class MuteManager(BasePlugin):
+    name = "mute_manager"
+    def on_chat_sent(self, data):
+        data = chat_sent().parse(data.data)
+        if self.protocol.player.muted and data.message[0] != self.config.command_prefix and data.message[:2] != "##":
+            self.protocol.send_chat_message("You are currently muted and cannot speak. You are limited to commands and admin chat (prefix your lines with ## for admin chat.")
+            return False
+        return True
+
 

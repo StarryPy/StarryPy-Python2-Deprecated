@@ -1,1 +1,1 @@
-from admin_command_plugin import UserCommandPlugin
+from admin_command_plugin import UserCommandPlugin, MuteManager

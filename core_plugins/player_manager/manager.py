@@ -47,6 +47,7 @@ class Player(Base):
     plugin_storage = Column(String)
     planet = Column(String)
     on_ship = Column(Boolean)
+    muted = Column(Boolean)
 
     ips = relationship("IPAddress", order_by="IPAddress.id", backref="players")
 
