@@ -42,8 +42,6 @@ class PlayerManagerPlugin(BasePlugin):
     def after_connect_response(self, data):
         connection_parameters = connect_response().parse(data.data)
         if not connection_parameters.success:
-            self.logger.warning("Connection from IP: %s was unsuccessful. Reason from Starbound Server: %s",
-                                self.protocol.transport.getHost().host, connection_parameters.reject_reason)
             self.protocol.transport.loseConnection()
         self.protocol.player.client_id = connection_parameters.client_id
         self.protocol.player.logged_in = True
