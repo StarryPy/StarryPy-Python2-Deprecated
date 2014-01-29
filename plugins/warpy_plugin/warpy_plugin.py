@@ -6,7 +6,7 @@ from utility_functions import build_packet, move_ship_to_coords
 
 class Warpy(SimpleCommandPlugin):
     """
-    Plugin that allows privleged players to warp around as they like.
+    Plugin that allows privileged players to warp around as they like.
     """
     name = "warpy_plugin"
     depends = ['command_dispatcher', 'player_manager']
