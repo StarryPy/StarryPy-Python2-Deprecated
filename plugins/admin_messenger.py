@@ -9,12 +9,16 @@ class AdminMessenger(BasePlugin):
     depends = ['player_manager']
     auto_activate = True
 
+    def activate(self):
+        super(AdminMessenger, self).activate()
+        self.prefix = self.config.chat_prefix
+
     def on_chat_sent(self, data):
         data = packets.chat_sent().parse(data.data)
-        if data.message[:3] == "@@@":
+        if data.message[:3] == self.prefix*3:
             self.broadcast_message(data)
             return False
-        if data.message[:2] == "@@":
+        if data.message[:2] == self.prefix*2:
             self.message_admins(data)
             return False
         return True

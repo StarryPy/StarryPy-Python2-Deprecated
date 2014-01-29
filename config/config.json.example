@@ -8,7 +8,8 @@
     "bind_port": 21025,
     "plugin_path": "./plugins",
     "command_prefix": "/",
-    "passthrough" : false,
+    "chat_prefix": "@",
+    "passthrough": false,
     "colors": {
     	"default": "^#F7EB43;",
     	"guest": "^#F7EB43;",
