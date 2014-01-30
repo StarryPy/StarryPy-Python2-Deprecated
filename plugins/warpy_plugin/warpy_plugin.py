@@ -2,6 +2,7 @@ from base_plugin import SimpleCommandPlugin
 from core_plugins.player_manager import permissions, UserLevels
 from packets import warp_command_write, Packets
 from utility_functions import build_packet, move_ship_to_coords, extract_name
+from core_plugins.permission_manager import perm
 
 class Warpy(SimpleCommandPlugin):
     """

@@ -12,7 +12,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
     """
     name = "user_management_commands"
     depends = ['command_dispatcher', 'player_manager', 'permission_manager']
-    commands = ["who", "whois", "promote", "kick", "ban", "give_item", "planet", "mute", "unmute", "passthrough", "shutdown"]
+    commands = ["who", "whois", "kick", "ban", "give_item", "planet", "mute", "unmute", "passthrough", "shutdown"]
     auto_activate = True
 
     def activate(self):
