@@ -22,14 +22,14 @@ class UserCommandPlugin(SimpleCommandPlugin):
     def who(self, data):
         """Returns all current users on the server. Syntax: /who"""
         who = [w.colored_name(self.config.colors) for w in self.player_manager.who()]
-        self.protocol.send_chat_message("Players online: %s" % ", ".join(who))
+        self.protocol.send_chat_message("%d players online: %s" % (len(who), ", ".join(who)))
         return False
 
     def planet(self, data):
         """Displays who is on your current planet."""
         who = [w.colored_name(self.config.colors) for w in self.player_manager.who() if
                w.planet == self.protocol.player.planet and not w.on_ship]
-        self.protocol.send_chat_message("Players on your current planet: %s" % ", ".join(who))
+        self.protocol.send_chat_message("%d players on your current planet: %s" % (len(who), ", ".join(who)))
 
     @permissions(UserLevels.ADMIN)
     def whois(self, data):
