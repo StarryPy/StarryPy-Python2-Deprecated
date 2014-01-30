@@ -594,5 +594,5 @@ if __name__ == '__main__':
     logger.info("Started server.")
 
     factory = StarryPyServerFactory()
-    reactor.listenTCP(21025, factory)
+    reactor.listenTCP(config.bind_port, factory, backlog=50, interface=config.bind_ip)
     reactor.run()

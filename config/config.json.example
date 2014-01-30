@@ -8,6 +8,8 @@
     "plugin_path": "./plugins",
     "command_prefix": "/",
     "passthrough" : false,
+    "bind_ip": "",
+    "bind_port": 21025,
     "colors": {
     	"default": "^#F7EB43;",
     	"guest": "^#F7EB43;",
