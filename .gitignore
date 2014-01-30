@@ -40,3 +40,4 @@ nosetests.xml
 *.db
 *.db-journal
 *.log
+.idea/
