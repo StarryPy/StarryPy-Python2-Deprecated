@@ -33,7 +33,7 @@ class PlayerManagerPlugin(BasePlugin):
             self.protocol.player = self.player_manager.fetch_or_create(
                 name=client_data.name,
                 uuid=str(client_data.uuid),
-                ip=self.protocol.transport.getHost().host,
+                ip=self.protocol.transport.getPeer().host,
                 protocol=self.protocol.id)
             return True
         except AlreadyLoggedIn:
@@ -75,7 +75,7 @@ class PlayerManagerPlugin(BasePlugin):
             self.protocol.player.logged_in = True
             self.logger.info("Player %s (UUID: %s, IP: %s) logged in" % (
                 self.protocol.player.name, self.protocol.player.uuid,
-                self.protocol.transport.getHost().host))
+                self.protocol.transport.getPeer().host))
 
     def after_world_start(self, data):
         world_start = packets.Variant("").parse(data.data)
