@@ -1,4 +1,3 @@
-import json
 from base_plugin import SimpleCommandPlugin
 from core_plugins.player_manager import UserLevels, permissions
 
@@ -36,14 +35,14 @@ class PlanetProtectPlugin(SimpleCommandPlugin):
         self.player_manager = self.plugins['player_manager']
 
     def planet_check(self):
-        if self.protocol.player.planet in self.protected_planets and self.protocol.player.access_level < UserLevels.ADMIN:
+        if self.protocol.player.planet in self.protected_planets and self.protocol.player.access_level < UserLevels.REGISTERED:
             return False
         else:
             return True
 
     @permissions(UserLevels.ADMIN)
     def protect(self, data):
-        """Protects the current planet. Only admins can build on protected planets. Syntax: /protect"""
+        """Protects the current planet. Only registered users can build on protected planets. Syntax: /protect"""
         planet = self.protocol.player.planet
         on_ship = self.protocol.player.on_ship
         if on_ship:
