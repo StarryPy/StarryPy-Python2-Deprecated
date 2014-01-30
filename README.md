@@ -23,7 +23,7 @@ This requires Python and pip to install, and on *nix systems the python developm
 Create a configuration file using the config.json.example. The most important things to note are owner\_uuid, which should be set to a character's UUID that you possess and have never shared; server\_address and server\_port, which should be set to the proxied server. StarryPy will default to port 21025 for normal clients to connect to. Select a good random port, or set it to 21024 and firewall it off from the outside.
 
 # Run it
-Use your terminal (cmd or powershell on windows) and `cd` to the directory you installed StarryPy into. Enter `python server.py` to start the proxy.
+After making sure the Starbound server is running, use your terminal (cmd or powershell on windows) and `cd` to the directory you installed StarryPy into. Enter `python server.py` to start the proxy.
 
 # Built-in plugins
 StarryPy is nearly entirely plugin driven (our plugin manager is a plugin!), so there are quite a few built-in plugins. The truly important plugins are in the core\_plugins folder. If you remove any of those, it's likely that most other plugins will break. We'll break them down by core plugin and normal plugin classes. If you are looking for the commands, feel free to skip the core plugins section.

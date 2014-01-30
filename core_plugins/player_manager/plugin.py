@@ -70,11 +70,12 @@ class PlayerManagerPlugin(BasePlugin):
         connection_parameters = connect_response().parse(data.data)
         if not connection_parameters.success:
             self.protocol.transport.loseConnection()
-        self.protocol.player.client_id = connection_parameters.client_id
-        self.protocol.player.logged_in = True
-        self.logger.info("Player %s (UUID: %s, IP: %s) logged in" % (
-            self.protocol.player.name, self.protocol.player.uuid,
-            self.protocol.transport.getHost().host))
+        else:
+            self.protocol.player.client_id = connection_parameters.client_id
+            self.protocol.player.logged_in = True
+            self.logger.info("Player %s (UUID: %s, IP: %s) logged in" % (
+                self.protocol.player.name, self.protocol.player.uuid,
+                self.protocol.transport.getHost().host))
 
     def after_world_start(self, data):
         world_start = packets.Variant("").parse(data.data)
