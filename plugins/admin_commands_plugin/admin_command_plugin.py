@@ -10,13 +10,14 @@ class UserCommandPlugin(SimpleCommandPlugin):
     Provides a simple chat interface to the user manager.
     """
     name = "user_management_commands"
-    depends = ['command_dispatcher', 'player_manager']
+    depends = ['command_dispatcher', 'player_manager', 'permission_manager']
     commands = ["who", "whois", "promote", "kick", "ban", "give_item", "planet", "mute", "unmute", "passthrough", "shutdown"]
     auto_activate = True
 
     def activate(self):
         super(UserCommandPlugin, self).activate()
         self.player_manager = self.plugins['player_manager'].player_manager
+        self.permission_manager = self.plugins['permission_manager']
         self.godmode = {}
 
     def who(self, data):
@@ -31,7 +32,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
                w.planet == self.protocol.player.planet and not w.on_ship]
         self.protocol.send_chat_message("%d players on your current planet: %s" % (len(who), ", ".join(who)))
 
-    @permissions(UserLevels.ADMIN)
+    @perm("whois")
     def whois(self, data):
         """Returns client data about the specified user. Syntax: /whois [user name]"""
         name = " ".join(data)
@@ -45,63 +46,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
             self.protocol.send_chat_message("Player not found!")
         return False
 
-    @permissions(UserLevels.MODERATOR)
-    def promote(self, data):
-        """Promotes/demoates a user to a specific rank. Syntax: /promote [username] [rank] (where rank is either: registered, moderator, admin, or guest))"""
-        if len(data) > 0:
-            name = " ".join(data[:-1])
-            rank = data[-1].lower()
-            player = self.player_manager.get_by_name(name)
-            if player is not None:
-                old_rank = player.access_level
-                if old_rank >= self.protocol.player.access_level:
-                    self.protocol.send_chat_message("You cannot change that user's access level as they are at least at an equal level as you.")
-                    return
-                if rank == "admin":
-                    self.make_admin(player)
-                elif rank == "moderator":
-                    self.make_mod(player)
-                elif rank == "registered":
-                    self.make_registered(player)
-                elif rank == "guest":
-                    self.make_guest(player)
-                else:
-                    self.protocol.send_chat_message("No such rank!\n" + self.promote.__doc__)
-                    return
-
-                self.protocol.send_chat_message("%s: %s -> %s" % (
-                    player.colored_name(self.config.colors), str(UserLevels(old_rank)).split(".")[1],
-                    rank.upper()))
-                self.protocol.factory.protocols[player.protocol].send_chat_message(
-                    "%s has promoted you to %s" % (
-                        self.protocol.player.colored_name(self.config.colors), rank.upper()))
-            else:
-                self.protocol.send_chat_message("Player not found!\n" + self.promote.__doc__)
-                return
-        else:
-            self.protocol.send_chat_message(self.promote.__doc__)
-
-    @permissions(UserLevels.OWNER)
-    def make_guest(self, player):
-        player.access_level = UserLevels.GUEST
-        self.player_manager.session.commit()
-
-    @permissions(UserLevels.MODERATOR)
-    def make_registered(self, player):
-        player.access_level = UserLevels.REGISTERED
-        self.player_manager.session.commit()
-
-    @permissions(UserLevels.ADMIN)
-    def make_mod(self, player):
-        player.access_level = UserLevels.MODERATOR
-        self.player_manager.session.commit()
-
-    @permissions(UserLevels.OWNER)
-    def make_admin(self, player):
-        player.access_level = UserLevels.ADMIN
-        self.player_manager.session.commit()
-
-    @permissions(UserLevels.MODERATOR)
+    @perm("kick")
     def kick(self, data):
         """Kicks a user from the server. Usage: /kick [username] [reason]"""
         name, reason = extract_name(data)
@@ -119,7 +64,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
                              " ".join(reason))
         return False
 
-    @permissions(UserLevels.ADMIN)
+    @perm("ban")
     def ban(self, data):
         """Bans an IP (retrieved by /whois). Syntax: /ban [ip address]"""
         ip = data[0]
@@ -128,13 +73,13 @@ class UserCommandPlugin(SimpleCommandPlugin):
         self.logger.warning("%s banned IP: %s", self.protocol.player.name, ip)
         return False
 
-    @permissions(UserLevels.ADMIN)
+    @perm("ban")
     def bans(self, data):
         """Lists the currently banned IPs. Syntax: /bans"""
         self.protocol.send_chat_message("\n".join(
             "IP: %s " % self.player_manager.bans))
 
-    @permissions(UserLevels.ADMIN)
+    @perm("ban")
     def unban(self, data):
         """Unbans an IP. Syntax: /unban [ip address]"""
         ip = data[0]
@@ -147,7 +92,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
             self.protocol.send_chat_message("Couldn't find IP: %s" % ip)
         return False
 
-    @permissions(UserLevels.ADMIN)
+    @perm("give")
     def give_item(self, data):
         """Gives an item to a player. Syntax: /give [target player] [item name] [optional: item count]"""
         if len(data) >= 2:
@@ -176,7 +121,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
         else:
             self.protocol.send_chat_message(self.give_item.__doc__)
             
-    @permissions(UserLevels.MODERATOR)
+    @perm("mute")
     def mute(self, data):
         """Mute a player. Syntax: /mute [player name]"""
         name = " ".join(data)
@@ -189,7 +134,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
         target_protocol.send_chat_message("You have been muted.")
         self.protocol.send_chat_message("%s has been muted." % name)
 
-    @permissions(UserLevels.MODERATOR)
+    @perm("mute")
     def unmute(self, data):
         """Unmute a currently muted player. Syntax: /unmute [player name]"""
         name = " ".join(data)
@@ -202,12 +147,12 @@ class UserCommandPlugin(SimpleCommandPlugin):
         target_protocol.send_chat_message("You have been unmuted.")
         self.protocol.send_chat_message("%s has been unmuted." % name)
 
-    @permissions(UserLevels.ADMIN)
+    @perm("passthrough")
     def passthrough(self, data):
         """Sets the server to passthrough mode. *This is irreversible without restart.* Syntax: /passthrough"""
         self.config.passthrough = True
 
-    @permissions(UserLevels.ADMIN)
+    @perm("shutdown")
     def shutdown(self, data):
         """Shutdown the server in n seconds. Syntax: /shutdown [number of seconds] (>0)"""
         x = float(data[0])

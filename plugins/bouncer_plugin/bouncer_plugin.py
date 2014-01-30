@@ -7,10 +7,12 @@ class BouncerPlugin(BasePlugin):
     Prohibits players with a UserLevel < REGISTRED from destructive actions.
     """
     name = "bouncer"
+    depends = ['command_dispatcher', 'permission_manager']
     auto_activate = False
 
     def activate(self):
         super(BouncerPlugin, self).activate()
+        self.permission_manager = self.plugins['permission_manager']
         bad_packets = [
             "CONNECT_WIRE",
             "DISCONNECT_ALL_WIRES",
@@ -25,7 +27,7 @@ class BouncerPlugin(BasePlugin):
         ]
         for n in ["on_" + n.lower() for n in bad_packets]:
             setattr(self, n,
-                    (lambda x: False if self.protocol.player.access_level < UserLevels.REGISTERED else True))
+                    (lambda x: True if self.permission_manager.playerhasperm(self.protocol.player.uuid, "build") else False))
 
     def after_connect_response(self, data):
         if self.protocol.player.access_level < UserLevels.REGISTERED:
