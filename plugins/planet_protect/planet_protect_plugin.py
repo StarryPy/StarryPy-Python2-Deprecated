@@ -15,17 +15,17 @@ class PlanetProtectPlugin(SimpleCommandPlugin):
     def activate(self):
         super(PlanetProtectPlugin, self).activate()
         bad_packets = [
-                        "CONNECT_WIRE",
-                        "DISCONNECT_ALL_WIRES",
-                        "OPEN_CONTAINER",
-                        "CLOSE_CONTAINER",
-                        "SWAP_IN_CONTAINER",
-                        "DAMAGE_TILE",
-                        "DAMAGE_TILE_GROUP",
-                        "REQUEST_DROP",
-                        "ENTITY_INTERACT",
-                        "MODIFY_TILE_LIST"]
-        for n in ["on_"+n.lower() for n in bad_packets]:
+            "CONNECT_WIRE",
+            "DISCONNECT_ALL_WIRES",
+            "OPEN_CONTAINER",
+            "CLOSE_CONTAINER",
+            "SWAP_IN_CONTAINER",
+            "DAMAGE_TILE",
+            "DAMAGE_TILE_GROUP",
+            "REQUEST_DROP",
+            "ENTITY_INTERACT",
+            "MODIFY_TILE_LIST"]
+        for n in ["on_" + n.lower() for n in bad_packets]:
             setattr(self, n, (lambda x: self.planet_check()))
         if self.config.plugin_config == {}:
             self.protected_planets = []

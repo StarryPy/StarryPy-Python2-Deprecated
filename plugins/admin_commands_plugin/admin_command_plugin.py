@@ -11,7 +11,8 @@ class UserCommandPlugin(SimpleCommandPlugin):
     """
     name = "user_management_commands"
     depends = ['command_dispatcher', 'player_manager']
-    commands = ["who", "whois", "promote", "kick", "ban", "give_item", "planet", "mute", "unmute", "passthrough", "shutdown"]
+    commands = ["who", "whois", "promote", "kick", "ban", "give_item", "planet", "mute", "unmute",
+                "passthrough", "shutdown"]
     auto_activate = True
 
     def activate(self):
@@ -55,7 +56,8 @@ class UserCommandPlugin(SimpleCommandPlugin):
             if player is not None:
                 old_rank = player.access_level
                 if old_rank >= self.protocol.player.access_level:
-                    self.protocol.send_chat_message("You cannot change that user's access level as they are at least at an equal level as you.")
+                    self.protocol.send_chat_message(
+                        "You cannot change that user's access level as they are at least at an equal level as you.")
                     return
                 if rank == "admin":
                     self.make_admin(player)
@@ -72,7 +74,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
                 self.protocol.send_chat_message("%s: %s -> %s" % (
                     player.colored_name(self.config.colors), str(UserLevels(old_rank)).split(".")[1],
                     rank.upper()))
-                self.protocol.factory.protocols[player.protocol].send_chat_message(
+                self.factory.protocols[player.protocol].send_chat_message(
                     "%s has promoted you to %s" % (
                         self.protocol.player.colored_name(self.config.colors), rank.upper()))
             else:
@@ -109,12 +111,12 @@ class UserCommandPlugin(SimpleCommandPlugin):
             reason = "no reason given"
         info = self.player_manager.whois(name)
         if info and info.logged_in:
-            tp = self.protocol.factory.protocols[info.protocol]
+            tp = self.factory.protocols[info.protocol]
             tp.die()
-            self.protocol.factory.broadcast("%s kicked %s (reason: %s)" %
-                                            (self.protocol.player.name,
-                                             info.name,
-                                             " ".join(reason)))
+            self.factory.broadcast("%s kicked %s (reason: %s)" %
+                                   (self.protocol.player.name,
+                                    info.name,
+                                    " ".join(reason)))
             self.logger.info("%s kicked %s (reason: %s", self.protocol.player.name, info.name,
                              " ".join(reason))
         return False
@@ -153,7 +155,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
         if len(data) >= 2:
             name, item = extract_name(data)
             target_player = self.player_manager.get_logged_in_by_name(name)
-            target_protocol = self.protocol.factory.protocols[target_player.protocol]
+            target_protocol = self.factory.protocols[target_player.protocol]
             if target_player is not None:
                 if len(item) > 0:
                     item_name = item[0]
@@ -175,13 +177,13 @@ class UserCommandPlugin(SimpleCommandPlugin):
             return False
         else:
             self.protocol.send_chat_message(self.give_item.__doc__)
-            
+
     @permissions(UserLevels.MODERATOR)
     def mute(self, data):
         """Mute a player. Syntax: /mute [player name]"""
         name = " ".join(data)
         player = self.player_manager.get_logged_in_by_name(name)
-        target_protocol = self.protocol.factory.protocols[player.protocol]
+        target_protocol = self.factory.protocols[player.protocol]
         if player is None:
             self.protocol.send_chat_message("Couldn't find name: %s" % name)
             return
@@ -194,7 +196,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
         """Unmute a currently muted player. Syntax: /unmute [player name]"""
         name = " ".join(data)
         player = self.player_manager.get_logged_in_by_name(name)
-        target_protocol = self.protocol.factory.protocols[player.protocol]
+        target_protocol = self.factory.protocols[player.protocol]
         if player is None:
             self.protocol.send_chat_message("Couldn't find name: %s" % name)
             return
@@ -211,15 +213,19 @@ class UserCommandPlugin(SimpleCommandPlugin):
     def shutdown(self, data):
         """Shutdown the server in n seconds. Syntax: /shutdown [number of seconds] (>0)"""
         x = float(data[0])
-        self.protocol.factory.broadcast("SERVER ANNOUNCEMENT: Server is shutting down in %s seconds!" % data[0])
+        self.factory.broadcast("SERVER ANNOUNCEMENT: Server is shutting down in %s seconds!" % data[0])
         reactor.callLater(x, reactor.stop)
+
 
 class MuteManager(BasePlugin):
     name = "mute_manager"
+
     def on_chat_sent(self, data):
         data = chat_sent().parse(data.data)
-        if self.protocol.player.muted and data.message[0] != self.config.command_prefix and data.message[:2] != "##":
-            self.protocol.send_chat_message("You are currently muted and cannot speak. You are limited to commands and admin chat (prefix your lines with ## for admin chat.")
+        if self.protocol.player.muted and data.message[0] != self.config.command_prefix and data.message[
+                                                                                            :2] != "##":
+            self.protocol.send_chat_message(
+                "You are currently muted and cannot speak. You are limited to commands and admin chat (prefix your lines with ## for admin chat.")
             return False
         return True
 

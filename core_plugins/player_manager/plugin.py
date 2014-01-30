@@ -15,17 +15,13 @@ class PlayerManagerPlugin(BasePlugin):
         super(PlayerManagerPlugin, self).activate()
         self.player_manager = PlayerManager(self.config)
         self.l_call = LoopingCall(self.check_logged_in)
-        self.factory = None
+        self.l_call.start(.25)
+        print self.factory
 
     def check_logged_in(self):
         for player in self.player_manager.session.query(Player).filter_by(logged_in=True).all():
             if player.protocol not in self.factory.protocols.keys():
                 player.logged_in = False
-    def on_protocol_version(self, data):
-        if not self.l_call.running:
-            self.factory = self.protocol.factory
-            self.l_call.start(.25)
-        return True
 
     def on_client_connect(self, data):
         client_data = client_connect().parse(data.data)
