@@ -34,7 +34,6 @@ class StarryPyServerProtocol(Protocol):
         self.buffering_packet = None
         self.after_write_callback = None
         self.plugin_manager = None
-        self.debug_file = open(self.config.debug_file, 'w')
         self.call_mapping = {
             packets.Packets.PROTOCOL_VERSION: self.protocol_version,
             packets.Packets.CONNECT_RESPONSE: self.connect_response,
