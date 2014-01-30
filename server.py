@@ -15,7 +15,7 @@ from packet_stream import PacketStream
 import packets
 from plugin_manager import PluginManager, route
 from utility_functions import build_packet
-
+VERSION = "1.1.0"
 
 class StarryPyServerProtocol(Protocol):
     """
@@ -590,8 +590,7 @@ if __name__ == '__main__':
     logger.addHandler(sh)
     logger.addHandler(fh_d)
     logger.addHandler(fh_w)
-    logger.debug("test")
-    logger.info("Started server.")
+    logger.info("Started StarryPy server version %s" % VERSION)
 
     factory = StarryPyServerFactory()
     reactor.listenTCP(factory.config.bind_port, factory)
