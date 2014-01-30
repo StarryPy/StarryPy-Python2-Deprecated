@@ -3,6 +3,7 @@ from base_plugin import SimpleCommandPlugin, BasePlugin
 from core_plugins.player_manager import permissions, UserLevels
 from packets import chat_sent
 from utility_functions import give_item_to_player, extract_name
+from core_plugins.permission_manager.plugin import perm
 
 
 class UserCommandPlugin(SimpleCommandPlugin):

@@ -1,5 +1,6 @@
 from base_plugin import SimpleCommandPlugin
 from core_plugins.player_manager import UserLevels, permissions
+from core_plugins.permission_manager.plugin import perm
 
 
 class PlanetProtectPlugin(SimpleCommandPlugin):
