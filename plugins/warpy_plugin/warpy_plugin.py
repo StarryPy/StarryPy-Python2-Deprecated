@@ -9,7 +9,7 @@ class Warpy(SimpleCommandPlugin):
     """
     name = "warpy_plugin"
     depends = ['command_dispatcher', 'player_manager', 'permission_manager']
-    commands = ["tp", "move_ship"]
+    commands = ["warp", "move_ship"]
     auto_activate = True
 
     def activate(self):
@@ -18,8 +18,8 @@ class Warpy(SimpleCommandPlugin):
         self.permission_manager = self.plugins['permission_manager']
 
     @perm("tp")
-    def tp(self, name):
-        """Warps you to a player's ship, or a player to another player's ship. Syntax: /tp [player name] OR /tp [player 1] [player 2]"""
+    def warp(self, name):
+        """Warps you to a player's ship, or a player to another player's ship. Syntax: /warp [player name] OR /warp [player 1] [player 2]"""
         if len(name) == 0:
             self.protocol.send_chat_message(self.warp.__doc__)
             return
