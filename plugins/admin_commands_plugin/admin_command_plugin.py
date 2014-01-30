@@ -1,3 +1,4 @@
+from twisted.internet import reactor
 from base_plugin import SimpleCommandPlugin, BasePlugin
 from core_plugins.player_manager import permissions, UserLevels
 from packets import chat_sent
@@ -10,7 +11,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
     """
     name = "user_management_commands"
     depends = ['command_dispatcher', 'player_manager']
-    commands = ["who", "whois", "promote", "kick", "ban", "give_item", "planet", "mute", "unmute", "passthrough"]
+    commands = ["who", "whois", "promote", "kick", "ban", "give_item", "planet", "mute", "unmute", "passthrough", "shutdown"]
     auto_activate = True
 
     def activate(self):
@@ -201,11 +202,17 @@ class UserCommandPlugin(SimpleCommandPlugin):
         target_protocol.send_chat_message("You have been unmuted.")
         self.protocol.send_chat_message("%s has been unmuted." % name)
 
-    @permissions(UserLevels.OWNER)
+    @permissions(UserLevels.ADMIN)
     def passthrough(self, data):
         """Sets the server to passthrough mode. *This is irreversible without restart.* Syntax: /passthrough"""
         self.config.passthrough = True
 
+    @permissions(UserLevels.ADMIN)
+    def shutdown(self, data):
+        """Shutdown the server in n seconds. Syntax: /shutdown [number of seconds] (>0)"""
+        x = float(data[0])
+        self.protocol.factory.broadcast("SERVER ANNOUNCEMENT: Server is shutting down in %s seconds!" % data[0])
+        reactor.callLater(x, reactor.stop)
 
 class MuteManager(BasePlugin):
     name = "mute_manager"
