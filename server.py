@@ -2,6 +2,7 @@
 import logging
 from uuid import uuid4
 import sys
+import socket
 
 import construct
 from twisted.internet import reactor
@@ -415,7 +416,8 @@ class StarryPyServerProtocol(Protocol):
         :return: None
         """
         try:
-            x = build_packet(packets.Packets.CLIENT_DISCONNECT, packets.client_disconnect().build(Container(data=0)))
+            x = build_packet(packets.Packets.CLIENT_DISCONNECT,
+                             packets.client_disconnect().build(Container(data=0)))
 
             if self.player and self.player.logged_in:
                 self.client_disconnect(x)
@@ -432,7 +434,6 @@ class StarryPyServerProtocol(Protocol):
             self.client_protocol.transport.abortConnection()
         except AttributeError:
             pass
-
 
 
 class ClientProtocol(Protocol):
@@ -565,6 +566,14 @@ class StarboundClientFactory(ClientFactory):
 
 
 if __name__ == '__main__':
+    config = ConfigurationManager()
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.settimeout(1)
+    result = sock.connect_ex((config.server_hostname, config.server_port))
+    if result != 0:
+        print "The starbound server is not connectable at the address %s:%d." % (config.server_hostname, config.server_port)
+        print "Please ensure that you are running starbound_server on the correct port and that is reflected in the StarryPy configuration."
+        sys.exit()
     logger = logging.getLogger('starrypy')
     logger.setLevel(logging.DEBUG)
     fh_d = logging.FileHandler("debug.log")
@@ -583,6 +592,7 @@ if __name__ == '__main__':
     logger.addHandler(fh_w)
     logger.debug("test")
     logger.info("Started server.")
+
     factory = StarryPyServerFactory()
     reactor.listenTCP(21025, factory)
     reactor.run()
