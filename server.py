@@ -569,7 +569,7 @@ if __name__ == '__main__':
     config = ConfigurationManager()
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.settimeout(1)
-    result = sock.connect_ex((config.server_hostname, config.server_port))
+    result = sock.connect_ex((config.upstream_hostname, config.upstream_port))
     if result != 0:
         print "The starbound server is not connectable at the address %s:%d." % (config.server_hostname, config.server_port)
         print "Please ensure that you are running starbound_server on the correct port and that is reflected in the StarryPy configuration."

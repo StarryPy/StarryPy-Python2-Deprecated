@@ -50,6 +50,7 @@ class ConfigurationManager(object):
             if item in self.config:
                 return self.config[item]
             else:
+                self.logger.error("Couldn't find configuration option %s in configuration file.", item)
                 raise AttributeError
 
     def __setattr__(self, key, value):
