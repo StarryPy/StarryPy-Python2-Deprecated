@@ -28,11 +28,10 @@ class PlanetProtectPlugin(SimpleCommandPlugin):
                         "MODIFY_TILE_LIST"]
         for n in ["on_"+n.lower() for n in bad_packets]:
             setattr(self, n, (lambda x: self.planet_check()))
-        try:
-            with open("plugins/planet_protect/protected_planets.json") as f:
-                self.protected_planets = json.load(f)
-        except:
+        if self.config.plugin_config == {}:
             self.protected_planets = []
+        else:
+            self.protected_planets = self.config.plugin_config
 
         self.player_manager = self.plugins['player_manager']
 
@@ -75,10 +74,5 @@ class PlanetProtectPlugin(SimpleCommandPlugin):
         self.save()
 
     def save(self):
-        try:
-            with open("plugins/planet_protect/protected_planets.json", "w") as f:
-                json.dump(self.protected_planets, f)
-        except:
-            self.logger.exception("Couldn't save protected planets.", exc_info=True)
-            raise
+        self.config.plugin_config = self.protected_planets
 

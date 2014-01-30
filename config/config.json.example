@@ -1,20 +1,37 @@
 {
     "upstream_hostname": "localhost",
     "upstream_port": 21024,
+    "bind_port": 21025,
+    "passthrough": false,
+    "plugin_config": {
+        "new_player_greeter_plugin": {
+            "items": [
+                [
+                    "coalore",
+                    200
+                ],
+                [
+                    "alienburger",
+                    5
+                ]
+            ],
+            "message": "Welcome to the server! Here are some starter items to get you off to a good start."
+        },
+        "motd_plugin": "Welcome to the server! Play nice."
+    },
+    "chat_prefix": "@",
     "debug_file": "debug.log",
     "core_plugin_path": "./core_plugins",
-    "owner_uuid": "",
-    "player_db": "config/player.db",
-    "bind_port": 21025,
-    "plugin_path": "./plugins",
-    "command_prefix": "/",
-    "passthrough" : false,
     "colors": {
-    	"default": "^#F7EB43;",
-    	"guest": "^#F7EB43;",
-    	"registered": "^#A0F743;",
-    	"moderator": "^#4385F7;",
-    	"admin": "^#C443F7;",
-    	"owner": "^#F7434C;"    
-    }
+        "guest": "^#F7EB43;",
+        "default": "^#F7EB43;",
+        "registered": "^#A0F743;",
+        "moderator": "^#4385F7;",
+        "admin": "^#C443F7;",
+        "owner": "^#F7434C;"
+    },
+    "owner_uuid": "THIS IS TO BE SET",
+    "player_db": "config/player.db",
+    "plugin_path": "./plugins",
+    "command_prefix": "/"
 }
