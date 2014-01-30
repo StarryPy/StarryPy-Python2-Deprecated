@@ -50,7 +50,7 @@ class Planet(object):
 
 def move_ship_to_coords(protocol, sector, x, y, z, planet, satellite):
     logger.info("Moving %s's ship to coordinates: %s", protocol.player.name,
-                ":".join((sector, x, y, z, planet, satellite)))
+                ":".join((sector, str(x), str(y), str(z), str(planet), str(satellite))))
     x, y, z, planet, satellite = map(int, (x, y, z, planet, satellite))
     warp_packet = build_packet(packets.Packets.WARP_COMMAND,
                                packets.warp_command_write(t="MOVE_SHIP", sector=sector, x=x, y=y, z=z,
