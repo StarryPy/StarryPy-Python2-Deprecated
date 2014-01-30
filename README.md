@@ -110,7 +110,7 @@ All plugins must ultimately derive from `BasePlugin`. Do not override the `__ini
 
 There will be more to come in the near future, for now please examine the base plugin classes.
 
-Please consider letting us know of your plugin(s) so it can be listed at [our plugin list](https://github.com/MrMarvin/StarryPy_plugins). Pull requests are much appreciated!
+Please consider letting us know of your plugin(s) so it can be listed at [our plugin list](https://github.com/MrMarvin/StarryPy_plugins). Pull requests are much appreciated! Please note that any plugins that we integrate into StarryPy proper must be licensed under WTFPL for simplicity's sake. If this isn't acceptable to you, we will only be able to provide a link.
 
 # Planned features
 We haven't been able to pack in everything we've wanted to in this version. We love contributions, so please feel free to write whatever plugins/improve the core however you can.
