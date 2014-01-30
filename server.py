@@ -571,7 +571,7 @@ if __name__ == '__main__':
     sock.settimeout(1)
     result = sock.connect_ex((config.upstream_hostname, config.upstream_port))
     if result != 0:
-        print "The starbound server is not connectable at the address %s:%d." % (config.server_hostname, config.server_port)
+        print "The starbound server is not connectable at the address %s:%d." % (config.upstream_hostname, config.upstream_port)
         print "Please ensure that you are running starbound_server on the correct port and that is reflected in the StarryPy configuration."
         sys.exit()
     logger = logging.getLogger('starrypy')
