@@ -99,6 +99,9 @@ This plugin provides various methods for warping players and ships around.
 * **/move\_ship**: Moves your ship to the location of another player, or coordinates in the form of `alpha 514180 -82519336 -23964461 4` `Access: Admin`
 * **/move\_other\_ship**: Same as above, but another player's ship. `Access: Admin`
 
+### More plugins
+Even more plugins can be found over at [our plugin list](https://github.com/MrMarvin/StarryPy_plugins).
+
 # Plugin development
 
 There are several built-in plugins that you can derive inspiration from. The plugin API is decidedly simple, and simply responds to packet events. There is a convenience plugin class called SimpleCommandPlugin which responds to user commands in chat. Currently there is no easy way to *modify* packets, however they can be dropped or allowed to send by any plugin intercepting that packet type.
@@ -106,6 +109,8 @@ There are several built-in plugins that you can derive inspiration from. The plu
 All plugins must ultimately derive from `BasePlugin`. Do not override the `__init__` method unless you absolutely know that you need to. All setup functions should be done in `activate()`
 
 There will be more to come in the near future, for now please examine the base plugin classes.
+
+Please consider letting us know of your plugin(s) so it can be listed at [our plugin list](https://github.com/MrMarvin/StarryPy_plugins). Pull requests are much appreciated!
 
 # Planned features
 We haven't been able to pack in everything we've wanted to in this version. We love contributions, so please feel free to write whatever plugins/improve the core however you can.
