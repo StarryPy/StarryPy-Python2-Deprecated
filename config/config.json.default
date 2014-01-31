@@ -10,7 +10,7 @@
         "registered": "^#A0F743;"
     },
     "command_prefix": "/",
-    "core_plugin_path": "./core_plugins",
+    "core_plugin_path": "core_plugins",
     "debug_file": "debug.log",
     "owner_uuid": "!!! SET THIS !!!",
     "passthrough": false,
@@ -31,8 +31,11 @@
             "message": "Welcome to the server! Here are some starter items to get you off to a good start."
         }
     },
-    "plugin_path": "./plugins",
+    "plugin_path": "plugins",
     "upstream_hostname": "localhost",
     "upstream_port": 21024,
-    "port_check": true
+    "port_check": true,
+    "logging_format_console": "%(asctime)s -  %(name)s - %(levelname)s - %(message)s",
+    "logging_format_debugfile": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    "logging_format_logfile": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 }
