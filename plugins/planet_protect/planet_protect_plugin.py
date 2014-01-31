@@ -1,5 +1,6 @@
 from base_plugin import SimpleCommandPlugin
 from core_plugins.player_manager import UserLevels, permissions
+from core_plugins.permission_manager.plugin import perm
 
 
 class PlanetProtectPlugin(SimpleCommandPlugin):
@@ -10,10 +11,11 @@ class PlanetProtectPlugin(SimpleCommandPlugin):
     name = "planet_protect"
     description = "Protects planets."
     commands = ["protect", "unprotect"]
-    depends = ["player_manager", "command_dispatcher"]
+    depends = ["player_manager", "command_dispatcher", "permission_manager"]
 
     def activate(self):
         super(PlanetProtectPlugin, self).activate()
+        self.permission_manager = self.plugins['permission_manager']
         bad_packets = [
                         "CONNECT_WIRE",
                         "DISCONNECT_ALL_WIRES",
@@ -35,12 +37,11 @@ class PlanetProtectPlugin(SimpleCommandPlugin):
         self.player_manager = self.plugins['player_manager']
 
     def planet_check(self):
-        if self.protocol.player.planet in self.protected_planets and self.protocol.player.access_level < UserLevels.REGISTERED:
-            return False
-        else:
-            return True
+        if self.protocol.player.planet in self.protected_planets:
+            return self.permission_manager.playerhasperm("protect.bypass")
+        return True
 
-    @permissions(UserLevels.ADMIN)
+    @perm("protect.assign")
     def protect(self, data):
         """Protects the current planet. Only registered users can build on protected planets. Syntax: /protect"""
         planet = self.protocol.player.planet
@@ -56,7 +57,7 @@ class PlanetProtectPlugin(SimpleCommandPlugin):
             self.protocol.send_chat_message("Planet is already protected!")
         self.save()
 
-    @permissions(UserLevels.ADMIN)
+    @perm("protect.assign")
     def unprotect(self, data):
         """Removes the protection from the current planet. Syntax: /unprotect"""
         planet = self.protocol.player.planet

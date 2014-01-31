@@ -1,19 +1,25 @@
 from base_plugin import SimpleCommandPlugin
 from core_plugins.player_manager import permissions, UserLevels
 from plugin_manager import PluginNotFound
+from core_plugins.permission_manager.plugin import perm
 
 
 class PluginManagerPlugin(SimpleCommandPlugin):
     """ Provides a simple chat interface to the PluginManager"""
     name = "plugin_manager"
     commands = ["list_plugins", "enable_plugin", "disable_plugin", "help"]
+    depends = ["command_dispatcher", "permission_manager"]
     auto_activate = True
+
+    def activate(self):
+        super(PluginManagerPlugin, self).activate()
+        self.permission_manager = self.plugins['permission_manager']
 
     @property
     def plugin_manager(self):
         return self.protocol.plugin_manager
 
-    @permissions(UserLevels.ADMIN)
+    @perm("plugins.list")
     def list_plugins(self, data):
         """Lists all currently loaded plugins. Syntax: /list_plugins"""
         self.protocol.send_chat_message("Currently loaded plugins: %s" % " ".join(
@@ -23,7 +29,7 @@ class PluginManagerPlugin(SimpleCommandPlugin):
             self.protocol.send_chat_message("Inactive plugins: %s" % " ".join(
                 [plugin.name for plugin in self.plugin_manager.plugins if not plugin.active]))
 
-    @permissions(UserLevels.ADMIN)
+    @perm("plugins.toggle")
     def disable_plugin(self, data):
         """Disables a currently activated plugin. Syntax: /disable_plugin [plugin name]"""
         self.logger.debug("disable_plugin called: %s" " ".join(data))
@@ -45,7 +51,7 @@ class PluginManagerPlugin(SimpleCommandPlugin):
         plugin.deactivate()
         self.protocol.send_chat_message("Successfully deactivated plugin.")
 
-    @permissions(UserLevels.ADMIN)
+    @perm("plugins.toggle")
     def enable_plugin(self, data):
         """Enables a currently deactivated plugin. Syntax: /enable_plugin [plugin name]"""
         self.logger.debug("enable_plugin called: %s", " ".join(data))

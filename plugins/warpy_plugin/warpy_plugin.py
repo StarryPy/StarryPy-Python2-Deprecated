@@ -2,21 +2,23 @@ from base_plugin import SimpleCommandPlugin
 from core_plugins.player_manager import permissions, UserLevels
 from packets import warp_command_write, Packets
 from utility_functions import build_packet, move_ship_to_coords, extract_name
+from core_plugins.permission_manager import perm
 
 class Warpy(SimpleCommandPlugin):
     """
     Plugin that allows privileged players to warp around as they like.
     """
     name = "warpy_plugin"
-    depends = ['command_dispatcher', 'player_manager']
+    depends = ['command_dispatcher', 'player_manager', 'permission_manager']
     commands = ["warp", "move_ship"]
     auto_activate = True
 
     def activate(self):
         super(Warpy, self).activate()
         self.player_manager = self.plugins['player_manager'].player_manager
+        self.permission_manager = self.plugins['permission_manager']
 
-    @permissions(UserLevels.ADMIN)
+    @perm("tp")
     def warp(self, name):
         """Warps you to a player's ship, or a player to another player's ship. Syntax: /warp [player name] OR /warp [player 1] [player 2]"""
         if len(name) == 0:
@@ -37,7 +39,7 @@ class Warpy(SimpleCommandPlugin):
                 return
             self.warp_player_to_player(first_name, second_name)
 
-    @permissions(UserLevels.ADMIN)
+    @perm("moveship")
     def move_ship(self, location):
         """Move your ship to another player or specific coordinates. Syntax: /move_ship [player_name] OR /move_ship [from player] [to player]"""
         try:
