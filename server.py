@@ -567,18 +567,6 @@ class StarboundClientFactory(ClientFactory):
 
 
 if __name__ == '__main__':
-    config = ConfigurationManager()
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.settimeout(1)
-    result = sock.connect_ex((config.upstream_hostname, config.upstream_port))
-    if result != 0:
-        print "The starbound server is not connectable at the address %s:%d." % (config.upstream_hostname, config.upstream_port)
-        print "Please ensure that you are running starbound_server on the correct port and that is reflected in the StarryPy configuration."
-        sock.shutdown()
-        sock.close()
-        sys.exit()
-    sock.shutdown(SHUT_RDWR)
-    sock.close()
     logger = logging.getLogger('starrypy')
     logger.setLevel(logging.DEBUG)
     fh_d = logging.FileHandler("debug.log")
@@ -587,7 +575,6 @@ if __name__ == '__main__':
     fh_w.setLevel(logging.INFO)
     sh = logging.StreamHandler(sys.stdout)
     sh.setLevel(logging.INFO)
-
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     fh_d.setFormatter(formatter)
     fh_w.setFormatter(formatter)
@@ -595,6 +582,18 @@ if __name__ == '__main__':
     logger.addHandler(sh)
     logger.addHandler(fh_d)
     logger.addHandler(fh_w)
+    config = ConfigurationManager()
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.settimeout(1)
+    result = sock.connect_ex((config.upstream_hostname, config.upstream_port))
+    if result != 0:
+        logger.critical("The starbound server is not connectable at the address %s:%d." % (config.upstream_hostname, config.upstream_port))
+        logger.critical("Please ensure that you are running starbound_server on the correct port and that is reflected in the StarryPy configuration.")
+        sock.shutdown()
+        sock.close()
+        sys.exit()
+    sock.shutdown(SHUT_RDWR)
+    sock.close()
     logger.info("Started StarryPy server version %s" % VERSION)
 
     factory = StarryPyServerFactory()
