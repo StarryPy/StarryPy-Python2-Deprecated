@@ -13,7 +13,7 @@ class Announcer(BasePlugin):
 
     def after_connect_response(self, data):
         try:
-            self.protocol.factory.broadcast(
+            self.factory.broadcast(
                 self.protocol.player.colored_name(self.config.colors) + " joined.", 0, "", "Announcer")
         except AttributeError:
             self.logger.debug("Attribute error in after_connect_response.")
@@ -23,6 +23,6 @@ class Announcer(BasePlugin):
             raise
 
     def on_client_disconnect(self, data):
-        self.protocol.factory.broadcast(self.protocol.player.colored_name(self.config.colors) + " left.", 0,
-                                        "", "Announcer")
+        self.factory.broadcast(self.protocol.player.colored_name(self.config.colors) + " left.", 0,
+                               "", "Announcer")
 

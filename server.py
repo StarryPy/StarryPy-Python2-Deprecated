@@ -1,21 +1,26 @@
 # -*- coding: UTF-8 -*-
+from _socket import SHUT_RDWR
 import logging
 from uuid import uuid4
 import sys
 import socket
+import datetime
 
 import construct
 from twisted.internet import reactor
 from twisted.internet.protocol import ClientFactory, ServerFactory, Protocol, connectionDone
 from construct import Container
 import construct.core
+from twisted.internet.task import LoopingCall
 
 from config import ConfigurationManager
 from packet_stream import PacketStream
 import packets
 from plugin_manager import PluginManager, route
 from utility_functions import build_packet
+
 VERSION = "1.1.0"
+
 
 class StarryPyServerProtocol(Protocol):
     """
@@ -84,6 +89,7 @@ class StarryPyServerProtocol(Protocol):
             packets.Packets.HEARTBEAT: self.heartbeat,
         }
         logger.info("Created StarryPyServerProtocol with UUID %s" % self.id)
+        self.client_protocol = None
 
     def connectionMade(self):
         """
@@ -99,7 +105,8 @@ class StarryPyServerProtocol(Protocol):
         self.packet_stream.direction = packets.Direction.CLIENT
         logger.debug("Connection made in StarryPyServerProtocol with UUID %s" %
                      self.id)
-        reactor.connectTCP(self.config.upstream_hostname, self.config.upstream_port, StarboundClientFactory(self))
+        reactor.connectTCP(self.config.upstream_hostname, self.config.upstream_port,
+                           StarboundClientFactory(self))
 
     def string_received(self, packet):
         """
@@ -395,7 +402,7 @@ class StarryPyServerProtocol(Protocol):
                                                             world=world,
                                                             client_id=0,
                                                             name=name,
-                                                            message=text))
+                                                            message=text.encode("utf-8")))
         chat_packet = build_packet(packets.Packets.CHAT_RECEIVED,
                                    chat_data)
         self.transport.write(chat_packet)
@@ -511,8 +518,10 @@ class StarryPyServerFactory(ServerFactory):
         self.config = ConfigurationManager()
         self.protocol.factory = self
         self.protocols = {}
-        self.plugin_manager = PluginManager()
+        self.plugin_manager = PluginManager(factory=self)
         self.plugin_manager.activate_plugins()
+        self.reaper = LoopingCall(self.reap_dead_protocols)
+        self.reaper.start(self.config.reap_time)
 
     def stopFactory(self):
         """
@@ -548,6 +557,27 @@ class StarryPyServerFactory(ServerFactory):
         p = ServerFactory.buildProtocol(self, address)
         return p
 
+    def reap_dead_protocols(self):
+        logger.debug("Reaping dead connections.")
+        count = 0
+        start_time = datetime.datetime.now()
+        for protocol in self.protocols.itervalues():
+            if (
+                protocol.packet_stream.last_received_timestamp - start_time).total_seconds() > self.config.reap_time:
+                protocol.connectionLost()
+                count += 1
+                continue
+            if protocol.client_protocol is not None and (
+                protocol.client_protocol.packet_stream.last_received_timestamp - start_time).total_seconds() > self.config.reap_time:
+                protocol.connectionLost()
+                count += 1
+        if count == 1:
+            logger.debug("1 connection reaped.")
+        elif count > 1:
+            logger.debug("%d connections reaped.")
+        else:
+            logger.debug("No connections reaped.")
+
 
 class StarboundClientFactory(ClientFactory):
     """
@@ -565,14 +595,6 @@ class StarboundClientFactory(ClientFactory):
 
 
 if __name__ == '__main__':
-    config = ConfigurationManager()
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.settimeout(1)
-    result = sock.connect_ex((config.upstream_hostname, config.upstream_port))
-    if result != 0:
-        print "The starbound server is not connectable at the address %s:%d." % (config.upstream_hostname, config.upstream_port)
-        print "Please ensure that you are running starbound_server on the correct port and that is reflected in the StarryPy configuration."
-        sys.exit()
     logger = logging.getLogger('starrypy')
     logger.setLevel(logging.DEBUG)
     fh_d = logging.FileHandler("debug.log")
@@ -581,14 +603,30 @@ if __name__ == '__main__':
     fh_w.setLevel(logging.INFO)
     sh = logging.StreamHandler(sys.stdout)
     sh.setLevel(logging.INFO)
-
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    fh_d.setFormatter(formatter)
-    fh_w.setFormatter(formatter)
-    sh.setFormatter(formatter)
     logger.addHandler(sh)
     logger.addHandler(fh_d)
     logger.addHandler(fh_w)
+    config = ConfigurationManager()
+    console_formatter = logging.Formatter(config.logging_format_console)
+    logfile_formatter = logging.Formatter(config.logging_format_logfile)
+    debugfile_formatter = logging.Formatter(config.logging_format_debugfile)
+    fh_d.setFormatter(debugfile_formatter)
+    fh_w.setFormatter(logfile_formatter)
+    sh.setFormatter(console_formatter)
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.settimeout(1)
+    if config.port_check:
+        result = sock.connect_ex((config.upstream_hostname, config.upstream_port))
+        if result != 0:
+            logger.critical("The starbound server is not connectable at the address %s:%d." % (
+            config.upstream_hostname, config.upstream_port))
+            logger.critical(
+                "Please ensure that you are running starbound_server on the correct port and that is reflected in the StarryPy configuration.")
+            sock.shutdown()
+            sock.close()
+            sys.exit()
+        sock.shutdown(SHUT_RDWR)
+        sock.close()
     logger.info("Started StarryPy server version %s" % VERSION)
 
     factory = StarryPyServerFactory()

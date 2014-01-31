@@ -35,7 +35,7 @@ class MissingDependency(PluginNotFound):
 class PluginManager(object):
     logger = logging.getLogger('starrypy.plugin_manager.PluginManager')
 
-    def __init__(self, base_class=BasePlugin):
+    def __init__(self, factory, base_class=BasePlugin):
         """
         Initializes the plugin manager. When called, with will first attempt
         to get the `ConfigurationManager` singleton and extract the core plugin
@@ -48,7 +48,7 @@ class PluginManager(object):
         self.plugin_names = []
         self.config = ConfigurationManager()
         self.base_class = base_class
-
+        self.factory = factory
         self.core_plugin_dir = os.path.realpath(self.config.core_plugin_path)
         sys.path.append(self.core_plugin_dir)
         self.load_plugins(self.core_plugin_dir)
@@ -57,7 +57,7 @@ class PluginManager(object):
         sys.path.append(self.plugin_dir)
         self.load_plugins(self.plugin_dir)
 
-        self.logger.info("Loaded plugins: %s" % "\n".join(
+        self.logger.info("Loaded plugins:\n%s" % "\n".join(
             ["%s, Active: %s" % (plugin.name, plugin.auto_activate) for plugin in self.plugins]))
 
     def load_plugins(self, plugin_dir):
@@ -83,6 +83,8 @@ class PluginManager(object):
                         plugin_instance = plugin(self.config)
                         if plugin_instance.name in self.plugin_names:
                             continue
+                        plugin_instance.factory = self.factory
+
                         if plugin_instance.depends is not None:
                             for dependency in plugin_instance.depends:
                                 try:
@@ -141,7 +143,7 @@ class PluginManager(object):
                 if res is None:
                     res = True
                 return_values.append(res)
-            except Exception as e:
+            except:
                 self.logger.exception("Error in plugin %s with function %s.", str(plugin), command,
                                       exc_info=True)
         return all(return_values)

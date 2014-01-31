@@ -1,3 +1,4 @@
+import io
 import json
 import logging
 import inspect
@@ -18,19 +19,23 @@ class ConfigurationManager(object):
 
     def __init__(self):
         try:
+            with open("config/config.json.default", "r") as default_config:
+                self.config = json.load(default_config)
+        except:
+            self.logger.exception("Could not load the default configuration file.", exc_info=True)
+            raise
+        try:
             with open("config/config.json", "r+") as config:
-                self.config = json.load(config)
-                if not "plugin_config" in self.config:
-                    self.config["plugin_config"] = {}
-        except Exception as e:
-            self.logger.critical("Tried to read the configuration file, failed.\n%s", str(e))
+                self.config.update(json.load(config))
+        except:
+            self.logger.exception("Could not load the default configuration file.", exc_info=True)
             raise
         self.logger.debug("Created configuration manager.")
 
     def save(self):
         try:
-            with open("config/config.json", "w") as config:
-                config.write(json.dumps(self.config, indent=4, separators=(',', ': '), sort_keys=True))
+            with io.open("config/config.json", "w", encoding="utf-8") as config:
+                config.write(json.dumps(self.config, indent=4, separators=(',', ': '), sort_keys=True, ensure_ascii = False))
         except Exception as e:
             self.logger.critical("Tried to save the configuration file, failed.\n%s", str(e))
             raise
@@ -38,6 +43,7 @@ class ConfigurationManager(object):
     def __getattr__(self, item):
         if item == "config":
             return super(ConfigurationManager, self).__getattribute__(item)
+
 
         elif item == "plugin_config":
             caller = inspect.stack()[1][0].f_locals["self"].__class__.name
@@ -59,6 +65,7 @@ class ConfigurationManager(object):
 
         elif key == "plugin_config":
             caller = inspect.stack()[1][0].f_locals["self"].__class__.name
+
             self.config["plugin_config"][caller] = value
 
         else:

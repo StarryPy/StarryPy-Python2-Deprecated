@@ -15,7 +15,7 @@ class MOTDPlugin(SimpleCommandPlugin):
     def activate(self):
         super(MOTDPlugin, self).activate()
         try:
-            self._motd = self.config.plugin_config
+            self._motd = unicode(self.config.plugin_config)
         except:
             self.logger.error("Couldn't read message of the day from config.")
             raise
@@ -37,7 +37,7 @@ class MOTDPlugin(SimpleCommandPlugin):
     def set_motd(self, motd):
         """Sets the message of the day to a new value. Usage: /set_motd [New message of the day]"""
         try:
-            self._motd = " ".join(motd)
+            self._motd = " ".join(motd).encode("utf-8")
             self.config.plugin_config = self._motd
             self.logger.info("MOTD changed to: %s", self._motd)
             self.send_motd()

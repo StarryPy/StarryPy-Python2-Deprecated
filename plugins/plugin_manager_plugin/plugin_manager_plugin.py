@@ -72,9 +72,6 @@ class PluginManagerPlugin(SimpleCommandPlugin):
                 self.protocol.send_chat_message("Couldn't find a command with the name %s" % command)
             self.protocol.send_chat_message("%s%s: %s" % (self.config.command_prefix, command, func.__doc__))
         else:
-            commands = self.plugins['command_dispatcher'].commands
-            level = self.protocol.player.access_level
-            #accessible_commands = [x for x,y in commands if y.level >= level]
             self.protocol.send_chat_message("Available commands: %s\nAlso try /help command" % ", ".join(
                 self.plugins['command_dispatcher'].commands.keys()))
             return True

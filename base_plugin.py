@@ -11,7 +11,7 @@ class BasePlugin(object):
     connected clients. self.protocol will be changed by the plugin manager to
     the current protocol.
     
-    You may access the factory if necessary via self.protocol.factory.protocols
+    You may access the factory if necessary via self.factory.protocols
     to access other clients, but this "Is Not A Very Good Idea" (tm)
 
     `name` *must* be defined in child classes or else the plugin manager will

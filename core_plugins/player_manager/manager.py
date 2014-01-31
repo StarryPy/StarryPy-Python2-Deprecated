@@ -9,13 +9,32 @@ from enum import Enum
 from sqlalchemy.orm import Session, relationship, backref, object_session
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, \
     ForeignKey, Boolean, func
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.ext.declarative import declarative_base as sqla_declarative_base
 from twisted.words.ewords import AlreadyLoggedIn
 
 logger = logging.getLogger("starrypy.player_manager.manager")
 
-Base = declarative_base()
+declarative_base = lambda cls: sqla_declarative_base(cls=cls)
 
+@declarative_base
+class Base(object):
+    """
+    Add some default properties and methods to the SQLAlchemy declarative base.
+    """
+
+    @property
+    def columns(self):
+        return [ c.name for c in self.__table__.columns ]
+
+    @property
+    def columnitems(self):
+        return dict([ (c, getattr(self, c)) for c in self.columns ])
+
+    def __repr__(self):
+        return '{}({})'.format(self.__class__.__name__, self.columnitems)
+
+    def as_dict(self):
+        return self.columnitems
 
 class Banned(Exception):
     pass
@@ -24,14 +43,12 @@ class Banned(Exception):
 class IntEnum(int, Enum):
     pass
 
-
 class UserLevels(IntEnum):
     GUEST = 0
     REGISTERED = 1
     MODERATOR = 10
     ADMIN = 100
     OWNER = 1000
-
 
 class Player(Base):
     __tablename__ = 'players'
@@ -62,7 +79,7 @@ class Player(Base):
         except (ValueError, TypeError):
             plugin_storage = {}
 
-        if store != None:
+        if store is not None:
             plugin_storage[caller] = store
             self.plugin_storage = json.dumps(plugin_storage)
             object_session(self).commit()
@@ -72,6 +89,10 @@ class Player(Base):
             except (ValueError, KeyError, TypeError):
                 return {}
 
+    def as_dict(self):
+        d = super(Player, self).as_dict()
+        d['plugin_storage'] = json.loads(d['plugin_storage'])
+        return d
 
 class IPAddress(Base):
     __tablename__ = 'ips'
@@ -88,6 +109,7 @@ class Ban(Base):
     reason = Column(String)
 
 
+# noinspection PyArgumentList
 class PlayerManager(object):
     def __init__(self, config):
         self.config = config
@@ -161,13 +183,13 @@ class PlayerManager(object):
 def permissions(level=UserLevels.OWNER):
     """Provides a decorator to enable/disable permissions based on user level."""
 
-    def wrapper(func):
-        func.level = level
+    def wrapper(f):
+        f.level = level
 
-        @wraps(func)
+        @wraps(f)
         def wrapped_function(self, *args, **kwargs):
             if self.protocol.player.access_level >= level:
-                return func(self, *args, **kwargs)
+                return f(self, *args, **kwargs)
             else:
                 self.protocol.send_chat_message("You are not an admin.")
                 return False

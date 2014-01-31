@@ -10,8 +10,11 @@
         "registered": "^#A0F743;"
     },
     "command_prefix": "/",
-    "core_plugin_path": "./core_plugins",
+    "core_plugin_path": "core_plugins",
     "debug_file": "debug.log",
+    "logging_format_console": "%(asctime)s -  %(name)s - %(levelname)s - %(message)s",
+    "logging_format_debugfile": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    "logging_format_logfile": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     "owner_uuid": "!!! SET THIS !!!",
     "passthrough": false,
     "player_db": "config/player.db",
@@ -29,9 +32,14 @@
                 ]
             ],
             "message": "Welcome to the server! Here are some starter items to get you off to a good start."
+        },
+        "player_manager": {
+        "name_removal_regexes": ["[\\s]"]
         }
     },
-    "plugin_path": "./plugins",
+    "plugin_path": "plugins",
+    "port_check": true,
+    "reap_time": 10,
     "upstream_hostname": "localhost",
     "upstream_port": 21024
 }
