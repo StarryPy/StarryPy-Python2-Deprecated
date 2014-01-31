@@ -143,7 +143,7 @@ class PluginManager(object):
                 if res is None:
                     res = True
                 return_values.append(res)
-            except Exception as e:
+            except:
                 self.logger.exception("Error in plugin %s with function %s.", str(plugin), command,
                                       exc_info=True)
         return all(return_values)

@@ -33,7 +33,7 @@ class Base(object):
     def __repr__(self):
         return '{}({})'.format(self.__class__.__name__, self.columnitems)
 
-    def asDict(self):
+    def as_dict(self):
         return self.columnitems
 
 class Banned(Exception):
@@ -79,7 +79,7 @@ class Player(Base):
         except (ValueError, TypeError):
             plugin_storage = {}
 
-        if store != None:
+        if store is not None:
             plugin_storage[caller] = store
             self.plugin_storage = json.dumps(plugin_storage)
             object_session(self).commit()
@@ -89,8 +89,8 @@ class Player(Base):
             except (ValueError, KeyError, TypeError):
                 return {}
 
-    def asDict(self):
-        d = super(Player, self).asDict()
+    def as_dict(self):
+        d = super(Player, self).as_dict()
         d['plugin_storage'] = json.loads(d['plugin_storage'])
         return d
 
@@ -109,6 +109,7 @@ class Ban(Base):
     reason = Column(String)
 
 
+# noinspection PyArgumentList
 class PlayerManager(object):
     def __init__(self, config):
         self.config = config
@@ -182,13 +183,13 @@ class PlayerManager(object):
 def permissions(level=UserLevels.OWNER):
     """Provides a decorator to enable/disable permissions based on user level."""
 
-    def wrapper(func):
-        func.level = level
+    def wrapper(f):
+        f.level = level
 
-        @wraps(func)
+        @wraps(f)
         def wrapped_function(self, *args, **kwargs):
             if self.protocol.player.access_level >= level:
-                return func(self, *args, **kwargs)
+                return f(self, *args, **kwargs)
             else:
                 self.protocol.send_chat_message("You are not an admin.")
                 return False

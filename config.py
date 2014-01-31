@@ -21,14 +21,14 @@ class ConfigurationManager(object):
         try:
             with open("config/config.json.default", "r") as default_config:
                 self.config = json.load(default_config)
-        except Exception as e:
-            self.logger.error("Could not load the default configuration file.")
+        except:
+            self.logger.exception("Could not load the default configuration file.", exc_info=True)
             raise
         try:
             with open("config/config.json", "r+") as config:
                 self.config.update(json.load(config))
-        except Exception as e:
-            self.logger.critical("Tried to read the configuration file, failed.\n%s", str(e))
+        except:
+            self.logger.exception("Could not load the default configuration file.", exc_info=True)
             raise
         self.logger.debug("Created configuration manager.")
 
