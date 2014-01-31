@@ -28,7 +28,6 @@ class MOTDPlugin(SimpleCommandPlugin):
 
     def motd(self, data):
         """Displays the message of the day. Usage: /motd"""
-        print data
         if len(data) == 0:
             self.send_motd()
         else:

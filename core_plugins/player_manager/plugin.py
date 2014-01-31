@@ -16,7 +16,6 @@ class PlayerManagerPlugin(BasePlugin):
         self.player_manager = PlayerManager(self.config)
         self.l_call = LoopingCall(self.check_logged_in)
         self.l_call.start(.25)
-        print self.factory
 
     def check_logged_in(self):
         for player in self.player_manager.session.query(Player).filter_by(logged_in=True).all():
