@@ -32,6 +32,9 @@
                 ]
             ],
             "message": "Welcome to the server! Here are some starter items to get you off to a good start."
+        },
+        "player_manager": {
+        "name_removal_regexes": ["[\\s]"]
         }
     },
     "plugin_path": "plugins",
