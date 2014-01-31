@@ -23,6 +23,7 @@ class ConfigurationManager(object):
                 self.config = json.load(default_config)
         except Exception as e:
             self.logger.error("Could not load the default configuration file.")
+            raise
         try:
             with open("config/config.json", "r+") as config:
                 self.config.update(json.load(config))
