@@ -15,7 +15,7 @@ from packet_stream import PacketStream
 import packets
 from plugin_manager import PluginManager, route
 from utility_functions import build_packet
-
+VERSION = "1.1.0"
 
 class StarryPyServerProtocol(Protocol):
     """
@@ -34,7 +34,6 @@ class StarryPyServerProtocol(Protocol):
         self.buffering_packet = None
         self.after_write_callback = None
         self.plugin_manager = None
-        self.debug_file = open(self.config.debug_file, 'w')
         self.call_mapping = {
             packets.Packets.PROTOCOL_VERSION: self.protocol_version,
             packets.Packets.CONNECT_RESPONSE: self.connect_response,
@@ -100,7 +99,7 @@ class StarryPyServerProtocol(Protocol):
         self.packet_stream.direction = packets.Direction.CLIENT
         logger.debug("Connection made in StarryPyServerProtocol with UUID %s" %
                      self.id)
-        reactor.connectTCP(self.config.server_hostname, self.config.server_port, StarboundClientFactory(self))
+        reactor.connectTCP(self.config.upstream_hostname, self.config.upstream_port, StarboundClientFactory(self))
 
     def string_received(self, packet):
         """
@@ -569,9 +568,9 @@ if __name__ == '__main__':
     config = ConfigurationManager()
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.settimeout(1)
-    result = sock.connect_ex((config.server_hostname, config.server_port))
+    result = sock.connect_ex((config.upstream_hostname, config.upstream_port))
     if result != 0:
-        print "The starbound server is not connectable at the address %s:%d." % (config.server_hostname, config.server_port)
+        print "The starbound server is not connectable at the address %s:%d." % (config.upstream_hostname, config.upstream_port)
         print "Please ensure that you are running starbound_server on the correct port and that is reflected in the StarryPy configuration."
         sys.exit()
     logger = logging.getLogger('starrypy')
@@ -590,9 +589,8 @@ if __name__ == '__main__':
     logger.addHandler(sh)
     logger.addHandler(fh_d)
     logger.addHandler(fh_w)
-    logger.debug("test")
-    logger.info("Started server.")
+    logger.info("Started StarryPy server version %s" % VERSION)
 
     factory = StarryPyServerFactory()
-    reactor.listenTCP(config.bind_port, factory, backlog=50, interface=config.bind_ip)
+    reactor.listenTCP(factory.config.bind_port, factory, backlog=50, interface=factory.config.bind_ip)
     reactor.run()

@@ -1,21 +1,38 @@
 {
-    "server_hostname": "localhost",
-    "debug_file": "debug.log",
-    "core_plugin_path": "./core_plugins",
-    "owner_uuid": "",
-    "player_db": "config/player.db",
-    "server_port": 21024,
-    "plugin_path": "./plugins",
-    "command_prefix": "/",
-    "passthrough" : false,
-    "bind_ip": "",
     "bind_port": 21025,
+    "bind_ip": "",
+    "chat_prefix": "@",
     "colors": {
-    	"default": "^#F7EB43;",
-    	"guest": "^#F7EB43;",
-    	"registered": "^#A0F743;",
-    	"moderator": "^#4385F7;",
-    	"admin": "^#C443F7;",
-    	"owner": "^#F7434C;"    
-    }
+        "admin": "^#C443F7;",
+        "default": "^#F7EB43;",
+        "guest": "^#F7EB43;",
+        "moderator": "^#4385F7;",
+        "owner": "^#F7434C;",
+        "registered": "^#A0F743;"
+    },
+    "command_prefix": "/",
+    "core_plugin_path": "./core_plugins",
+    "debug_file": "debug.log",
+    "owner_uuid": "!!! SET THIS !!!",
+    "passthrough": false,
+    "player_db": "config/player.db",
+    "plugin_config": {
+        "motd_plugin": "Welcome to the server! Play nice.",
+        "new_player_greeter_plugin": {
+            "items": [
+                [
+                    "coalore",
+                    200
+                ],
+                [
+                    "alienburger",
+                    5
+                ]
+            ],
+            "message": "Welcome to the server! Here are some starter items to get you off to a good start."
+        }
+    },
+    "plugin_path": "./plugins",
+    "upstream_hostname": "localhost",
+    "upstream_port": 21024
 }

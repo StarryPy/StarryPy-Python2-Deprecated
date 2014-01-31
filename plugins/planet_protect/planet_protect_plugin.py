@@ -1,4 +1,3 @@
-import json
 from base_plugin import SimpleCommandPlugin
 from core_plugins.player_manager import UserLevels, permissions
 
@@ -28,23 +27,22 @@ class PlanetProtectPlugin(SimpleCommandPlugin):
                         "MODIFY_TILE_LIST"]
         for n in ["on_"+n.lower() for n in bad_packets]:
             setattr(self, n, (lambda x: self.planet_check()))
-        try:
-            with open("plugins/planet_protect/protected_planets.json") as f:
-                self.protected_planets = json.load(f)
-        except:
+        if self.config.plugin_config == {}:
             self.protected_planets = []
+        else:
+            self.protected_planets = self.config.plugin_config
 
         self.player_manager = self.plugins['player_manager']
 
     def planet_check(self):
-        if self.protocol.player.planet in self.protected_planets and self.protocol.player.access_level < UserLevels.ADMIN:
+        if self.protocol.player.planet in self.protected_planets and self.protocol.player.access_level < UserLevels.REGISTERED:
             return False
         else:
             return True
 
     @permissions(UserLevels.ADMIN)
     def protect(self, data):
-        """Protects the current planet. Only admins can build on protected planets. Syntax: /protect"""
+        """Protects the current planet. Only registered users can build on protected planets. Syntax: /protect"""
         planet = self.protocol.player.planet
         on_ship = self.protocol.player.on_ship
         if on_ship:
@@ -75,10 +73,5 @@ class PlanetProtectPlugin(SimpleCommandPlugin):
         self.save()
 
     def save(self):
-        try:
-            with open("plugins/planet_protect/protected_planets.json", "w") as f:
-                json.dump(self.protected_planets, f)
-        except:
-            self.logger.exception("Couldn't save protected planets.", exc_info=True)
-            raise
+        self.config.plugin_config = self.protected_planets
 

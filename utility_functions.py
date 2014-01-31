@@ -50,10 +50,29 @@ class Planet(object):
 
 def move_ship_to_coords(protocol, sector, x, y, z, planet, satellite):
     logger.info("Moving %s's ship to coordinates: %s", protocol.player.name,
-                ":".join((sector, x, y, z, planet, satellite)))
+                ":".join((sector, str(x), str(y), str(z), str(planet), str(satellite))))
     x, y, z, planet, satellite = map(int, (x, y, z, planet, satellite))
     warp_packet = build_packet(packets.Packets.WARP_COMMAND,
                                packets.warp_command_write(t="MOVE_SHIP", sector=sector, x=x, y=y, z=z,
                                                           planet=planet,
                                                           satellite=satellite, player="".encode('utf-8')))
     protocol.client_protocol.transport.write(warp_packet)
+
+
+def extract_name(l):
+    name = []
+    if l[0][0] not in ["'", '"']:
+        return l[0], l[1:]
+    name.append(l[0][1:])
+    terminator = l[0][0]
+    for idx, s in enumerate(l[1:]):
+        if s[-1] == terminator:
+            name.append(s[:-1])
+            if idx + 2 != len(l):
+                return " ".join(name), l[idx + 2:]
+            else:
+                return " ".join(name), None
+        else:
+            name.append(s)
+    raise ValueError("Final terminator character of <%s> not found" %
+                     terminator)
