@@ -1,5 +1,6 @@
 {
     "bind_port": 21025,
+    "bind_ip": "",
     "chat_prefix": "@",
     "colors": {
         "admin": "^#C443F7;",
