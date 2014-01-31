@@ -46,14 +46,14 @@ class PluginManager(object):
         """
         self.plugins = []
         self.plugin_names = []
-        self.config = ConfigurationManager()
+        self.config = ConfigurationManager("config/config.json")
         self.base_class = base_class
         self.factory = factory
-        self.core_plugin_dir = os.path.realpath(self.config.core_plugin_path)
+        self.core_plugin_dir = os.path.join(os.path.dirname(__file__), self.config.core_plugin_path)
         sys.path.append(self.core_plugin_dir)
         self.load_plugins(self.core_plugin_dir)
 
-        self.plugin_dir = os.path.realpath(self.config.plugin_path)
+        self.plugin_dir = os.path.join(os.path.dirname(__file__), self.config.plugin_path)
         sys.path.append(self.plugin_dir)
         self.load_plugins(self.plugin_dir)
 
