@@ -1,4 +1,5 @@
 # -*- coding: UTF-8 -*-
+from _socket import SHUT_RDWR
 import logging
 from uuid import uuid4
 import sys
@@ -399,7 +400,7 @@ class StarryPyServerProtocol(Protocol):
                                                             world=world,
                                                             client_id=0,
                                                             name=name,
-                                                            message=text))
+                                                            message=text.encode("utf-8")))
         chat_packet = build_packet(packets.Packets.CHAT_RECEIVED,
                                    chat_data)
         self.transport.write(chat_packet)
@@ -575,6 +576,8 @@ def test_for_upstream():
         print "The starbound server is not connectable at the address %s:%d." % (config.upstream_hostname, config.upstream_port)
         print "Please ensure that you are running starbound_server on the correct port and that is reflected in the StarryPy configuration."
         sys.exit()
+    sock.shutdown(SHUT_RDWR)
+    sock.close()
 
 def setup(config_path="config/config.json"):
     global config

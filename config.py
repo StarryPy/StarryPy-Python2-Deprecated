@@ -1,3 +1,4 @@
+import io
 import json
 import logging
 import inspect
@@ -29,8 +30,9 @@ class ConfigurationManager(object):
 
     def save(self):
         try:
-            with open("config/config.json", "w") as config:
-                config.write(json.dumps(self.config, indent=4, separators=(',', ': '), sort_keys=True))
+            with io.open("config/config.json", "w", encoding="utf-8") as config:
+                config.write(json.dumps(self.config, indent=4, separators=(',', ': '), sort_keys=True, ensure_ascii = False))
+
         except Exception as e:
             self.logger.critical("Tried to save the configuration file, failed.\n%s", str(e))
             raise
@@ -59,6 +61,7 @@ class ConfigurationManager(object):
 
         elif key == "plugin_config":
             caller = inspect.stack()[1][0].f_locals["self"].__class__.name
+
             self.config["plugin_config"][caller] = value
 
         else:
