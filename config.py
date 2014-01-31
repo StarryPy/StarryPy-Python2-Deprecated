@@ -19,10 +19,13 @@ class ConfigurationManager(object):
 
     def __init__(self):
         try:
+            with open("config/config.json.default", "r") as default_config:
+                self.config = json.load(default_config)
+        except Exception as e:
+            self.logger.error("Could not load the default configuration file.")
+        try:
             with open("config/config.json", "r+") as config:
-                self.config = json.load(config)
-                if not "plugin_config" in self.config:
-                    self.config["plugin_config"] = {}
+                self.config.update(json.load(config))
         except Exception as e:
             self.logger.critical("Tried to read the configuration file, failed.\n%s", str(e))
             raise
@@ -32,7 +35,6 @@ class ConfigurationManager(object):
         try:
             with io.open("config/config.json", "w", encoding="utf-8") as config:
                 config.write(json.dumps(self.config, indent=4, separators=(',', ': '), sort_keys=True, ensure_ascii = False))
-
         except Exception as e:
             self.logger.critical("Tried to save the configuration file, failed.\n%s", str(e))
             raise
@@ -40,6 +42,7 @@ class ConfigurationManager(object):
     def __getattr__(self, item):
         if item == "config":
             return super(ConfigurationManager, self).__getattribute__(item)
+
 
         elif item == "plugin_config":
             caller = inspect.stack()[1][0].f_locals["self"].__class__.name

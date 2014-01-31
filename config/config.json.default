@@ -33,5 +33,6 @@
     },
     "plugin_path": "./plugins",
     "upstream_hostname": "localhost",
-    "upstream_port": 21024
+    "upstream_port": 21024,
+    "port_check": true
 }
