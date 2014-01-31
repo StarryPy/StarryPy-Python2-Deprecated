@@ -16,9 +16,9 @@ class ConfigurationManager(object):
     __metaclass__ = Singleton
     logger = logging.getLogger("starrypy.config.ConfigurationManager")
 
-    def __init__(self):
+    def __init__(self, config_path):
         try:
-            with open("config/config.json", "r+") as config:
+            with open(config_path, "r+") as config:
                 self.config = json.load(config)
                 if not "plugin_config" in self.config:
                     self.config["plugin_config"] = {}

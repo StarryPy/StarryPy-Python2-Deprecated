@@ -100,6 +100,9 @@ class StarryPyServerProtocol(Protocol):
         self.packet_stream.direction = packets.Direction.CLIENT
         logger.debug("Connection made in StarryPyServerProtocol with UUID %s" %
                      self.id)
+        self.connect_to_upstream()
+
+    def connect_to_upstream(self):
         reactor.connectTCP(self.config.upstream_hostname, self.config.upstream_port, StarboundClientFactory(self))
 
     def string_received(self, packet):
@@ -564,9 +567,7 @@ class StarboundClientFactory(ClientFactory):
         protocol.server_protocol = self.server_protocol
         return protocol
 
-
-if __name__ == '__main__':
-    config = ConfigurationManager()
+def test_for_upstream():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.settimeout(1)
     result = sock.connect_ex((config.upstream_hostname, config.upstream_port))
@@ -574,6 +575,11 @@ if __name__ == '__main__':
         print "The starbound server is not connectable at the address %s:%d." % (config.upstream_hostname, config.upstream_port)
         print "Please ensure that you are running starbound_server on the correct port and that is reflected in the StarryPy configuration."
         sys.exit()
+
+def setup(config_path="config/config.json"):
+    global config
+    global logger
+    config = ConfigurationManager(config_path)
     logger = logging.getLogger('starrypy')
     logger.setLevel(logging.DEBUG)
     fh_d = logging.FileHandler("debug.log")
@@ -592,6 +598,12 @@ if __name__ == '__main__':
     logger.addHandler(fh_w)
     logger.info("Started StarryPy server version %s" % VERSION)
 
+def run():
     factory = StarryPyServerFactory()
     reactor.listenTCP(factory.config.bind_port, factory)
     reactor.run()
+
+if __name__ == '__main__':
+    setup()
+    test_for_upstream()
+    run()
