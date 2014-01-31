@@ -4,18 +4,21 @@ import logging
 from uuid import uuid4
 import sys
 import socket
+import datetime
 
 import construct
 from twisted.internet import reactor
 from twisted.internet.protocol import ClientFactory, ServerFactory, Protocol, connectionDone
 from construct import Container
 import construct.core
+from twisted.internet.task import LoopingCall
 
 from config import ConfigurationManager
 from packet_stream import PacketStream
 import packets
 from plugin_manager import PluginManager, route
 from utility_functions import build_packet
+
 VERSION = "1.1.0"
 
 class StarryPyServerProtocol(Protocol):
@@ -86,6 +89,7 @@ class StarryPyServerProtocol(Protocol):
             packets.Packets.HEARTBEAT: self.heartbeat,
         }
         logger.info("Created StarryPyServerProtocol with UUID %s" % self.id)
+        self.client_protocol = None
 
     def connectionMade(self):
         """
@@ -515,6 +519,8 @@ class StarryPyServerFactory(ServerFactory):
         self.protocols = {}
         self.plugin_manager = PluginManager(factory=self)
         self.plugin_manager.activate_plugins()
+        self.reaper = LoopingCall(self.reap_dead_protocols)
+        self.reaper.start(self.config.reap_time)
 
     def stopFactory(self):
         """
@@ -549,6 +555,24 @@ class StarryPyServerFactory(ServerFactory):
         logger.debug("Building protocol to address %s", address)
         p = ServerFactory.buildProtocol(self, address)
         return p
+
+    def reap_dead_protocols(self):
+        logger.debug("Reaping dead connections.")
+        count = 0
+        start_time = datetime.datetime.now()
+        for protocol in self.protocols.itervalues():
+            if (protocol.packet_stream.last_received_timestamp-start_time).total_seconds() > self.config.reap_time:
+                protocol.connectionLost()
+                count += 1
+                continue
+            if protocol.client_protocol is not None and (protocol.client_protocol.packet_stream.last_received_timestamp-start_time).total_seconds() > self.config.reap_time:
+                protocol.connectionLost()
+                count += 1
+        if count > 0:
+            logger.debug("%d connections reaped.")
+        else:
+            logger.debug("No connections reaped.")
+
 
 
 class StarboundClientFactory(ClientFactory):

@@ -1,5 +1,6 @@
 import logging
 import zlib
+import datetime
 import packets
 
 
@@ -27,6 +28,7 @@ class PacketStream(object):
         self.packet_size = None
         self.protocol = protocol
         self.direction = None
+        self.last_received_timestamp = datetime.datetime.now()
 
     def __add__(self, other):
         self._stream += other
@@ -35,6 +37,8 @@ class PacketStream(object):
             self.check_packet()
         except:
             pass
+        finally:
+            self.last_received_timestamp = datetime.datetime.now()
         return self
 
     def start_packet(self):
