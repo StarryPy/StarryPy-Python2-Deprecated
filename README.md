@@ -79,7 +79,7 @@ This plugin sends a Message of the Day on login. The MOTD is located in motd.txt
 Greets first-time players on the server. Gives them a greeting (located in new\_player\_message.txt) and gives them a pack of starter items (located in starter\_items.txt). Default items are 200 `coalore` and 5 `alienburger`s. 
 
 ### Planet Protection
-This plugin protects specified planets against modification in any way. Currently if a planet is protected only Admins may modify it. This plugin provides the following commands:
+This plugin protects specified planets against modification in any way. Currently if a planet is protected only registered users may modify it. This plugin provides the following commands:
 
 * **/protect**: Protects the planet you are currently on. `Access: Admin`
 * **/unprotect**: Unprotects the planet you are currently on. `Access: Admin`
