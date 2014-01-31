@@ -21,6 +21,7 @@ from utility_functions import build_packet
 
 VERSION = "1.1.0"
 
+
 class StarryPyServerProtocol(Protocol):
     """
     The main protocol class for handling connections from Starbound clients.
@@ -105,7 +106,8 @@ class StarryPyServerProtocol(Protocol):
         self.packet_stream.direction = packets.Direction.CLIENT
         logger.debug("Connection made in StarryPyServerProtocol with UUID %s" %
                      self.id)
-        reactor.connectTCP(self.config.upstream_hostname, self.config.upstream_port, StarboundClientFactory(self))
+        reactor.connectTCP(self.config.upstream_hostname, self.config.upstream_port,
+                           StarboundClientFactory(self))
 
     def string_received(self, packet):
         """
@@ -561,18 +563,21 @@ class StarryPyServerFactory(ServerFactory):
         count = 0
         start_time = datetime.datetime.now()
         for protocol in self.protocols.itervalues():
-            if (protocol.packet_stream.last_received_timestamp-start_time).total_seconds() > self.config.reap_time:
+            if (
+                protocol.packet_stream.last_received_timestamp - start_time).total_seconds() > self.config.reap_time:
                 protocol.connectionLost()
                 count += 1
                 continue
-            if protocol.client_protocol is not None and (protocol.client_protocol.packet_stream.last_received_timestamp-start_time).total_seconds() > self.config.reap_time:
+            if protocol.client_protocol is not None and (
+                protocol.client_protocol.packet_stream.last_received_timestamp - start_time).total_seconds() > self.config.reap_time:
                 protocol.connectionLost()
                 count += 1
-        if count > 0:
+        if count == 1:
+            logger.debug("1 connection reaped.")
+        elif count > 1:
             logger.debug("%d connections reaped.")
         else:
             logger.debug("No connections reaped.")
-
 
 
 class StarboundClientFactory(ClientFactory):
@@ -614,8 +619,10 @@ if __name__ == '__main__':
     if config.port_check:
         result = sock.connect_ex((config.upstream_hostname, config.upstream_port))
         if result != 0:
-            logger.critical("The starbound server is not connectable at the address %s:%d." % (config.upstream_hostname, config.upstream_port))
-            logger.critical("Please ensure that you are running starbound_server on the correct port and that is reflected in the StarryPy configuration.")
+            logger.critical("The starbound server is not connectable at the address %s:%d." % (
+            config.upstream_hostname, config.upstream_port))
+            logger.critical(
+                "Please ensure that you are running starbound_server on the correct port and that is reflected in the StarryPy configuration.")
             sock.shutdown()
             sock.close()
             sys.exit()
