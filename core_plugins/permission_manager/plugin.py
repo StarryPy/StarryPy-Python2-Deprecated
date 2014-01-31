@@ -22,7 +22,6 @@ class PermissionManagerPlugin(BasePlugin):
             self.creategroup("GUEST")
             self.creategroup("REGISTERED")
             self.setgroupparent("REGISTERED", "GUEST")
-            self.addgroupperm("REGISTERED", "warp.use")
             self.addgroupperm("REGISTERED", "plugins.list")
             self.creategroup("ADMIN")
             self.setgroupparent("ADMIN", "REGISTERED")
@@ -38,14 +37,19 @@ class PermissionManagerPlugin(BasePlugin):
             self.addgroupperm("ADMIN", "protect.bypass")
             self.addgroupperm("ADMIN", "plugins.toggle")
             self.addgroupperm("ADMIN", "tp")
-            self.addgroupperm("ADMIN", "mvoeship")
-            self.addgroupperm("ADMIN", "warp.edit")
+            self.addgroupperm("ADMIN", "moveship")
+            self.addgroupperm("ADMIN", "getrank")
+            self.addgroupperm("ADMIN", "rank.guest.*")
+            self.addgroupperm("ADMIN", "rank.registered.*")
+            self.addgroupperm("ADMIN", "rank.admin.add")
+            self.creategroup("COOWNER")
+            self.setgroupparent("COOWNER", "ADMIN")
+            self.addgroupperm("COOWNER", "rank.admin.del")
             self.creategroup("OWNER")
-            self.setgroupparent("OWNER", "ADMIN")
             self.addgroupperm("OWNER", "*")
             self.can_save = True
             self.save()
-    
+
     def after_connect_response(self, data):
         player = self.protocol.player.uuid
         if not self.getplayergroups(player):
@@ -71,11 +75,15 @@ class PermissionManagerPlugin(BasePlugin):
                     return True
                 if perm == "*":
                     return True
+                if perm[-1] == "*":
+                    if permission.startswith(perm[:-1]):
+                        return True
             if group[1] != "":
                 return self.grouphasperm(group[1], permission)
         return False
     
     def creategroup(self, group):
+        group = group.upper()
         othergroup = self.getgroup(group)
         if othergroup:
             return False
@@ -85,6 +93,7 @@ class PermissionManagerPlugin(BasePlugin):
         return True
     
     def removegroup(self, group):
+        group = group.upper()
         group = self.getgroup(group)
         if group:
             self.groups.remove(group)
@@ -99,6 +108,8 @@ class PermissionManagerPlugin(BasePlugin):
         return False
     
     def setgroupparent(self, group, parent):
+        group = group.upper()
+        parent = parent.upper()
         group = self.getgroup(group)
         if group:
             group[1] = parent
@@ -107,6 +118,8 @@ class PermissionManagerPlugin(BasePlugin):
         return False
     
     def addgroupperm(self, group, permission):
+        group = group.upper()
+        permission = permission.lower()
         group = self.getgroup(group)
         if group:
             for perm in group[2]:
@@ -118,6 +131,8 @@ class PermissionManagerPlugin(BasePlugin):
         return False
     
     def delgroupperm(self, group, permission):
+        group = group.upper()
+        permission = permission.lower()
         group = self.getgroup(group)
         if group:
             for perm in group[2]:
@@ -135,6 +150,7 @@ class PermissionManagerPlugin(BasePlugin):
         return False
     
     def addtogroup(self, player, group):
+        group = group.upper()
         for p in self.players:
             if p[0] == player:
                 for g in p[1]:
@@ -146,6 +162,7 @@ class PermissionManagerPlugin(BasePlugin):
         return False
     
     def removefromgroup(self, player, group):
+        group = group.upper()
         for p in self.players:
             if p[0] == player:
                 for g in p[1]:
