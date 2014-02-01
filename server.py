@@ -441,6 +441,8 @@ class StarryPyServerProtocol(Protocol):
         except AttributeError:
             pass
 
+    def connectionFailed(self, *args, **kwargs):
+        self.connectionLost()
 
 class ClientProtocol(Protocol):
     """
@@ -502,7 +504,6 @@ class ClientProtocol(Protocol):
             self.server_protocol.write(data)
         else:
             self.packet_stream += data
-
 
 class StarryPyServerFactory(ServerFactory):
     """
@@ -572,9 +573,9 @@ class StarryPyServerFactory(ServerFactory):
                 protocol.connectionLost()
                 count += 1
         if count == 1:
-            logger.debug("1 connection reaped.")
+            logger.info("1 connection reaped.")
         elif count > 1:
-            logger.debug("%d connections reaped.")
+            logger.info("%d connections reaped.")
         else:
             logger.debug("No connections reaped.")
 
@@ -622,8 +623,6 @@ if __name__ == '__main__':
             config.upstream_hostname, config.upstream_port))
             logger.critical(
                 "Please ensure that you are running starbound_server on the correct port and that is reflected in the StarryPy configuration.")
-            sock.shutdown()
-            sock.close()
             sys.exit()
         sock.shutdown(SHUT_RDWR)
         sock.close()
