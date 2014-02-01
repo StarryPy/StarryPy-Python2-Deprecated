@@ -178,6 +178,7 @@ def route(func):
         if res:
             res = func(self, data)
             d = deferLater(reactor, 1, self.plugin_manager.do, self, after, data)
+            self.factory.registered_reactor_users.append(d)
             d.addErrback(print_this_defered_failure)
         return res
 

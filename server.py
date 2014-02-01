@@ -521,11 +521,13 @@ class StarryPyServerFactory(ServerFactory):
         protocols.
         """
         self.config = ConfigurationManager()
+        self.registered_reactor_users = []
         self.protocol.factory = self
         self.protocols = {}
         self.plugin_manager = PluginManager(factory=self)
         self.plugin_manager.activate_plugins()
         self.reaper = LoopingCall(self.reap_dead_protocols)
+        self.registered_reactor_users.append(self.reaper)
         self.reaper.start(self.config.reap_time)
 
     def stopFactory(self):
