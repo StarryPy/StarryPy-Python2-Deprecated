@@ -109,7 +109,6 @@ class Ban(Base):
     reason = Column(String)
 
 
-# noinspection PyArgumentList
 class PlayerManager(object):
     def __init__(self, config):
         self.config = config
@@ -118,6 +117,7 @@ class PlayerManager(object):
         Base.metadata.create_all(self.engine)
         for player in self.session.query(Player).all():
             player.logged_in = False
+            player.protocol = None
 
     def fetch_or_create(self, uuid, name, ip, protocol=None):
         if self.session.query(Player).filter_by(uuid=uuid, logged_in=True).first():

@@ -425,8 +425,10 @@ class StarryPyServerProtocol(Protocol):
             x = build_packet(packets.Packets.CLIENT_DISCONNECT,
                              packets.client_disconnect().build(Container(data=0)))
 
-            if self.player and self.player.logged_in:
+            if self.player is not None:
                 self.client_disconnect(x)
+                self.player.logged_in = False
+                self.player.protocol = None
             self.client_protocol.transport.write(x)
         except:
             logger.error("Couldn't disconnect protocol.")
@@ -481,8 +483,7 @@ class ClientProtocol(Protocol):
         try:
             if self.server_protocol.handle_starbound_packets(
                     packet):
-                self.server_protocol.write(
-                    packet.original_data)
+                self.server_protocol.write(packet.original_data)
         except construct.core.FieldError:
             logger.exception("Construct field error in string_received.", exc_info=True)
             self.server_protocol.write(
