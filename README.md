@@ -182,9 +182,9 @@ plugin classes.
 Please consider letting us know of your plugin(s) so it can be listed at
 [our plugin list](https://github.com/MrMarvin/StarryPy_plugins). Pull requests
 are much appreciated! Please note that any plugins that we integrate into
-StarryPy proper must be licensed under an OSI-approved open-source license,
-for simplicity's sake. We suggest the MIT or BSD licenses. If this isn't
-acceptable to you, we will only be able to provide a link.
+StarryPy proper must be licensed under an open-source license. We suggest the
+MIT or BSD licenses. If this isn't acceptable to you, we will only be able to
+provide a link.
 
 ## Planned features
 
