@@ -524,6 +524,7 @@ class StarryPyServerFactory(ServerFactory):
         self.plugin_manager.activate_plugins()
         self.reaper = LoopingCall(self.reap_dead_protocols)
         self.reaper.start(self.config.reap_time)
+        logger.info("Listening on port %d" % self.config.bind_port)
 
     def stopFactory(self):
         """
