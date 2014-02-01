@@ -32,7 +32,7 @@ class PlanetProtectPlugin(SimpleCommandPlugin):
         self.player_manager = self.plugins.get("player_manager", [])
 
     def planet_check(self):
-        if self.protocol.player.planet in self.protected_planets and self.protocol.player.access_level < UserLevels.REGISTERED:
+        if not self.protocol.player.on_ship and self.protocol.player.planet in self.protected_planets and self.protocol.player.access_level < UserLevels.REGISTERED:
             return False
         else:
             return True
