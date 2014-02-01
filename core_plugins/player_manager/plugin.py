@@ -95,5 +95,6 @@ class PlayerManagerPlugin(BasePlugin):
             self.protocol.player.on_ship = True
 
     def on_client_disconnect(self, player):
-        self.logger.info("Player disconnected: %s", self.protocol.player.name)
-        self.protocol.player.logged_in = False
+        if self.protocol.player.logged_in:
+            self.logger.info("Player disconnected: %s", self.protocol.player.name)
+            self.protocol.player.logged_in = False
