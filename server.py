@@ -19,7 +19,7 @@ import packets
 from plugin_manager import PluginManager, route
 from utility_functions import build_packet
 
-VERSION = "1.1.0"
+VERSION = "1.2.0"
 
 
 class StarryPyServerProtocol(Protocol):

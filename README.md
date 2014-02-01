@@ -38,7 +38,7 @@ As a reminder, though this worked for me I cannot guarantee it will fork for you
 ### Download Python
 We'll be using ActiveState python for ease of use. This way you don't have to monkey around with your paths. Just download it from [here](http://www.activestate.com/activepython/downloads). ***Make sure you grab the 32-bit 2.7 version and not the python 3 version; the server will not run on Python 3, nor will it work with the 64-bit version on Windows due to licensing requirements.***
 
-### Download StarryPy from github. 
+### Download StarryPy from GitHub. 
 
 I personally recommend using git, but a zip file will suffice. Please note that if you choose not to use git (not too hard to figure out), future upgrades are far more likely to break everything.
 
