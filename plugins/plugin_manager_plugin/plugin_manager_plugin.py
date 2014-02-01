@@ -63,6 +63,7 @@ class PluginManagerPlugin(SimpleCommandPlugin):
         plugin.activate()
         self.protocol.send_chat_message("Successfully activated plugin.")
 
+    @permissions(UserLevels.GUEST)
     def help(self, data):
         """Prints help messages for plugin commands. Syntax: /help [command]"""
         if len(data) > 0:
@@ -72,6 +73,10 @@ class PluginManagerPlugin(SimpleCommandPlugin):
                 self.protocol.send_chat_message("Couldn't find a command with the name %s" % command)
             self.protocol.send_chat_message("%s%s: %s" % (self.config.command_prefix, command, func.__doc__))
         else:
-            self.protocol.send_chat_message("Available commands: %s\nAlso try /help command" % ", ".join(
-                self.plugins['command_dispatcher'].commands.keys()))
+            available = []
+            for name, f in self.plugins['command_dispatcher'].commands.iteritems():
+                if f.level <= self.protocol.player.access_level:
+                    available.append(name)
+            available.sort(key=str.lower)
+            self.protocol.send_chat_message("Available commands: %s\nAlso try /help command" % ", ".join(available))
             return True
