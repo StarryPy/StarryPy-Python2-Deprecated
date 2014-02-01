@@ -1,10 +1,7 @@
 import twisted
 from twisted.test import proto_helpers
-from twisted.trial import unittest
-from packets import Packets
-from utility_functions import build_packet
 from server import *
-import os
+from utility_functions import build_packet
 
 class SBFake(object):
     def __init__(self):
@@ -53,16 +50,3 @@ class SBFakeServer(SBFake):
         # Hence the monkey patch the proxy does not automatically connect to the game server
         # so we do this manually here:
         self.protocol.makeConnection(self.tr)
-
-class ConnectionTests(unittest.TestCase):
-
-    def setUp(self):
-        self.client_side = SBFakeClient(os.path.abspath("../config/config.json"))
-        self.server_side = SBFakeServer(self.client_side.protocol)
-
-    def test_protocol_version(self):
-        self.server_side.send_packet(Packets.PROTOCOL_VERSION,'00000274')
-        self.assertEqual(self.client_side.tr.value().encode("hex"), "00 08 00000274".replace(" ",""))
-
-    def tearDown(self):
-        self.client_side.make_sure_evething_is_stopped()
