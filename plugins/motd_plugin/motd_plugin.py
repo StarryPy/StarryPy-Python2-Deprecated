@@ -26,9 +26,9 @@ class MOTDPlugin(SimpleCommandPlugin):
     def send_motd(self):
         self.protocol.send_chat_message("Message of the Day:\n%s" % self._motd)
 
+    @permissions(UserLevels.GUEST)
     def motd(self, data):
         """Displays the message of the day. Usage: /motd"""
-        print data
         if len(data) == 0:
             self.send_motd()
         else:

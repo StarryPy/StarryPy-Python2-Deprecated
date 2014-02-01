@@ -23,6 +23,7 @@ class Announcer(BasePlugin):
             raise
 
     def on_client_disconnect(self, data):
-        self.factory.broadcast(self.protocol.player.colored_name(self.config.colors) + " left.", 0,
-                               "", "Announcer")
+        if not self.protocol.player.logged_in:
+            self.factory.broadcast(self.protocol.player.colored_name(self.config.colors) + " left.", 0,
+                                   "", "Announcer")
 

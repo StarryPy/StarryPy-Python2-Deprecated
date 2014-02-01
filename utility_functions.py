@@ -1,3 +1,4 @@
+import collections
 import logging
 
 from construct import Container
@@ -12,7 +13,6 @@ def give_item_to_player(player_protocol, item, count=1):
     logger.debug("Giving item %s (count: %s) to %s", item, count, player_protocol.player.name)
     item_count = int(count)
     maximum = 1000
-    total = item_count
     while item_count > 0:
         x = item_count
         if x > maximum:
@@ -20,6 +20,16 @@ def give_item_to_player(player_protocol, item, count=1):
         item_packet = build_packet(packets.Packets.GIVE_ITEM, packets.give_item_write(item, x + 1))
         player_protocol.transport.write(item_packet)
         item_count -= x
+
+
+def recursive_dictionary_update(d, u):
+    for k, v in u.iteritems():
+        if isinstance(v, collections.Mapping):
+            r = recursive_dictionary_update(d.get(k, {}), v)
+            d[k] = r
+        else:
+            d[k] = u[k]
+    return d
 
 
 def build_packet(packet_type, data):

@@ -83,7 +83,7 @@ variant_variant = Struct("data",
                                          lambda: Variant(""))))
 
 
-class dict_variant(Construct):
+class DictVariant(Construct):
     def _parse(self, stream, context):
         l = VLQ("").parse_stream(stream)
         c = {}
@@ -110,4 +110,4 @@ class Variant(Construct):
         elif x == 6:
             return variant_variant.parse_stream(stream)
         elif x == 7:
-            return dict_variant("").parse_stream(stream)
+            return DictVariant("").parse_stream(stream)
