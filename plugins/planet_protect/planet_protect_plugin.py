@@ -1,5 +1,6 @@
 from base_plugin import SimpleCommandPlugin
 from core_plugins.player_manager import UserLevels, permissions
+from packets import entity_create, EntityType, star_string
 
 
 class PlanetProtectPlugin(SimpleCommandPlugin):
@@ -27,12 +28,9 @@ class PlanetProtectPlugin(SimpleCommandPlugin):
             "MODIFY_TILE_LIST"]
         for n in ["on_" + n.lower() for n in bad_packets]:
             setattr(self, n, (lambda x: self.planet_check()))
-        if self.config.plugin_config == {}:
-            self.protected_planets = []
-        else:
-            self.protected_planets = self.config.plugin_config
-
-        self.player_manager = self.plugins['player_manager']
+        self.protected_planets = self.config.plugin_config.get("protected_planets", [])
+        self.blacklist = self.config.plugin_config.get("blacklist", [])
+        self.player_manager = self.plugins.get("player_manager", [])
 
     def planet_check(self):
         if self.protocol.player.planet in self.protected_planets and self.protocol.player.access_level < UserLevels.REGISTERED:
@@ -73,5 +71,15 @@ class PlanetProtectPlugin(SimpleCommandPlugin):
         self.save()
 
     def save(self):
-        self.config.plugin_config = self.protected_planets
+        self.config.plugin_config['protected_planets'] = self.protected_planets
+        self.config.plugin_config['blacklist'] = self.blacklist
 
+    def on_entity_create(self, data):
+        if self.protocol.player.planet in self.protected_planets and self.protocol.player.access_level <= UserLevels.MODERATOR:
+            entities = entity_create.parse(data.data)
+            for entity in entities.entity:
+                if entity.entity_type == EntityType.PROJECTILE:
+                    p_type = star_string("").parse(entity.entity)
+                    if p_type in self.blacklist:
+                        self.logger.info("Player %s attempted to use a prohibited projectile, %s, on a protected planet.", self.protocol.player.name, p_type)
+                        return False

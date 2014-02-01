@@ -2,6 +2,9 @@ import io
 import json
 import logging
 import inspect
+import sys
+from utility_functions import recursive_dictionary_update
+
 
 class Singleton(type):
     _instances = {}
@@ -21,16 +24,25 @@ class ConfigurationManager(object):
         try:
             with open("config/config.json.default", "r") as default_config:
                 self.config = json.load(default_config)
-        except:
-            self.logger.exception("Could not load the default configuration file.", exc_info=True)
-            raise
+        except IOError:
+            self.logger.critical("The configuration defaults file (config.json.default) doesn't exist! Shutting down.")
+            sys.exit()
+        except ValueError:
+            self.logger.critical("The configuration defaults file (config.json.default) contains invalid JSON. Please run it against a JSON linter, such as http://jsonlint.com. Shutting down." )
+            sys.exit()
         try:
             with open("config/config.json", "r+") as config:
-                self.config.update(json.load(config))
-        except:
-            self.logger.exception("Could not load the default configuration file.", exc_info=True)
-            raise
+                self.config = recursive_dictionary_update(self.config, json.load(config))
+        except IOError:
+            self.logger.warning("The configuration file (config.json) doesn't exist! Creating one from defaults.")
+            with open("config/config.json", "w") as f:
+                json.dump(self.config, f)
+        except ValueError:
+            self.logger.critical("The configuration file (config.json) contains invalid JSON. Please run it against a JSON linter, such as http://jsonlint.com. Shutting down.")
+            sys.exit()
+
         self.logger.debug("Created configuration manager.")
+        self.save()
 
     def save(self):
         try:
