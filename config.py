@@ -80,12 +80,12 @@ class ConfigurationManager(object):
                 self.logger.error("Couldn't find configuration option %s in configuration file.", item)
                 raise AttributeError
 
+
     def __setattr__(self, key, value):
         if key == "config":
             super(ConfigurationManager, self).__setattr__(key, value)
         elif key == "plugin_config":
             caller = inspect.stack()[1][0].f_locals["self"].__class__.name
-
             self.config["plugin_config"][caller] = value
         else:
             self.config[key] = value

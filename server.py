@@ -17,21 +17,14 @@ from twisted.internet.task import LoopingCall
 from config import ConfigurationManager
 from packet_stream import PacketStream
 import packets
-from plugin_manager import PluginManager, route
+from plugin_manager import PluginManager, route, FatalPluginError
 from utility_functions import build_packet
 
-VERSION = "1.2.0"
+VERSION = "1.2.1"
 TRACE = False
 TRACE_LVL = 9
-
-logging.addLevelName(TRACE_LVL, "TRACE")
-
-
-def trace(self, message, *args, **kws):
-    self._log(TRACE_LVL, message, args, **kws)
-
-
-logging.Logger.trace = trace
+logging.addLevelName(9, "TRACE")
+logging.Logger.trace = lambda s, m, *a, **k: s._log(TRACE_LVL, m, a, **k)
 
 
 class StarryPyServerProtocol(Protocol):
@@ -534,11 +527,15 @@ class StarryPyServerFactory(ServerFactory):
         self.config = ConfigurationManager()
         self.protocol.factory = self
         self.protocols = {}
-        self.plugin_manager = PluginManager(factory=self)
+        try:
+            self.plugin_manager = PluginManager(factory=self)
+        except FatalPluginError:
+            logger.critical("Shutting Down.")
+            sys.exit()
         self.plugin_manager.activate_plugins()
         self.reaper = LoopingCall(self.reap_dead_protocols)
         self.reaper.start(self.config.reap_time)
-        logger.info("Listening on port %d" % self.config.bind_port)
+        logger.debug("Factory created, endpoint of port %d" % self.config.bind_port)
 
     def stopFactory(self):
         """
@@ -625,13 +622,13 @@ class UDPProxy(DatagramProtocol):
 
 if __name__ == '__main__':
     logger = logging.getLogger('starrypy')
+    logger.setLevel(9)
     if TRACE:
         trace_logger = logging.FileHandler("trace.log")
         trace_logger.setLevel("TRACE")
         trace_logger.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
         logger.addHandler(trace_logger)
-    logger.trace("Initialized trace logger.")
-    logger.setLevel(9)
+        logger.trace("Initialized trace logger.")
     fh_d = logging.FileHandler("debug.log")
     fh_d.setLevel(logging.DEBUG)
     fh_w = logging.FileHandler("server.log")
@@ -673,6 +670,7 @@ if __name__ == '__main__':
     except CannotListenError:
         logger.critical("Cannot listen on TCP port %d. Exiting.", factory.config.bind_port)
         sys.exit()
+    logger.info("Listening on port %s" % factory.config.bind_port)
     try:
         reactor.listenUDP(config.bind_port, UDPProxy())
     except CannotListenError:

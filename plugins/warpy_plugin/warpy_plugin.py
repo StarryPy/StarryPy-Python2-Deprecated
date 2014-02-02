@@ -90,9 +90,6 @@ class Warpy(SimpleCommandPlugin):
         x = int(location.pop())
         sector = location.pop()
         move_ship_to_coords(protocol, sector, x, y, z, planet, satellite)
-        protocol.send_chat_message(
-            "You have been moved to a different planet by %s" % self.protocol.player.colored_name(
-                self.config.colors))
 
     def move_own_ship_to_player(self, player_name):
         t = self.player_manager.get_logged_in_by_name(player_name)

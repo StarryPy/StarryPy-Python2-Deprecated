@@ -93,6 +93,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
         except:
             self.player_manager.session.rollback()
             raise
+
     @permissions(UserLevels.MODERATOR)
     def make_registered(self, player):
         player.access_level = UserLevels.REGISTERED
@@ -178,7 +179,8 @@ class UserCommandPlugin(SimpleCommandPlugin):
                 self.protocol.send_chat_message("Please check your syntax. %s" % str(e))
                 return
             except AttributeError:
-                self.protocol.send_chat_message("Please check that the username you are referencing exists. If it has spaces, please surround it by quotes.")
+                self.protocol.send_chat_message(
+                    "Please check that the username you are referencing exists. If it has spaces, please surround it by quotes.")
                 return
             except:
                 self.protocol.send_chat_message("An unknown error occured. %s" % str(e))

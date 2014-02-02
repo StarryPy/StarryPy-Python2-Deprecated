@@ -87,7 +87,9 @@ class MutableDict(Mutable, dict):
         dict.__delitem__(self, key)
         self.changed()
 
+
 MutableDict.associate_with(JSONEncodedDict)
+
 
 class Player(Base):
     __tablename__ = 'players'

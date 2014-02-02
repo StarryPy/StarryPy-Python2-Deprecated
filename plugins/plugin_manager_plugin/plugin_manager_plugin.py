@@ -78,5 +78,6 @@ class PluginManagerPlugin(SimpleCommandPlugin):
                 if f.level <= self.protocol.player.access_level:
                     available.append(name)
             available.sort(key=str.lower)
-            self.protocol.send_chat_message("Available commands: %s\nAlso try /help command" % ", ".join(available))
+            self.protocol.send_chat_message(
+                "Available commands: %s\nAlso try /help command" % ", ".join(available))
             return True

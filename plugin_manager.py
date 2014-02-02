@@ -31,10 +31,12 @@ class MissingDependency(PluginNotFound):
     of a plugin.
     """
 
+
 class UnresolvedOrCircularDependencyError(Exception):
     """
     Raised whenever there is a circular dependency detected in the loading of of plugins.
     """
+
 
 class PluginManager(object):
     logger = logging.getLogger('starrypy.plugin_manager.PluginManager')
@@ -79,7 +81,8 @@ class PluginManager(object):
             try:
                 mod = __import__(name, globals(), locals(), [], 0)
                 for _, plugin in inspect.getmembers(mod, inspect.isclass):
-                    if issubclass(plugin, self.base_class) and plugin is not self.base_class and plugin not in seen_plugins:
+                    if issubclass(plugin,
+                                  self.base_class) and plugin is not self.base_class and plugin not in seen_plugins:
                         plugin.config = self.config
                         plugin.factory = self.factory
                         plugin.active = False
@@ -92,8 +95,8 @@ class PluginManager(object):
                 self.logger.critical("Import error for %s", name)
                 sys.exit()
         try:
-            dependencies = {x.name:set(x.depends) for x in seen_plugins}
-            classes = {x.name:x for x in seen_plugins}
+            dependencies = {x.name: set(x.depends) for x in seen_plugins}
+            classes = {x.name: x for x in seen_plugins}
             while len(dependencies) > 0:
                 ready = [x for x, d in dependencies.iteritems() if len(d) == 0]
                 if len(ready) == 0:
@@ -101,12 +104,13 @@ class PluginManager(object):
                     for n, d in dependencies.iteritems():
                         for dep in d:
                             ex.append("%s->%s" % (n, dep))
-                    raise UnresolvedOrCircularDependencyError("Unresolved or circular dependencies found:\n%s" % "\n".join(ex))
+                    raise UnresolvedOrCircularDependencyError(
+                        "Unresolved or circular dependencies found:\n%s" % "\n".join(ex))
                 for name in ready:
                     self.plugins[name] = classes[name]()
                     self.load_order.append(name)
                     self.logger.debug("Instantiated plugin '%s'" % name)
-                    del(dependencies[name])
+                    del (dependencies[name])
                 for name, depends in dependencies.iteritems():
                     to_load = depends & set(self.plugins.iterkeys())
                     dependencies[name] = dependencies[name].difference(set(self.plugins.iterkeys()))
@@ -132,7 +136,7 @@ class PluginManager(object):
 
     def activate_plugins(self):
         for plugin in [self.plugins[x] for x in self.load_order]:
-            if plugin.auto_activate:
+            if self.config.config['plugin_config'][plugin.name]['auto_activate']:
                 try:
                     plugin.activate()
                 except FatalPluginError as e:

@@ -80,5 +80,7 @@ class PlanetProtectPlugin(SimpleCommandPlugin):
                 if entity.entity_type == EntityType.PROJECTILE:
                     p_type = star_string("").parse(entity.entity)
                     if p_type in self.blacklist:
-                        self.logger.info("Player %s attempted to use a prohibited projectile, %s, on a protected planet.", self.protocol.player.name, p_type)
+                        self.logger.info(
+                            "Player %s attempted to use a prohibited projectile, %s, on a protected planet.",
+                            self.protocol.player.name, p_type)
                         return False

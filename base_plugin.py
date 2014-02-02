@@ -21,6 +21,12 @@ class BasePlugin(object):
     depends = []
     auto_activate = True
 
+    def __init__(self):
+        plugin_config = self.config.plugin_config
+        if 'auto_activate' not in plugin_config:
+            plugin_config['auto_activate'] = self.auto_activate
+        self.config.plugin_config = plugin_config
+
     def activate(self):
         """
         Called when the plugins are activated, do any setup work here.
