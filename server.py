@@ -534,6 +534,7 @@ class StarryPyServerFactory(ServerFactory):
         :return: None
         """
         self.config.save()
+        self.plugin_manager.die()
 
     def broadcast(self, text, channel=1, world='', name=''):
         """
