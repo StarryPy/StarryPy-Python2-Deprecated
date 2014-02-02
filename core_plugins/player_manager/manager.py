@@ -65,16 +65,12 @@ class Player(Base):
     planet = Column(String)
     on_ship = Column(Boolean)
     muted = Column(Boolean)
-    afk = Column(Boolean)
 
     ips = relationship("IPAddress", order_by="IPAddress.id", backref="players")
 
     def colored_name(self, colors):
         color = colors[str(UserLevels(self.access_level)).split(".")[1].lower()]
-        name = self.name
-        if self.afk:
-            name = "(AFK)" + name
-        return color + name + colors["default"]
+        return color + self.name + colors["default"]
 
     def storage(self, store=None):
         caller = inspect.stack()[1][0].f_locals["self"].__class__.name

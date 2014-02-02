@@ -1,1 +1,0 @@
-from afk_plugin import AFKPlugin
