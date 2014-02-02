@@ -20,7 +20,7 @@ import packets
 from plugin_manager import PluginManager, route, FatalPluginError
 from utility_functions import build_packet
 
-VERSION = "1.2.1"
+VERSION = "1.2.2"
 TRACE = False
 TRACE_LVL = 9
 logging.addLevelName(9, "TRACE")
