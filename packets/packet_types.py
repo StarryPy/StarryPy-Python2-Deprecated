@@ -1,6 +1,6 @@
 from construct import *
 from enum import IntEnum
-from data_types import SignedVLQ, VLQ, Variant, star_string
+from data_types import SignedVLQ, VLQ, Variant, star_string, DictVariant
 
 
 class Direction(IntEnum):
@@ -56,6 +56,18 @@ class Packets(IntEnum):
     STATUS_EFFECT_REQUEST = 44
     UPDATE_WORLD_PROPERTIES = 45
     HEARTBEAT = 46
+
+
+class EntityType(IntEnum):
+    END = -1
+    PLAYER = 0
+    MONSTER = 1
+    OBJECT = 2
+    ITEMDROP = 3
+    PROJECTILE = 4
+    PLANT = 5
+    PLANTDROP = 6
+    EFFECT = 7
 
 
 class PacketOutOfOrder(Exception):
@@ -164,6 +176,7 @@ warp_command_write = lambda t, sector=u'', x=0, y=0, z=0, planet=0, satellite=0,
         ),
         player=player))
 
+
 world_start = lambda name="world_start": Struct(name,
                                                 VLQ("planet_size"),
                                                 Bytes("planet", lambda ctx: ctx.planet_size),
@@ -206,3 +219,13 @@ update_world_properties_write = lambda dictionary: update_world_properties().bui
     Container(
         count=len(dictionary),
         properties=[Container(key=k, value=Container(type="SVLQ", data=v)) for k, v in dictionary.items()]))
+
+entity_create = Struct("entity_create",
+                       GreedyRange(
+                           Struct("entity",
+                                  Byte("entity_type"),
+                                  VLQ("entity_size"),
+                                  String("entity", lambda ctx: ctx.entity_size),
+                                  SignedVLQ("entity_id")
+                       )))
+projectile = DictVariant("projectile")

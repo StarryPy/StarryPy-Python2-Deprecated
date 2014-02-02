@@ -3,6 +3,7 @@ from core_plugins.player_manager import permissions, UserLevels
 from packets import warp_command_write, Packets
 from utility_functions import build_packet, move_ship_to_coords, extract_name
 
+
 class Warpy(SimpleCommandPlugin):
     """
     Plugin that allows privileged players to warp around as they like.
@@ -27,7 +28,7 @@ class Warpy(SimpleCommandPlugin):
         except ValueError:
             self.protocol.send_chat_message(self.warp.__doc__)
             return
-        if rest is None or len(rest)==0:
+        if rest is None or len(rest) == 0:
             self.warp_self_to_player([first_name])
         else:
             try:
@@ -42,42 +43,35 @@ class Warpy(SimpleCommandPlugin):
         """Move your ship to another player or specific coordinates. Syntax: /move_ship [player_name] OR /move_ship [from player] [to player]"""
         try:
             first_name, rest = extract_name(location)
-            if rest is None:
+            print first_name
+            print rest
+            if not rest:
                 self.move_own_ship_to_player(first_name)
             else:
                 self.move_player_ship_to_other(first_name, extract_name(rest)[0])
         except ValueError:
             self.protocol.send_chat_message(self.move_ship.__doc__)
 
-
     def warp_self_to_player(self, name):
         self.logger.debug("Warp command called by %s to %s", self.protocol.player.name, name)
         name = " ".join(name)
-        target_player = self.player_manager.get_logged_in_by_name(name)
-        if target_player is not None:
-            if target_player is not self.protocol.player:
-                warp_packet = build_packet(Packets.WARP_COMMAND,
-                                           warp_command_write(t="WARP_OTHER_SHIP",
-                                                              player=target_player.name.encode('utf-8')))
-            else:
-                warp_packet = build_packet(Packets.WARP_COMMAND,
-                                           warp_command_write(t='WARP_UP'))
-            self.protocol.client_protocol.transport.write(warp_packet)
-        else:
-            self.protocol.send_chat_message("No player by the name %s found." % name)
-            self.protocol.send_chat_message(self.warp.__doc__)
+        self.warp_player_to_player(self.protocol.player.name, name)
 
     def warp_player_to_player(self, from_string, to_string):
-        self.logger.debug("Warp player-to-player command called by %s: %s to %s", self.protocol.player.name, from_string, to_string)
+        self.logger.debug("Warp player-to-player command called by %s: %s to %s", self.protocol.player.name,
+                          from_string, to_string)
         from_player = self.player_manager.get_logged_in_by_name(from_string)
         to_player = self.player_manager.get_logged_in_by_name(to_string)
+        print from_player
+        print to_player
         if from_player is not None:
             if to_player is not None:
-                from_protocol = self.protocol.factory.protocols[from_player.protocol]
+                from_protocol = self.factory.protocols[from_player.protocol]
                 if from_player is not to_player:
                     warp_packet = build_packet(Packets.WARP_COMMAND,
                                                warp_command_write(t="WARP_OTHER_SHIP",
                                                                   player=to_player.name.encode('utf-8')))
+                    print warp_packet
                 else:
                     warp_packet = build_packet(Packets.WARP_COMMAND,
                                                warp_command_write(t='WARP_UP'))
@@ -103,7 +97,15 @@ class Warpy(SimpleCommandPlugin):
                 self.config.colors))
 
     def move_own_ship_to_player(self, player_name):
-        pass
+        t = self.player_manager.get_logged_in_by_name(player_name)
+        if t is None:
+            raise ValueError
+        if t.planet == u"":
+            self.protocol.send_chat_message(
+                "Sorry, we don't have a tracked planet location for %s. Perhaps they haven't warped down to a planet since logging in?" % t.name)
+            return
+        self.move_player_ship(self.protocol, t.planet.split(":"))
+
 
     def move_player_ship_to_other(self, from_player, to_player):
         f = self.player_manager.get_logged_in_by_name(from_player)
@@ -111,7 +113,8 @@ class Warpy(SimpleCommandPlugin):
         if f is None or t is None:
             raise ValueError
         if t.planet == u"":
-            self.protocol.send_chat_message("Sorry, we don't have a tracked planet location for %s. Perhaps they haven't warped to a planet since logging in?" % to_player)
+            self.protocol.send_chat_message(
+                "Sorry, we don't have a tracked planet location for %s. Perhaps they haven't warped to a planet since logging in?" % to_player)
             return
-        self.move_player_ship(self.protocol.factory.protocols[f.protocol], t.planet.split(":"))
+        self.move_player_ship(self.factory.protocols[f.protocol], t.planet.split(":"))
 

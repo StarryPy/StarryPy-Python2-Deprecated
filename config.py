@@ -1,6 +1,10 @@
+import io
 import json
 import logging
 import inspect
+import sys
+from utility_functions import recursive_dictionary_update
+
 
 class Singleton(type):
     _instances = {}
@@ -18,19 +22,32 @@ class ConfigurationManager(object):
 
     def __init__(self):
         try:
+            with open("config/config.json.default", "r") as default_config:
+                self.config = json.load(default_config)
+        except IOError:
+            self.logger.critical("The configuration defaults file (config.json.default) doesn't exist! Shutting down.")
+            sys.exit()
+        except ValueError:
+            self.logger.critical("The configuration defaults file (config.json.default) contains invalid JSON. Please run it against a JSON linter, such as http://jsonlint.com. Shutting down." )
+            sys.exit()
+        try:
             with open("config/config.json", "r+") as config:
-                self.config = json.load(config)
-                if not "plugin_config" in self.config:
-                    self.config["plugin_config"] = {}
-        except Exception as e:
-            self.logger.critical("Tried to read the configuration file, failed.\n%s", str(e))
-            raise
+                self.config = recursive_dictionary_update(self.config, json.load(config))
+        except IOError:
+            self.logger.warning("The configuration file (config.json) doesn't exist! Creating one from defaults.")
+            with open("config/config.json", "w") as f:
+                json.dump(self.config, f)
+        except ValueError:
+            self.logger.critical("The configuration file (config.json) contains invalid JSON. Please run it against a JSON linter, such as http://jsonlint.com. Shutting down.")
+            sys.exit()
+
         self.logger.debug("Created configuration manager.")
+        self.save()
 
     def save(self):
         try:
-            with open("config/config.json", "w") as config:
-                config.write(json.dumps(self.config, indent=4, separators=(',', ': '), sort_keys=True))
+            with io.open("config/config.json", "w", encoding="utf-8") as config:
+                config.write(json.dumps(self.config, indent=4, separators=(',', ': '), sort_keys=True, ensure_ascii = False))
         except Exception as e:
             self.logger.critical("Tried to save the configuration file, failed.\n%s", str(e))
             raise
@@ -38,6 +55,7 @@ class ConfigurationManager(object):
     def __getattr__(self, item):
         if item == "config":
             return super(ConfigurationManager, self).__getattribute__(item)
+
 
         elif item == "plugin_config":
             caller = inspect.stack()[1][0].f_locals["self"].__class__.name
@@ -59,6 +77,7 @@ class ConfigurationManager(object):
 
         elif key == "plugin_config":
             caller = inspect.stack()[1][0].f_locals["self"].__class__.name
+
             self.config["plugin_config"][caller] = value
 
         else:
