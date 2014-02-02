@@ -8,7 +8,7 @@ import datetime
 
 import construct
 from twisted.internet import reactor
-from twisted.internet.protocol import ClientFactory, ServerFactory, Protocol, connectionDone
+from twisted.internet.protocol import ClientFactory, ServerFactory, Protocol, connectionDone, DatagramProtocol
 from construct import Container
 import construct.core
 from twisted.internet.task import LoopingCall
@@ -446,6 +446,7 @@ class StarryPyServerProtocol(Protocol):
     def connectionFailed(self, *args, **kwargs):
         self.connectionLost()
 
+
 class ClientProtocol(Protocol):
     """
     The protocol class which handles the connection to the Starbound server.
@@ -506,6 +507,7 @@ class ClientProtocol(Protocol):
         else:
             self.packet_stream += data
 
+
 class StarryPyServerFactory(ServerFactory):
     """
     Factory which creates `StarryPyServerProtocol` instances.
@@ -524,6 +526,7 @@ class StarryPyServerFactory(ServerFactory):
         self.plugin_manager.activate_plugins()
         self.reaper = LoopingCall(self.reap_dead_protocols)
         self.reaper.start(self.config.reap_time)
+        logger.info("Listening on port %d" % self.config.bind_port)
 
     def stopFactory(self):
         """
@@ -565,12 +568,12 @@ class StarryPyServerFactory(ServerFactory):
         start_time = datetime.datetime.now()
         for protocol in self.protocols.itervalues():
             if (
-                protocol.packet_stream.last_received_timestamp - start_time).total_seconds() > self.config.reap_time:
+                    protocol.packet_stream.last_received_timestamp - start_time).total_seconds() > self.config.reap_time:
                 protocol.connectionLost()
                 count += 1
                 continue
             if protocol.client_protocol is not None and (
-                protocol.client_protocol.packet_stream.last_received_timestamp - start_time).total_seconds() > self.config.reap_time:
+                    protocol.client_protocol.packet_stream.last_received_timestamp - start_time).total_seconds() > self.config.reap_time:
                 protocol.connectionLost()
                 count += 1
         if count == 1:
@@ -594,6 +597,13 @@ class StarboundClientFactory(ClientFactory):
         protocol = ClientFactory.buildProtocol(self, address)
         protocol.server_protocol = self.server_protocol
         return protocol
+
+
+class UDPProxy(DatagramProtocol):
+    client = None
+
+    def datagramReceived(self, datagram, addr):
+        self.client.transport.write(datagram, (self.config.upstream_hostname, self.config.upstream_port))
 
 
 if __name__ == '__main__':
@@ -621,7 +631,7 @@ if __name__ == '__main__':
         result = sock.connect_ex((config.upstream_hostname, config.upstream_port))
         if result != 0:
             logger.critical("The starbound server is not connectable at the address %s:%d." % (
-            config.upstream_hostname, config.upstream_port))
+                config.upstream_hostname, config.upstream_port))
             logger.critical(
                 "Please ensure that you are running starbound_server on the correct port and that is reflected in the StarryPy configuration.")
             sys.exit()
@@ -631,4 +641,5 @@ if __name__ == '__main__':
 
     factory = StarryPyServerFactory()
     reactor.listenTCP(factory.config.bind_port, factory)
+    reactor.listenUDP(config.bind_port, UDPProxy())
     reactor.run()

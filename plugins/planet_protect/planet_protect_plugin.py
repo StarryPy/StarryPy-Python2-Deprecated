@@ -24,7 +24,6 @@ class PlanetProtectPlugin(SimpleCommandPlugin):
             "DAMAGE_TILE",
             "DAMAGE_TILE_GROUP",
             "REQUEST_DROP",
-            "ENTITY_INTERACT",
             "MODIFY_TILE_LIST"]
         for n in ["on_" + n.lower() for n in bad_packets]:
             setattr(self, n, (lambda x: self.planet_check()))
@@ -33,7 +32,7 @@ class PlanetProtectPlugin(SimpleCommandPlugin):
         self.player_manager = self.plugins.get("player_manager", [])
 
     def planet_check(self):
-        if self.protocol.player.planet in self.protected_planets and self.protocol.player.access_level < UserLevels.REGISTERED:
+        if not self.protocol.player.on_ship and self.protocol.player.planet in self.protected_planets and self.protocol.player.access_level < UserLevels.REGISTERED:
             return False
         else:
             return True

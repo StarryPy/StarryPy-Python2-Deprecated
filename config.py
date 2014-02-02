@@ -74,11 +74,10 @@ class ConfigurationManager(object):
     def __setattr__(self, key, value):
         if key == "config":
             super(ConfigurationManager, self).__setattr__(key, value)
-
         elif key == "plugin_config":
             caller = inspect.stack()[1][0].f_locals["self"].__class__.name
 
             self.config["plugin_config"][caller] = value
-
         else:
             self.config[key] = value
+        self.save()
