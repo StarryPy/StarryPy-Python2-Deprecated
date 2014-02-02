@@ -178,11 +178,8 @@ warp_command_write = lambda t, sector=u'', x=0, y=0, z=0, planet=0, satellite=0,
 
 
 world_start = lambda name="world_start": Struct(name,
-                                                VLQ("planet_size"),
-                                                Bytes("planet", lambda ctx: ctx.planet_size),
-                                                VLQ("world_structure_size"),
-                                                Bytes("world_structure",
-                                                      lambda ctx: ctx.world_structure_size),
+                                                Variant("planet"),
+                                                Variant("world_structure"),
                                                 VLQ("sky_size"),
                                                 Bytes("sky",
                                                       lambda ctx: ctx.sky_size),
@@ -191,8 +188,8 @@ world_start = lambda name="world_start": Struct(name,
                                                 BFloat32("spawn_x"),
                                                 BFloat32("spawn_y"),
                                                 update_world_properties("world_properties"),
-                                                SBInt32("unknown1"),
-                                                Flag("unknown2"))
+                                                UBInt32("client_id"),
+                                                Flag("local"))
 
 world_stop = lambda name="world_stop": Struct(name,
                                               star_string("status"))
