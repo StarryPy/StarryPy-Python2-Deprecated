@@ -1,6 +1,6 @@
 from construct import *
 from enum import IntEnum
-from data_types import SignedVLQ, VLQ, Variant, star_string, DictVariant
+from data_types import SignedVLQ, VLQ, Variant, star_string, DictVariant,  StarByteArray
 
 
 class Direction(IntEnum):
@@ -178,21 +178,15 @@ warp_command_write = lambda t, sector=u'', x=0, y=0, z=0, planet=0, satellite=0,
 
 
 world_start = lambda name="world_start": Struct(name,
-                                                VLQ("planet_size"),
-                                                Bytes("planet", lambda ctx: ctx.planet_size),
-                                                VLQ("world_structure_size"),
-                                                Bytes("world_structure",
-                                                      lambda ctx: ctx.world_structure_size),
-                                                VLQ("sky_size"),
-                                                Bytes("sky",
-                                                      lambda ctx: ctx.sky_size),
-                                                VLQ("server_weather_size"),
-                                                Bytes("server_weather", lambda ctx: ctx.server_weather_size),
+                                                Variant("planet"),
+                                                Variant("world_structure"),
+                                                StarByteArray("sky_structure"),
+                                                StarByteArray("weather_data"),
                                                 BFloat32("spawn_x"),
                                                 BFloat32("spawn_y"),
-                                                update_world_properties("world_properties"),
-                                                SBInt32("unknown1"),
-                                                Flag("unknown2"))
+                                                Variant("world_properties"),
+                                                UBInt32("client_id"),
+                                                Flag("local_interpolation"))
 
 world_stop = lambda name="world_stop": Struct(name,
                                               star_string("status"))

@@ -84,8 +84,8 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
                 self.protocol.transport.getPeer().host))
 
     def after_world_start(self, data):
-        world_start = packets.Variant("").parse(data.data)
-        coords = world_start['config']['coordinate']
+        world_start = packets.world_start().parse(data.data)
+        coords = world_start.planet['config']['coordinate']
         if coords is not None:
             parent_system = coords['parentSystem']
             location = parent_system['location']
