@@ -178,10 +178,10 @@ class PluginManager(object):
         :rtype : BasePlugin subclassed instance.
         :raises : PluginNotFound
         """
-        for plugin in self.plugins:
-            if plugin.name.lower() == name.lower():
-                return plugin
-        raise PluginNotFound("No plugin with name=%s found." % name.lower())
+        try:
+            return self.plugins[name.lower()]
+        except KeyError:
+            raise PluginNotFound("No plugin with name=%s found." % name.lower())
 
     def die(self):
         for plugin in self.plugins.itervalues():

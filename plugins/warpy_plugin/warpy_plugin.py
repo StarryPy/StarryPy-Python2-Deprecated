@@ -25,16 +25,16 @@ class Warpy(SimpleCommandPlugin):
             return
         try:
             first_name, rest = extract_name(name)
-        except ValueError:
-            self.protocol.send_chat_message(self.warp.__doc__)
+        except ValueError as e:
+            self.protocol.send_chat_message(str(e))
             return
         if rest is None or len(rest) == 0:
             self.warp_self_to_player([first_name])
         else:
             try:
                 second_name = extract_name(rest)[0]
-            except ValueError:
-                self.protocol.send_chat_message(self.warp.__doc__)
+            except ValueError as e:
+                self.protocol.send_chat_message(str(e))
                 return
             self.warp_player_to_player(first_name, second_name)
 
@@ -49,8 +49,11 @@ class Warpy(SimpleCommandPlugin):
                 self.move_own_ship_to_player(first_name)
             else:
                 self.move_player_ship_to_other(first_name, extract_name(rest)[0])
-        except ValueError:
+        except ValueError as e:
+            self.protocol.send_chat_message(str(e))
             self.protocol.send_chat_message(self.move_ship.__doc__)
+        except AttributeError:
+            self.protocol.send_chat_message("Couldn't find one or both of the users you specified.")
 
     def warp_self_to_player(self, name):
         self.logger.debug("Warp command called by %s to %s", self.protocol.player.name, name)
