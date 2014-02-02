@@ -20,7 +20,7 @@ from plugin_manager import PluginManager, route
 from utility_functions import build_packet
 
 VERSION = "1.2.0"
-
+TRACE = False
 
 class StarryPyServerProtocol(Protocol):
     """
@@ -614,6 +614,7 @@ if __name__ == '__main__':
     fh_d.setLevel(logging.DEBUG)
     fh_w = logging.FileHandler("server.log")
     fh_w.setLevel(logging.INFO)
+    trace_logger = logging.FileHandler("trace.log")
     sh = logging.StreamHandler(sys.stdout)
     sh.setLevel(logging.INFO)
     logger.addHandler(sh)

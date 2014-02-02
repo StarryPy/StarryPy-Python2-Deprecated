@@ -1,6 +1,6 @@
 from twisted.internet import reactor
 from base_plugin import SimpleCommandPlugin, BasePlugin
-from core_plugins.player_manager import permissions, UserLevels
+from plugins.player_manager import permissions, UserLevels
 from packets import chat_sent
 from utility_functions import give_item_to_player, extract_name
 
@@ -88,22 +88,37 @@ class UserCommandPlugin(SimpleCommandPlugin):
     @permissions(UserLevels.OWNER)
     def make_guest(self, player):
         player.access_level = UserLevels.GUEST
-        self.player_manager.session.commit()
-
+        try:
+            self.player_manager.session.commit()
+        except:
+            self.player_manager.session.rollback()
+            raise
     @permissions(UserLevels.MODERATOR)
     def make_registered(self, player):
         player.access_level = UserLevels.REGISTERED
-        self.player_manager.session.commit()
+        try:
+            self.player_manager.session.commit()
+        except:
+            self.player_manager.session.rollback()
+            raise
 
     @permissions(UserLevels.ADMIN)
     def make_mod(self, player):
         player.access_level = UserLevels.MODERATOR
-        self.player_manager.session.commit()
+        try:
+            self.player_manager.session.commit()
+        except:
+            self.player_manager.session.rollback()
+            raise
 
     @permissions(UserLevels.OWNER)
     def make_admin(self, player):
         player.access_level = UserLevels.ADMIN
-        self.player_manager.session.commit()
+        try:
+            self.player_manager.session.commit()
+        except:
+            self.player_manager.session.rollback()
+            raise
 
     @permissions(UserLevels.MODERATOR)
     def kick(self, data):

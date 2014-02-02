@@ -1,5 +1,5 @@
 from base_plugin import SimpleCommandPlugin
-from core_plugins.player_manager import UserLevels, permissions
+from plugins.player_manager import UserLevels, permissions
 from packets import entity_create, EntityType, star_string
 
 

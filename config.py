@@ -23,7 +23,7 @@ class ConfigurationManager(object):
     def __init__(self):
         try:
             with open("config/config.json.default", "r") as default_config:
-                self.config = json.load(default_config)
+                default = json.load(default_config)
         except IOError:
             self.logger.critical("The configuration defaults file (config.json.default) doesn't exist! Shutting down.")
             sys.exit()
@@ -31,12 +31,20 @@ class ConfigurationManager(object):
             self.logger.critical("The configuration defaults file (config.json.default) contains invalid JSON. Please run it against a JSON linter, such as http://jsonlint.com. Shutting down." )
             sys.exit()
         try:
-            with open("config/config.json", "r+") as config:
-                self.config = recursive_dictionary_update(self.config, json.load(config))
+            with open("config/config.json", "r") as c:
+                config = json.load(c)
+                self.config = recursive_dictionary_update(default, config)
         except IOError:
             self.logger.warning("The configuration file (config.json) doesn't exist! Creating one from defaults.")
-            with open("config/config.json", "w") as f:
-                json.dump(self.config, f)
+            try:
+                with open("config/config.json", "w") as f:
+                    json.dump(default, f, indent=4, separators=(',', ': '), sort_keys=True, ensure_ascii = False)
+            except IOError:
+                self.logger.critical("Couldn't write a default configuration file. Please check that StarryPy has write access in the config/ directory.")
+                self.logger.critical("Exiting...")
+                sys.exit()
+            self.logger.warning("StarryPy will now exit. Please examine config.json and adjust the variables appropriately.")
+            sys.exit()
         except ValueError:
             self.logger.critical("The configuration file (config.json) contains invalid JSON. Please run it against a JSON linter, such as http://jsonlint.com. Shutting down.")
             sys.exit()
@@ -47,6 +55,7 @@ class ConfigurationManager(object):
     def save(self):
         try:
             with io.open("config/config.json", "w", encoding="utf-8") as config:
+                self.logger.warning("Writing configuration file.")
                 config.write(json.dumps(self.config, indent=4, separators=(',', ': '), sort_keys=True, ensure_ascii = False))
         except Exception as e:
             self.logger.critical("Tried to save the configuration file, failed.\n%s", str(e))

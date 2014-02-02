@@ -1,5 +1,5 @@
 from base_plugin import SimpleCommandPlugin
-from core_plugins.player_manager import permissions, UserLevels
+from plugins.player_manager import permissions, UserLevels
 from plugin_manager import PluginNotFound
 
 

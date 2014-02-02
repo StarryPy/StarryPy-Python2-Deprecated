@@ -14,7 +14,7 @@ class NewPlayerGreeter(BasePlugin):
 
     def after_connect_response(self, data):
         try:
-            my_storage = self.protocol.player.storage()
+            my_storage = self.protocol.player.storage
         except AttributeError:
             self.logger.debug("Tried to give item to non-existent protocol.")
             return

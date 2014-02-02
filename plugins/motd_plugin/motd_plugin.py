@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 from base_plugin import SimpleCommandPlugin
-from core_plugins.player_manager import permissions, UserLevels
+from plugins.player_manager import permissions, UserLevels
 
 
 class MOTDPlugin(SimpleCommandPlugin):

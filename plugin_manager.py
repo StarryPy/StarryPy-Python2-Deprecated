@@ -106,7 +106,7 @@ class PluginManager(object):
                 for name in ready:
                     self.plugins[name] = classes[name]()
                     self.load_order.append(name)
-                    self.logger.info("Instantiated plugin '%s'" % name)
+                    self.logger.debug("Instantiated plugin '%s'" % name)
                     del(dependencies[name])
                 for name, depends in dependencies.iteritems():
                     to_load = depends & set(self.plugins.iterkeys())
