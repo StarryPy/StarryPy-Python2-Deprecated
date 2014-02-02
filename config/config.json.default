@@ -15,7 +15,7 @@
     "logging_format_console": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     "logging_format_debugfile": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     "logging_format_logfile": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    "owner_uuid": "b07dbd8c1a681d71ef728161976b6fa5",
+    "owner_uuid": "!!--REPLACE THIS--!!",
     "passthrough": false,
     "player_db": "config/player.db",
     "plugin_config": {
