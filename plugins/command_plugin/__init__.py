@@ -1,1 +1,0 @@
-from command_plugin import CommandDispatchPlugin

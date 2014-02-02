@@ -93,7 +93,6 @@ class PluginManager(object):
                 sys.exit()
         try:
             dependencies = {x.name:set(x.depends) for x in seen_plugins}
-            print dependencies
             classes = {x.name:x for x in seen_plugins}
             while len(dependencies) > 0:
                 ready = [x for x, d in dependencies.iteritems() if len(d) == 0]
@@ -134,7 +133,11 @@ class PluginManager(object):
     def activate_plugins(self):
         for plugin in [self.plugins[x] for x in self.load_order]:
             if plugin.auto_activate:
-                plugin.activate()
+                try:
+                    plugin.activate()
+                except FatalPluginError as e:
+                    self.logger.critical("A plugin reported a fatal error. Error: %s", str(e))
+                    raise
 
     def deactivate_plugins(self):
         for plugin in [self.plugins[x] for x in reversed(self.load_order)]:
@@ -209,3 +212,7 @@ def route(func):
         logger.error("Deferred function failure. %s", f)
 
     return wrapped_function
+
+
+class FatalPluginError(Exception):
+    pass

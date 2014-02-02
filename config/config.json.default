@@ -121,6 +121,7 @@
     "port_check": true,
     "reap_time": 10,
     "server_connect_timeout": 5,
+    "starbound_path": "/opt/starbound/",
     "upstream_hostname": "localhost",
     "upstream_port": 21024
 }

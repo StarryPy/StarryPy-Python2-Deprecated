@@ -87,6 +87,7 @@ class MutableDict(Mutable, dict):
         dict.__delitem__(self, key)
         self.changed()
 
+MutableDict.associate_with(JSONEncodedDict)
 
 class Player(Base):
     __tablename__ = 'players'
@@ -99,7 +100,7 @@ class Player(Base):
     protocol = Column(String)
     client_id = Column(Integer)
     ip = Column(String)
-    plugin_storage = Column(MutableDict.as_mutable(JSONEncodedDict))
+    plugin_storage = Column(JSONEncodedDict, default=dict())
     planet = Column(String)
     on_ship = Column(Boolean)
     muted = Column(Boolean)
@@ -114,6 +115,8 @@ class Player(Base):
     @property
     def storage(self):
         caller = inspect.stack()[1][0].f_locals["self"].__class__.name
+        if self.plugin_storage is None:
+            self.plugin_storage = {}
         try:
             return self.plugin_storage[caller]
         except (ValueError, KeyError, TypeError):

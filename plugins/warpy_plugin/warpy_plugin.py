@@ -1,5 +1,5 @@
 from base_plugin import SimpleCommandPlugin
-from plugins.player_manager import permissions, UserLevels
+from plugins.core.player_manager import permissions, UserLevels
 from packets import warp_command_write, Packets
 from utility_functions import build_packet, move_ship_to_coords, extract_name
 
@@ -43,8 +43,6 @@ class Warpy(SimpleCommandPlugin):
         """Move your ship to another player or specific coordinates. Syntax: /move_ship [player_name] OR /move_ship [from player] [to player]"""
         try:
             first_name, rest = extract_name(location)
-            print first_name
-            print rest
             if not rest:
                 self.move_own_ship_to_player(first_name)
             else:
@@ -65,8 +63,6 @@ class Warpy(SimpleCommandPlugin):
                           from_string, to_string)
         from_player = self.player_manager.get_logged_in_by_name(from_string)
         to_player = self.player_manager.get_logged_in_by_name(to_string)
-        print from_player
-        print to_player
         if from_player is not None:
             if to_player is not None:
                 from_protocol = self.factory.protocols[from_player.protocol]
@@ -74,7 +70,6 @@ class Warpy(SimpleCommandPlugin):
                     warp_packet = build_packet(Packets.WARP_COMMAND,
                                                warp_command_write(t="WARP_OTHER_SHIP",
                                                                   player=to_player.name.encode('utf-8')))
-                    print warp_packet
                 else:
                     warp_packet = build_packet(Packets.WARP_COMMAND,
                                                warp_command_write(t='WARP_UP'))

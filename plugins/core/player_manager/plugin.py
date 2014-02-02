@@ -4,16 +4,16 @@ from construct import Container
 from twisted.internet.task import LoopingCall
 from twisted.words.ewords import AlreadyLoggedIn
 
-from base_plugin import BasePlugin
-from plugins.player_manager.manager import PlayerManager, Banned, Player
+from base_plugin import SimpleCommandPlugin
+from manager import PlayerManager, Banned, Player, permissions, UserLevels
 from packets import client_connect, connect_response
 import packets
 from utility_functions import build_packet, Planet
 
 
-class PlayerManagerPlugin(BasePlugin):
+class PlayerManagerPlugin(SimpleCommandPlugin):
     name = "player_manager"
-
+    commands = ["list_players", "delete_player"]
     def activate(self):
         super(PlayerManagerPlugin, self).activate()
         self.player_manager = PlayerManager(self.config)
@@ -101,3 +101,32 @@ class PlayerManagerPlugin(BasePlugin):
         if self.protocol.player.logged_in:
             self.logger.info("Player disconnected: %s", self.protocol.player.name)
             self.protocol.player.logged_in = False
+
+    @permissions(UserLevels.ADMIN)
+    def delete_player(self, data):
+        name = " ".join(data)
+        if self.player_manager.get_logged_in_by_name(name) is not None:
+            self.protocol.send_chat_message("That player is currently logged in. Refusing to delete logged in character.")
+            return False
+        else:
+            player = self.player_manager.get_by_name(name)
+            if player is None:
+                self.protocol.send_chat_message("Couldn't find a player named %s. Please check the spelling and try again." % name)
+                return False
+            self.player_manager.session.delete(player)
+            self.protocol.send_chat_message("Deleted player with name %s." % name)
+
+    @permissions(UserLevels.ADMIN)
+    def list_players(self, data):
+        if len(data) == 0:
+            self.format_player_response(self.player_manager.session.query(Player).all())
+        else:
+            rx = re.sub(r"[\*]", "%", " ".join(data))
+            self.format_player_response(self.player_manager.session.query(Player).filter(Player.name.like(rx)).all())
+
+    def format_player_response(self, players):
+        if len(players) <= 25:
+            self.protocol.send_chat_message("Results: %s" % "\n".join(["%s: %s" % (player.uuid, player.name) for player in players]))
+        else:
+            self.protocol.send_chat_message("Results: %s" % "\n".join(["%s: %s" % (player.uuid, player.name) for player in players[:25]]))
+            self.protocol.send_chat_message("And %d more. Narrow it down with SQL like syntax. Feel free to use a *, it will be replaced appropriately." % (len(players) - 25))

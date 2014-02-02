@@ -55,7 +55,7 @@ class ConfigurationManager(object):
     def save(self):
         try:
             with io.open("config/config.json", "w", encoding="utf-8") as config:
-                self.logger.warning("Writing configuration file.")
+                self.logger.debug("Writing configuration file.")
                 config.write(json.dumps(self.config, indent=4, separators=(',', ': '), sort_keys=True, ensure_ascii = False))
         except Exception as e:
             self.logger.critical("Tried to save the configuration file, failed.\n%s", str(e))

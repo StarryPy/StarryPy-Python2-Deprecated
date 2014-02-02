@@ -1,5 +1,5 @@
 from base_plugin import BasePlugin
-from plugins.player_manager import UserLevels
+from plugins.core.player_manager import UserLevels
 
 
 class BouncerPlugin(BasePlugin):

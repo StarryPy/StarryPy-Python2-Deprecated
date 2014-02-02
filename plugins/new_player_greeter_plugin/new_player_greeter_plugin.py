@@ -20,7 +20,6 @@ class NewPlayerGreeter(BasePlugin):
             return
         if not 'given_starter_items' in my_storage or my_storage['given_starter_items'] == "False":
             my_storage['given_starter_items'] = "True"
-            self.protocol.player.storage(my_storage)
             self.give_items()
             self.send_greetings()
             self.logger.info("Gave starter items to %s.", self.protocol.player.name)

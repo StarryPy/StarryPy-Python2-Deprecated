@@ -1,5 +1,5 @@
 from base_plugin import BasePlugin
-from plugins.player_manager import permissions, UserLevels
+from plugins.core.player_manager import permissions, UserLevels
 import packets
 
 
