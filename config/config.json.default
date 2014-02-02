@@ -120,6 +120,7 @@
     "plugin_path": "plugins",
     "port_check": true,
     "reap_time": 10,
+    "server_connect_timeout": 5,
     "upstream_hostname": "localhost",
     "upstream_port": 21024
 }
