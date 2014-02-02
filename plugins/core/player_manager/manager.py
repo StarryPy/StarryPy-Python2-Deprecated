@@ -1,20 +1,36 @@
 import datetime
-import json
 from functools import wraps
 import inspect
 import logging
+import json
 
 from enum import Enum
-
-from sqlalchemy.orm import Session, relationship, backref, object_session
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, \
-    ForeignKey, Boolean, func
+from sqlalchemy.ext.mutable import Mutable
+from sqlalchemy.orm import Session, relationship, backref
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey, Boolean, func
 from sqlalchemy.ext.declarative import declarative_base as sqla_declarative_base
 from twisted.words.ewords import AlreadyLoggedIn
+from sqlalchemy.types import TypeDecorator, VARCHAR
+
+
+class JSONEncodedDict(TypeDecorator):
+    impl = VARCHAR
+
+    def process_bind_param(self, value, dialect):
+        if value is not None:
+            value = json.dumps(value)
+        return value
+
+    def process_result_value(self, value, dialect):
+        if value is not None:
+            value = json.loads(value)
+        return value
+
 
 logger = logging.getLogger("starrypy.player_manager.manager")
 
 declarative_base = lambda cls: sqla_declarative_base(cls=cls)
+
 
 @declarative_base
 class Base(object):
@@ -24,17 +40,18 @@ class Base(object):
 
     @property
     def columns(self):
-        return [ c.name for c in self.__table__.columns ]
+        return [c.name for c in self.__table__.columns]
 
     @property
     def columnitems(self):
-        return dict([ (c, getattr(self, c)) for c in self.columns ])
+        return dict([(c, getattr(self, c)) for c in self.columns])
 
     def __repr__(self):
         return '{}({})'.format(self.__class__.__name__, self.columnitems)
 
     def as_dict(self):
         return self.columnitems
+
 
 class Banned(Exception):
     pass
@@ -43,12 +60,36 @@ class Banned(Exception):
 class IntEnum(int, Enum):
     pass
 
+
 class UserLevels(IntEnum):
     GUEST = 0
     REGISTERED = 1
     MODERATOR = 10
     ADMIN = 100
     OWNER = 1000
+
+
+class MutableDict(Mutable, dict):
+    @classmethod
+    def coerce(cls, key, value):
+        if not isinstance(value, MutableDict):
+            if isinstance(value, dict):
+                return MutableDict(value)
+            return Mutable.coerce(key, value)
+        else:
+            return value
+
+    def __setitem__(self, key, value):
+        dict.__setitem__(self, key, value)
+        self.changed()
+
+    def __delitem__(self, key):
+        dict.__delitem__(self, key)
+        self.changed()
+
+
+MutableDict.associate_with(JSONEncodedDict)
+
 
 class Player(Base):
     __tablename__ = 'players'
@@ -61,42 +102,39 @@ class Player(Base):
     protocol = Column(String)
     client_id = Column(Integer)
     ip = Column(String)
-    plugin_storage = Column(String)
+    plugin_storage = Column(JSONEncodedDict, default=dict())
     planet = Column(String)
     on_ship = Column(Boolean)
     muted = Column(Boolean)
-    afk = Column(Boolean)
 
     ips = relationship("IPAddress", order_by="IPAddress.id", backref="players")
 
     def colored_name(self, colors):
         color = colors[str(UserLevels(self.access_level)).split(".")[1].lower()]
         name = self.name
-        if self.afk:
-            name = "(AFK)" + name
         return color + name + colors["default"]
 
-    def storage(self, store=None):
+    @property
+    def storage(self):
         caller = inspect.stack()[1][0].f_locals["self"].__class__.name
+        if self.plugin_storage is None:
+            self.plugin_storage = {}
         try:
-            plugin_storage = json.loads(self.plugin_storage)
-        except (ValueError, TypeError):
-            plugin_storage = {}
+            return self.plugin_storage[caller]
+        except (ValueError, KeyError, TypeError):
+            self.plugin_storage[caller] = {}
+            return self.plugin_storage[caller]
 
-        if store is not None:
-            plugin_storage[caller] = store
-            self.plugin_storage = json.dumps(plugin_storage)
-            object_session(self).commit()
-        else:
-            try:
-                return plugin_storage[caller]
-            except (ValueError, KeyError, TypeError):
-                return {}
+    @storage.setter
+    def storage(self, store):
+        caller = inspect.stack()[1][0].f_locals["self"].__class__.name
+        self.plugin_storage[caller] = store
 
     def as_dict(self):
         d = super(Player, self).as_dict()
         d['plugin_storage'] = json.loads(d['plugin_storage'])
         return d
+
 
 class IPAddress(Base):
     __tablename__ = 'ips'
@@ -155,7 +193,11 @@ class PlayerManager(object):
             self.session.add(player)
         if uuid == self.config.owner_uuid:
             player.access_level = int(UserLevels.OWNER)
-        self.session.commit()
+        try:
+            self.session.commit()
+        except:
+            self.session.rollback()
+            raise
         return player
 
     def who(self):
@@ -165,16 +207,16 @@ class PlayerManager(object):
         return self.session.query(Player).filter(Player.logged_in == True,
                                                  func.lower(Player.name) == func.lower(name)).first()
 
-    def __del__(self):
-        self.session.commit()
-        self.session.close()
-
     def check_bans(self, ip):
         return self.session.query(Ban).filter_by(ip=ip).first() is not None
 
     def ban(self, ip):
         self.session.add(Ban(ip=ip))
-        self.session.commit()
+        try:
+            self.session.commit()
+        except:
+            self.session.rollback()
+            raise
 
     def get_by_name(self, name):
         return self.session.query(Player).filter(func.lower(Player.name) == func.lower(name)).first()

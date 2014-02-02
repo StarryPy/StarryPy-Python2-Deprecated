@@ -1,5 +1,5 @@
 from base_plugin import SimpleCommandPlugin
-from core_plugins.player_manager import permissions, UserLevels
+from plugins.core.player_manager import permissions, UserLevels
 from plugin_manager import PluginNotFound
 
 
@@ -17,11 +17,11 @@ class PluginManagerPlugin(SimpleCommandPlugin):
     def list_plugins(self, data):
         """Lists all currently loaded plugins. Syntax: /list_plugins"""
         self.protocol.send_chat_message("Currently loaded plugins: %s" % " ".join(
-            [plugin.name for plugin in self.plugin_manager.plugins if plugin.active]))
-        inactive = [plugin.name for plugin in self.plugin_manager.plugins if not plugin.active]
+            [plugin.name for plugin in self.plugin_manager.plugins.itervalues() if plugin.active]))
+        inactive = [plugin.name for plugin in self.plugin_manager.plugins.itervalues() if not plugin.active]
         if len(inactive) > 0:
             self.protocol.send_chat_message("Inactive plugins: %s" % " ".join(
-                [plugin.name for plugin in self.plugin_manager.plugins if not plugin.active]))
+                [plugin.name for plugin in self.plugin_manager.plugins.itervalues() if not plugin.active]))
 
     @permissions(UserLevels.ADMIN)
     def disable_plugin(self, data):
@@ -78,5 +78,6 @@ class PluginManagerPlugin(SimpleCommandPlugin):
                 if f.level <= self.protocol.player.access_level:
                     available.append(name)
             available.sort(key=str.lower)
-            self.protocol.send_chat_message("Available commands: %s\nAlso try /help command" % ", ".join(available))
+            self.protocol.send_chat_message(
+                "Available commands: %s\nAlso try /help command" % ", ".join(available))
             return True

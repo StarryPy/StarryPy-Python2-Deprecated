@@ -1,0 +1,1 @@
+from plugins.core.command_plugin.command_plugin import CommandDispatchPlugin

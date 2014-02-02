@@ -8,6 +8,7 @@ import datetime
 
 import construct
 from twisted.internet import reactor
+from twisted.internet.error import CannotListenError
 from twisted.internet.protocol import ClientFactory, ServerFactory, Protocol, connectionDone, DatagramProtocol
 from construct import Container
 import construct.core
@@ -16,10 +17,14 @@ from twisted.internet.task import LoopingCall
 from config import ConfigurationManager
 from packet_stream import PacketStream
 import packets
-from plugin_manager import PluginManager, route
+from plugin_manager import PluginManager, route, FatalPluginError
 from utility_functions import build_packet
 
-VERSION = "1.2.0"
+VERSION = "1.2.1"
+TRACE = False
+TRACE_LVL = 9
+logging.addLevelName(9, "TRACE")
+logging.Logger.trace = lambda s, m, *a, **k: s._log(TRACE_LVL, m, a, **k)
 
 
 class StarryPyServerProtocol(Protocol):
@@ -31,9 +36,11 @@ class StarryPyServerProtocol(Protocol):
         """
         """
         self.id = str(uuid4().hex)
+        logger.trace("Creating protocol with ID %s.", self.id)
         self.factory.protocols[self.id] = self
         self.player = None
         self.state = None
+        logger.trace("Trying to initialize configuration manager.")
         self.config = ConfigurationManager()
         self.parsing = False
         self.buffering_packet = None
@@ -88,7 +95,6 @@ class StarryPyServerProtocol(Protocol):
             packets.Packets.UPDATE_WORLD_PROPERTIES: self.update_world_properties,
             packets.Packets.HEARTBEAT: self.heartbeat,
         }
-        logger.info("Created StarryPyServerProtocol with UUID %s" % self.id)
         self.client_protocol = None
 
     def connectionMade(self):
@@ -103,10 +109,9 @@ class StarryPyServerProtocol(Protocol):
         self.plugin_manager = self.factory.plugin_manager
         self.packet_stream = PacketStream(self)
         self.packet_stream.direction = packets.Direction.CLIENT
-        logger.debug("Connection made in StarryPyServerProtocol with UUID %s" %
-                     self.id)
+        logger.info("Connection established from IP: %s" % self.transport.getPeer().host)
         reactor.connectTCP(self.config.upstream_hostname, self.config.upstream_port,
-                           StarboundClientFactory(self))
+                           StarboundClientFactory(self), timeout=self.config.server_connect_timeout)
 
     def string_received(self, packet):
         """
@@ -522,11 +527,15 @@ class StarryPyServerFactory(ServerFactory):
         self.config = ConfigurationManager()
         self.protocol.factory = self
         self.protocols = {}
-        self.plugin_manager = PluginManager(factory=self)
+        try:
+            self.plugin_manager = PluginManager(factory=self)
+        except FatalPluginError:
+            logger.critical("Shutting Down.")
+            sys.exit()
         self.plugin_manager.activate_plugins()
         self.reaper = LoopingCall(self.reap_dead_protocols)
         self.reaper.start(self.config.reap_time)
-        logger.info("Listening on port %d" % self.config.bind_port)
+        logger.debug("Factory created, endpoint of port %d" % self.config.bind_port)
 
     def stopFactory(self):
         """
@@ -534,6 +543,7 @@ class StarryPyServerFactory(ServerFactory):
         :return: None
         """
         self.config.save()
+        self.plugin_manager.die()
 
     def broadcast(self, text, channel=1, world='', name=''):
         """
@@ -569,12 +579,14 @@ class StarryPyServerFactory(ServerFactory):
         for protocol in self.protocols.itervalues():
             if (
                     protocol.packet_stream.last_received_timestamp - start_time).total_seconds() > self.config.reap_time:
+                logger.trace("Reaping protocol %s. Reason: Server protocol timeout.", protocol.id)
                 protocol.connectionLost()
                 count += 1
                 continue
             if protocol.client_protocol is not None and (
                     protocol.client_protocol.packet_stream.last_received_timestamp - start_time).total_seconds() > self.config.reap_time:
                 protocol.connectionLost()
+                logger.trace("Reaping protocol %s. Reason: Client protocol timeout.", protocol.id)
                 count += 1
         if count == 1:
             logger.info("1 connection reaped.")
@@ -591,9 +603,11 @@ class StarboundClientFactory(ClientFactory):
     protocol = ClientProtocol
 
     def __init__(self, server_protocol):
+        logger.trace("Client protocol instantiated.")
         self.server_protocol = server_protocol
 
     def buildProtocol(self, address):
+        logger.trace("Building protocol in StarboundClientFactory to address %s", address)
         protocol = ClientFactory.buildProtocol(self, address)
         protocol.server_protocol = self.server_protocol
         return protocol
@@ -608,7 +622,13 @@ class UDPProxy(DatagramProtocol):
 
 if __name__ == '__main__':
     logger = logging.getLogger('starrypy')
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(9)
+    if TRACE:
+        trace_logger = logging.FileHandler("trace.log")
+        trace_logger.setLevel("TRACE")
+        trace_logger.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
+        logger.addHandler(trace_logger)
+        logger.trace("Initialized trace logger.")
     fh_d = logging.FileHandler("debug.log")
     fh_d.setLevel(logging.DEBUG)
     fh_w = logging.FileHandler("server.log")
@@ -618,16 +638,20 @@ if __name__ == '__main__':
     logger.addHandler(sh)
     logger.addHandler(fh_d)
     logger.addHandler(fh_w)
+    logger.trace("Attempting initialization of configuration manager singleton.")
     config = ConfigurationManager()
+    logger.trace("Attemping to set logging formatters from configuration.")
     console_formatter = logging.Formatter(config.logging_format_console)
     logfile_formatter = logging.Formatter(config.logging_format_logfile)
     debugfile_formatter = logging.Formatter(config.logging_format_debugfile)
     fh_d.setFormatter(debugfile_formatter)
     fh_w.setFormatter(logfile_formatter)
     sh.setFormatter(console_formatter)
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.settimeout(1)
     if config.port_check:
+        logger.debug("Port check enabled. Performing port check to %s:%d", config.upstream_hostname,
+                     config.upstream_port)
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(1)
         result = sock.connect_ex((config.upstream_hostname, config.upstream_port))
         if result != 0:
             logger.critical("The starbound server is not connectable at the address %s:%d." % (
@@ -637,9 +661,20 @@ if __name__ == '__main__':
             sys.exit()
         sock.shutdown(SHUT_RDWR)
         sock.close()
+        logger.debug("Port check succeeded. Continuing.")
     logger.info("Started StarryPy server version %s" % VERSION)
-
     factory = StarryPyServerFactory()
-    reactor.listenTCP(factory.config.bind_port, factory)
-    reactor.listenUDP(config.bind_port, UDPProxy())
+    logger.debug("Attempting to listen on TCP port %d", factory.config.bind_port)
+    try:
+        reactor.listenTCP(factory.config.bind_port, factory)
+    except CannotListenError:
+        logger.critical("Cannot listen on TCP port %d. Exiting.", factory.config.bind_port)
+        sys.exit()
+    logger.info("Listening on port %s" % factory.config.bind_port)
+    try:
+        reactor.listenUDP(config.bind_port, UDPProxy())
+    except CannotListenError:
+        logger.error(
+            "Could not listen on UDP port %d. Will continue running, but please note that steam statistics will be unavailable.",
+            factory.config.bind_port)
     reactor.run()

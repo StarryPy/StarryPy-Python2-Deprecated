@@ -1,5 +1,5 @@
 from base_plugin import BasePlugin
-from core_plugins.player_manager import permissions, UserLevels
+from plugins.core.player_manager import permissions, UserLevels
 import packets
 
 
@@ -36,6 +36,6 @@ class AdminMessenger(BasePlugin):
     def broadcast_message(self, message):
         for protocol in self.factory.protocols.itervalues():
             protocol.send_chat_message("%sSERVER BROADCAST: %s%s" % (
-            self.config.colors["admin"], message.message[3:], self.config.colors["default"]))
+                self.config.colors["admin"], message.message[3:], self.config.colors["default"]))
             self.logger.info("Broadcast from %s. Message: %s", self.protocol.player.name,
                              message.message[3:])

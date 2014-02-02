@@ -19,8 +19,30 @@
     "passthrough": false,
     "player_db": "config/player.db",
     "plugin_config": {
-        "motd_plugin": "Welcome to the server! Play nice.",
+        "admin_messenger": {
+            "auto_activate": true
+        },
+        "announcer_plugin": {
+            "auto_activate": true
+        },
+        "bouncer": {
+            "auto_activate": false
+        },
+        "chat_logger": {
+            "auto_activate": true
+        },
+        "command_dispatcher": {
+            "auto_activate": true
+        },
+        "motd_plugin": {
+            "auto_activate": true,
+            "motd": "Welcome to the server! Play nice."
+        },
+        "mute_manager": {
+            "auto_activate": true
+        },
         "new_player_greeter_plugin": {
+            "auto_activate": true,
             "items": [
                 [
                     "coalore",
@@ -34,6 +56,7 @@
             "message": "Welcome to the server! Here are some starter items to get you off to a good start."
         },
         "planet_protect": {
+            "auto_activate": true,
             "blacklist": [
                 "bomb",
                 "bombblockexplosion",
@@ -111,15 +134,30 @@
             "protected_planets": []
         },
         "player_manager": {
+            "auto_activate": true,
             "name_removal_regexes": [
                 "\\^#[\\w]+;",
                 "[^ \\w]+"
             ]
+        },
+        "plugin_manager": {
+            "auto_activate": true
+        },
+        "starbound_config_manager": {
+            "auto_activate": true
+        },
+        "user_management_commands": {
+            "auto_activate": true
+        },
+        "warpy_plugin": {
+            "auto_activate": true
         }
     },
     "plugin_path": "plugins",
     "port_check": true,
     "reap_time": 10,
+    "server_connect_timeout": 5,
+    "starbound_path": "/opt/starbound/",
     "upstream_hostname": "localhost",
     "upstream_port": 21024
 }
