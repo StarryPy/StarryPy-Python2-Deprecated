@@ -12,7 +12,7 @@ from sqlalchemy import create_engine, Column, Integer, String, DateTime, Foreign
 from sqlalchemy.ext.declarative import declarative_base as sqla_declarative_base
 from twisted.words.ewords import AlreadyLoggedIn
 from sqlalchemy.types import TypeDecorator, VARCHAR
-
+from utility_functions import path
 
 class JSONEncodedDict(TypeDecorator):
     impl = VARCHAR
@@ -160,7 +160,7 @@ class Ban(Base):
 class PlayerManager(object):
     def __init__(self, config):
         self.config = config
-        self.engine = create_engine('sqlite:///%s' % os.path.join(os.path.dirname(__file__), "../..",self.config.player_db))
+        self.engine = create_engine('sqlite:///%s' % path.preauthChild(self.config.player_db).path)
         self.session = Session(self.engine)
         Base.metadata.create_all(self.engine)
         for player in self.session.query(Player).all():
