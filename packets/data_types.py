@@ -70,20 +70,26 @@ class StarStringAdapter(Adapter):
     def _decode(self, obj, context):
         return obj.string
 
+
 class Joiner(Adapter):
     def _encode(self, obj, context):
         return obj
+
     def _decode(self, obj, context):
         return "".join(obj)
+
+
 star_string_struct = lambda name="star_string": Struct(name,
                                                        VLQ("length"),
                                                        String("string", lambda ctx: ctx.length)
 )
 
+
 class VariantVariant(Construct):
     def _parse(self, stream, context):
         l = VLQ("").parse_stream(stream)
         return [Variant("").parse_stream(stream) for _ in range(l)]
+
 
 class DictVariant(Construct):
     def _parse(self, stream, context):
@@ -114,9 +120,11 @@ class Variant(Construct):
         elif x == 7:
             return DictVariant("").parse_stream(stream)
 
+
 class StarByteArray(Construct):
     def _parse(self, stream, context):
         l = VLQ("").parse_stream(stream)
         return _read_stream(stream, l)
+
     def _build(self, obj, stream, context):
-        _write_stream(stream, len(obj), VLQ("").build(len(obj))+obj)
+        _write_stream(stream, len(obj), VLQ("").build(len(obj)) + obj)

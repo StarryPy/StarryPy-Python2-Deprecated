@@ -29,12 +29,11 @@ class StarboundConfigManager(SimpleCommandPlugin):
         if self.config.upstream_port != starbound_config['gamePort']:
             raise FatalPluginError(
                 "The starbound gamePort option (%d) does not match the config.json value (%d)." % (
-                starbound_config['gamePort'], self.config.upstream_port))
+                    starbound_config['gamePort'], self.config.upstream_port))
         self._spawn = starbound_config['defaultWorldCoordinate'].split(":")
 
     @permissions(UserLevels.GUEST)
     def spawn(self, data):
         """Moves your ship to spawn. Syntax: /move_ship_to_spawn"""
-        print self._spawn
         self.plugins['warpy_plugin'].move_player_ship(self.protocol, [x for x in self._spawn])
         self.protocol.send_chat_message("Moving your ship to spawn.")

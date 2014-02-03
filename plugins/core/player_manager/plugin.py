@@ -138,4 +138,4 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
                 "Results: %s" % "\n".join(["%s: %s" % (player.uuid, player.name) for player in players[:25]]))
             self.protocol.send_chat_message(
                 "And %d more. Narrow it down with SQL like syntax. Feel free to use a *, it will be replaced appropriately." % (
-                len(players) - 25))
+                    len(players) - 25))

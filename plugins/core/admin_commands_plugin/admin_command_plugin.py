@@ -62,11 +62,12 @@ class UserCommandPlugin(SimpleCommandPlugin):
             self.logger.trace("Player object in promote command, found by name, is %s." % str(player))
             if player is not None:
                 self.logger.trace("Player object was not None. Dump of player object follows.")
-                for line in pprint.pformat(player):
-                    self.logger.trace("\t"+line)
+                for line in pprint.pformat(player).split("\n"):
+                    self.logger.trace("\t" + line)
                 old_rank = player.access_level
                 if old_rank >= self.protocol.player.access_level:
-                    self.logger.trace("The old rank was greater or equal to the current rank. Sending a message and returning.")
+                    self.logger.trace(
+                        "The old rank was greater or equal to the current rank. Sending a message and returning.")
                     self.protocol.send_chat_message(
                         "You cannot change that user's access level as they are at least at an equal level as you.")
                     return
