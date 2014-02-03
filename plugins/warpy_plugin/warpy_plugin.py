@@ -83,6 +83,11 @@ class Warpy(SimpleCommandPlugin):
             self.protocol.send_chat_message(self.warp.__doc__)
 
     def move_player_ship(self, protocol, location):
+        if len(location) < 5:
+            self.logger.warning("Couldn't derive a warp location in move_player_ship. Coordinates given: %s",
+                                ":".join(location))
+            self.protocol.send_chat_message("Sorry, an error occurred.")
+            return
         if len(location) == 5:
             satellite = 0
         else:
