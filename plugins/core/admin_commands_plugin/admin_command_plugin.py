@@ -1,3 +1,5 @@
+import pprint
+import socket
 from twisted.internet import reactor
 from base_plugin import SimpleCommandPlugin, BasePlugin
 from plugins.core.player_manager import permissions, UserLevels
@@ -51,13 +53,21 @@ class UserCommandPlugin(SimpleCommandPlugin):
     @permissions(UserLevels.MODERATOR)
     def promote(self, data):
         """Promotes/demoates a user to a specific rank. Syntax: /promote [username] [rank] (where rank is either: registered, moderator, admin, or guest))"""
+        self.logger.trace("Promote command received with the following data: %s" % ":".join(data))
         if len(data) > 0:
             name = " ".join(data[:-1])
+            self.logger.trace("Extracted the name %s in promote command." % name)
             rank = data[-1].lower()
+            self.logger.trace("Extracted the rank %s in the promote command." % rank)
             player = self.player_manager.get_by_name(name)
+            self.logger.trace("Player object in promote command, found by name, is %s." % str(player))
             if player is not None:
+                self.logger.trace("Player object was not None. Dump of player object follows.")
+                for line in pprint.pformat(player):
+                    self.logger.trace("\t"+line)
                 old_rank = player.access_level
                 if old_rank >= self.protocol.player.access_level:
+                    self.logger.trace("The old rank was greater or equal to the current rank. Sending a message and returning.")
                     self.protocol.send_chat_message(
                         "You cannot change that user's access level as they are at least at an equal level as you.")
                     return
@@ -70,23 +80,32 @@ class UserCommandPlugin(SimpleCommandPlugin):
                 elif rank == "guest":
                     self.make_guest(player)
                 else:
+                    self.logger.trace("Non-existent rank. Returning with a help message.")
                     self.protocol.send_chat_message("No such rank!\n" + self.promote.__doc__)
                     return
 
+                self.logger.trace("Sending promotion message to promoter.")
                 self.protocol.send_chat_message("%s: %s -> %s" % (
                     player.colored_name(self.config.colors), str(UserLevels(old_rank)).split(".")[1],
                     rank.upper()))
-                self.factory.protocols[player.protocol].send_chat_message(
-                    "%s has promoted you to %s" % (
-                        self.protocol.player.colored_name(self.config.colors), rank.upper()))
+                self.logger.trace("Sending promotion message to promoted player.")
+                try:
+                    self.factory.protocols[player.protocol].send_chat_message(
+                        "%s has promoted you to %s" % (
+                            self.protocol.player.colored_name(self.config.colors), rank.upper()))
+                except KeyError:
+                    self.logger.trace("Promoted player is not logged in.")
             else:
+                self.logger.trace("Player wasn't found. Sending chat message to player.")
                 self.protocol.send_chat_message("Player not found!\n" + self.promote.__doc__)
                 return
         else:
+            self.logger.trace("Received blank promotion command. Sending help message.")
             self.protocol.send_chat_message(self.promote.__doc__)
 
     @permissions(UserLevels.OWNER)
     def make_guest(self, player):
+        self.logger.trace("Setting %s to GUEST", player.name)
         player.access_level = UserLevels.GUEST
         try:
             self.player_manager.session.commit()
@@ -96,6 +115,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.MODERATOR)
     def make_registered(self, player):
+        self.logger.trace("Setting %s to REGISTERED", player.name)
         player.access_level = UserLevels.REGISTERED
         try:
             self.player_manager.session.commit()
@@ -106,6 +126,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
     @permissions(UserLevels.ADMIN)
     def make_mod(self, player):
         player.access_level = UserLevels.MODERATOR
+        self.logger.trace("Setting %s to MODERATOR", player.name)
         try:
             self.player_manager.session.commit()
         except:
@@ -114,6 +135,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.OWNER)
     def make_admin(self, player):
+        self.logger.trace("Setting %s to ADMIN", player.name)
         player.access_level = UserLevels.ADMIN
         try:
             self.player_manager.session.commit()
@@ -144,11 +166,21 @@ class UserCommandPlugin(SimpleCommandPlugin):
     @permissions(UserLevels.ADMIN)
     def ban(self, data):
         """Bans an IP (retrieved by /whois). Syntax: /ban [ip address]"""
-        ip = data[0]
-        self.player_manager.ban(ip)
-        self.protocol.send_chat_message("Banned IP: %s" % ip)
-        self.logger.warning("%s banned IP: %s", self.protocol.player.name, ip)
+        try:
+            ip = data[0]
+            socket.inet_aton(ip)
+            self.logger.debug("Banning IP address %s" % ip)
+            self.player_manager.ban(ip)
+            self.protocol.send_chat_message("Banned IP: %s" % ip)
+            self.logger.warning("%s banned IP: %s", self.protocol.player.name, ip)
+            return False
+        except socket.error:
+            self.ban_by_name(data)
         return False
+
+    def ban_by_name(self, data):
+        raise NotImplementedError
+
 
     @permissions(UserLevels.ADMIN)
     def bans(self, data):

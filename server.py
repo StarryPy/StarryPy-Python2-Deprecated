@@ -20,7 +20,7 @@ import packets
 from plugin_manager import PluginManager, route, FatalPluginError
 from utility_functions import build_packet
 
-VERSION = "1.2.2"
+VERSION = "1.2.3"
 TRACE = False
 TRACE_LVL = 9
 logging.addLevelName(9, "TRACE")
@@ -397,21 +397,23 @@ class StarryPyServerProtocol(Protocol):
         brackets, otherwise it will be displayed as `<name>`.
         :return: None
         """
-        logger.debug("Sent chat message with text: %s", text)
         if '\n' in text:
             lines = text.split('\n')
             for line in lines:
                 self.send_chat_message(line)
             return
+        logger.trace("Calling send_chat_message from player %s on channel %d on world '%s' with reported username of %s with message: %s", self.player.name, channel, world, name, text)
         chat_data = packets.chat_received().build(Container(chat_channel=channel,
                                                             world=world,
                                                             client_id=0,
                                                             name=name,
                                                             message=text.encode("utf-8")))
+        logger.trace("Built chat payload. Data: %s", chat_data.encode("hex"))
         chat_packet = build_packet(packets.Packets.CHAT_RECEIVED,
                                    chat_data)
+        logger.trace("Built chat packet. Data: %s", chat_packet.encode("hex"))
         self.transport.write(chat_packet)
-
+        logger.debug("Sent chat message with text: %s", text)
     def write(self, data):
         """
         Convenience method to send data to the client.
