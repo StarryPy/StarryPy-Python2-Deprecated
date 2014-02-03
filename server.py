@@ -433,7 +433,7 @@ class StarryPyServerProtocol(Protocol):
                              packets.client_disconnect().build(Container(data=0)))
 
             if self.player is not None:
-                if self.protocol is None:
+                if self.protocol is not None:
                     self.client_disconnect(x)
                 self.player.logged_in = False
                 self.player.protocol = None
