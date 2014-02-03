@@ -1,12 +1,11 @@
 import json
-from nose.tools import *
 import unittest
+
+from nose.tools import *
+
 from packets import *
 
-'''
-Tests for packet type 0x01: Protocol Version, Server -> Client 
-'''
-
+# Tests for packet type 0x01: Protocol Version, Server -> Client
 
 class ProtocolVersionTest(unittest.TestCase):
     def testParseBuild(self):
@@ -16,12 +15,10 @@ class ProtocolVersionTest(unittest.TestCase):
         assert_equal(protocol_version().build(parsed), packet)
 
 
-'''
-Tests for packet type 0x02: Connect Response, Server -> Client 
-'''
+# Tests for packet type 0x02: Connect Response, Server -> Client
 
 
-class ConnectRsponseTest(unittest.TestCase):
+class ConnectResponseTest(unittest.TestCase):
     def testParseBuild(self):
         packet = "010100".decode("hex")
         parsed = connect_response().parse(packet)
@@ -29,9 +26,7 @@ class ConnectRsponseTest(unittest.TestCase):
         assert_equal(connect_response().build(parsed), packet)
 
 
-'''
-Tests for packet type 0x03: Server Disconnect, Server -> Client 
-'''
+# Tests for packet type 0x03: Server Disconnect, Server -> Client
 
 
 class ServerDisconnectTest(unittest.TestCase):
@@ -39,12 +34,10 @@ class ServerDisconnectTest(unittest.TestCase):
         raise "not implemented, no test data available"
 
 
-'''
-Tests for packet type 0x04: Handshake Challenge, Server -> Client 
-'''
+# Tests for packet type 0x04: Handshake Challenge, Server -> Client
 
 
-class HandshakeChallangeTest(unittest.TestCase):
+class HandshakeChallengeTest(unittest.TestCase):
     def testParseBuild(self):
         packet = "00203575416369525a6b6d774b556b656b336b72552b73324c54765048453676325000001388".decode("hex")
         parsed = handshake_challenge().parse(packet)
@@ -54,10 +47,7 @@ class HandshakeChallangeTest(unittest.TestCase):
         assert_equal(handshake_challenge().build(parsed), packet)
 
 
-'''
-Tests for packet type 0x05: Chat Received, Server -> Client 
-'''
-
+# Tests for packet type 0x05: Chat Received, Server -> Client
 
 class ChatReceivedTest(unittest.TestCase):
     def testChatReceived(self):
@@ -67,23 +57,16 @@ class ChatReceivedTest(unittest.TestCase):
         assert_equal(chat_received().build(parsed), packet)
 
 
-'''
-Tests for packet type 0x06: Universe Time Update, Server -> Client 
-'''
-
+# Tests for packet type 0x06: Universe Time Update, Server -> Client
 
 class UniverseTimeUpdateTest(unittest.TestCase):
     def testParseBuild(self):
         packet = "85e2c976".decode("hex")
         parsed = universe_time_update().parse(packet)
-
         assert_equal(universe_time_update().build(parsed), packet)
 
 
-'''
-Tests for packet type 0x07: Client Connect, Server -> Client, compressed 
-'''
-
+# Tests for packet type 0x07: Client Connect, Server -> Client, compressed
 
 class ClientConnectTest(unittest.TestCase):
     def testParseBuild(self):
@@ -94,10 +77,7 @@ class ClientConnectTest(unittest.TestCase):
         assert_equal(client_connect().build(parsed), packet)
 
 
-'''
-Tests for packet type 0x08: Client Disconnect, Server -> Client, compressed 
-'''
-
+# Tests for packet type 0x08: Client Disconnect, Server -> Client, compressed
 
 class ClientDisconnectTest(unittest.TestCase):
     def testParseBuild(self):
@@ -107,10 +87,7 @@ class ClientDisconnectTest(unittest.TestCase):
         assert_equal(client_disconnect().build(parsed), packet)
 
 
-'''
-Tests for packet types 0x09: Handshake Response, Client -> Server
-'''
-
+# Tests for packet types 0x09: Handshake Response, Client -> Server
 
 class HandshakeResponseTest(unittest.TestCase):
     def testParseBuild(self):
@@ -122,9 +99,7 @@ class HandshakeResponseTest(unittest.TestCase):
         assert_equal(handshake_response().build(parsed), packet)
 
 
-'''
-Tests for packet types 0x0A: Warp Command, Client -> Server
-'''
+# Tests for packet types 0x0A: Warp Command, Client -> Server
 
 
 class WarpCommandTest(unittest.TestCase):
@@ -137,7 +112,7 @@ class WarpCommandTest(unittest.TestCase):
         built_packet = warp_command().build(parsed)
         assert_equal(packet, built_packet)
 
-    def testParseUp(self):
+    def testParseWarpUp(self):
         packet = "0000000200000000000000000000000000000000000000000000".decode("hex")
         parsed = warp_command().parse(packet)
 
@@ -176,9 +151,8 @@ class WarpCommandTest(unittest.TestCase):
         assert_equal(packet, built_packet)
 
 
-'''
-Tests for packet types 0x0B: Chat Sent, Client -> Server
-'''
+#Tests for packet types 0x0B: Chat Sent, Client -> Server
+
 
 
 class ChatSentTest(unittest.TestCase):
@@ -189,9 +163,8 @@ class ChatSentTest(unittest.TestCase):
         assert_equal(chat_sent().build(parsed), packet)
 
 
-'''
-Tests for packet types  0x0C: Client Context Update , Client -> Server
-'''
+# Tests for packet types  0x0C: Client Context Update , Client -> Server
+
 
 
 class ClientContextUpdateTest(unittest.TestCase):
@@ -199,9 +172,7 @@ class ClientContextUpdateTest(unittest.TestCase):
         raise "not yet understood"
 
 
-'''
-Tests for packet types 0x0D: World Start, Server -> Client
-'''
+#Tests for packet types 0x0D: World Start, Server -> Client
 
 
 class WorldStartTest(unittest.TestCase):
@@ -213,9 +184,7 @@ class WorldStartTest(unittest.TestCase):
         assert_equal(world_start().build(parsed), packet)
 
 
-'''
-Tests for packet types 0x0E: World Stop, Server -> Client
-'''
+#Tests for packet types 0x0E: World Stop, Server -> Client
 
 
 class WorldStopTest(unittest.TestCase):
