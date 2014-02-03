@@ -449,7 +449,7 @@ class StarryPyServerProtocol(Protocol):
             self.die()
 
     def die(self):
-        if self.player.protocol is not None:
+        if self.player is not None and self.player.protocol is not None:
             self.transport.abortConnection()
         self.factory.protocols.pop(self.id)
         try:
