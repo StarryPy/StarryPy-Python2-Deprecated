@@ -7,7 +7,6 @@ import socket
 import datetime
 
 import construct
-import twisted
 from twisted.internet import reactor
 from twisted.internet.error import CannotListenError
 from twisted.internet.protocol import ClientFactory, ServerFactory, Protocol, connectionDone, DatagramProtocol
@@ -110,7 +109,7 @@ class StarryPyServerProtocol(Protocol):
         self.plugin_manager = self.factory.plugin_manager
         self.packet_stream = PacketStream(self)
         self.packet_stream.direction = packets.Direction.CLIENT
-        logger.info("Connection established from IP: %s" % self.transport.getPeer().host)
+        logger.info("Connection established from IP: %s", self.transport.getPeer().host)
         reactor.connectTCP(self.config.upstream_hostname, self.config.upstream_port,
                            StarboundClientFactory(self), timeout=self.config.server_connect_timeout)
 
@@ -431,32 +430,28 @@ class StarryPyServerProtocol(Protocol):
         :return: None
         """
         try:
-            x = build_packet(packets.Packets.CLIENT_DISCONNECT,
-                             packets.client_disconnect().build(Container(data=0)))
-
-            if hasattr(self, "protocol") and self.protocol is not None:
-                if self.player is not None:
-                    self.client_disconnect(x)
-                self.player.logged_in = False
-                self.player.protocol = None
             if self.client_protocol is not None:
+                x = build_packet(packets.Packets.CLIENT_DISCONNECT,
+                             packets.client_disconnect().build(Container(data=0)))
+                if self.player is not None and self.player.logged_in:
+                    self.client_disconnect(x)
+                self.player.protocol = None
+                self.player = None
                 self.client_protocol.transport.write(x)
-                del self.client_protocol
-        except twisted.internet.error.ConnectionDone:
-            logger.debug("Connection was closed cleanly.")
-        except Exception as e:
-            logger.error("Couldn't disconnect protocol. %s", str(e))
+                self.client_protocol.transport.abortConnection()
+        except:
+            logger.error("Couldn't disconnect protocol.")
         finally:
-            self.die()
+            try:
+                self.factory.protocols.pop(self.id)
+            except:
+                self.logger.trace("Protocol was not in factory list. This should not happen.")
+            finally:
+                logger.info("Lost connection from IP: %s", self.transport.getPeer().host)
+                self.transport.abortConnection()
 
     def die(self):
-        if self.player is not None and self.player.protocol is not None:
-            self.transport.abortConnection()
-        self.factory.protocols.pop(self.id)
-        try:
-            self.client_protocol.transport.abortConnection()
-        except AttributeError:
-            pass
+        self.connectionLost()
 
     def connectionFailed(self, *args, **kwargs):
         self.connectionLost()

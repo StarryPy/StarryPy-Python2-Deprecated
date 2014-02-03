@@ -100,7 +100,7 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
             self.protocol.player.on_ship = True
 
     def on_client_disconnect(self, player):
-        if self.protocol.player.logged_in:
+        if self.protocol.player is not None and self.protocol.player.logged_in:
             self.logger.info("Player disconnected: %s", self.protocol.player.name)
             self.protocol.player.logged_in = False
 
