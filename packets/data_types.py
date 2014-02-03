@@ -1,6 +1,6 @@
 import logging
 from construct import Construct, Struct, Byte, BFloat64, Flag, \
-    Array, LazyBound, String, Container
+    String, Container
 from construct.core import _read_stream, _write_stream, Adapter
 
 
@@ -70,18 +70,23 @@ class StarStringAdapter(Adapter):
     def _decode(self, obj, context):
         return obj.string
 
+class Joiner(Adapter):
+    def _encode(self, obj, context):
+        return obj
+
+    def _decode(self, obj, context):
+        return "".join(obj)
+
 
 star_string_struct = lambda name="star_string": Struct(name,
                                                        VLQ("length"),
                                                        String("string", lambda ctx: ctx.length)
 )
 
-variant_variant = Struct("data",
-                         VLQ("length"),
-                         Array(lambda ctx: ctx.length,
-                               LazyBound("data",
-                                         lambda: Variant(""))))
-
+class VariantVariant(Construct):
+    def _parse(self, stream, context):
+        l = VLQ("").parse_stream(stream)
+        return [Variant("").parse_stream(stream) for _ in range(l)]
 
 class DictVariant(Construct):
     def _parse(self, stream, context):
@@ -108,6 +113,14 @@ class Variant(Construct):
         elif x == 5:
             return star_string().parse_stream(stream)
         elif x == 6:
-            return variant_variant.parse_stream(stream)
+            return VariantVariant("").parse_stream(stream)
         elif x == 7:
             return DictVariant("").parse_stream(stream)
+
+class StarByteArray(Construct):
+    def _parse(self, stream, context):
+        l = VLQ("").parse_stream(stream)
+        return _read_stream(stream, l)
+
+    def _build(self, obj, stream, context):
+        _write_stream(stream, len(obj), VLQ("").build(len(obj)) + obj)

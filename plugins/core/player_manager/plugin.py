@@ -85,12 +85,12 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
                 self.protocol.transport.getPeer().host))
 
     def after_world_start(self, data):
-        world_start = packets.Variant("").parse(data.data)
-        coords = world_start['config']['coordinate']
+        world_start = packets.world_start().parse(data.data)
+        coords = world_start.planet['config']['coordinate']
         if coords is not None:
             parent_system = coords['parentSystem']
             location = parent_system['location']
-            l = location['data']
+            l = location
             self.protocol.player.on_ship = False
             planet = Planet(parent_system['sector'], l[0], l[1], l[2],
                             coords['planetaryOrbitNumber'], coords['satelliteOrbitNumber'])
@@ -101,7 +101,7 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
             self.protocol.player.on_ship = True
 
     def on_client_disconnect(self, player):
-        if self.protocol.player.logged_in:
+        if self.protocol.player is not None and self.protocol.player.logged_in:
             self.logger.info("Player disconnected: %s", self.protocol.player.name)
             self.protocol.player.logged_in = False
 
@@ -139,4 +139,4 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
                 "Results: %s" % "\n".join(["%s: %s" % (player.uuid, player.name) for player in players[:25]]))
             self.protocol.send_chat_message(
                 "And %d more. Narrow it down with SQL like syntax. Feel free to use a *, it will be replaced appropriately." % (
-                len(players) - 25))
+                    len(players) - 25))

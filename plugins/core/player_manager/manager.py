@@ -111,8 +111,13 @@ class Player(Base):
     ips = relationship("IPAddress", order_by="IPAddress.id", backref="players")
 
     def colored_name(self, colors):
+        logger.trace("Building colored name.")
         color = colors[str(UserLevels(self.access_level)).split(".")[1].lower()]
+        logger.trace("Color is %s", color)
         name = self.name
+        logger.trace("Name is %s", name)
+        logger.trace("Returning the following data for colored name. %s:%s:%s", color, name,
+                     colors['default'])
         return color + name + colors["default"]
 
     @property

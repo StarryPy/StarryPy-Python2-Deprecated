@@ -6,7 +6,7 @@ import os
 class ConnectionTests(unittest.TestCase):
 
     def setUp(self):
-        self.client_side = SBFakeClient(os.path.abspath("../config/config.json"))
+        self.client_side = SBFakeClient("config/config.json")
         self.server_side = SBFakeServer(self.client_side.protocol)
 
     def test_protocol_version(self):

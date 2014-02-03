@@ -20,7 +20,7 @@ import packets
 from plugin_manager import PluginManager, route, FatalPluginError
 from utility_functions import build_packet
 
-VERSION = "1.2.2"
+VERSION = "1.2.3"
 TRACE = False
 TRACE_LVL = 9
 logging.addLevelName(9, "TRACE")
@@ -400,21 +400,24 @@ class StarryPyServerProtocol(Protocol):
         brackets, otherwise it will be displayed as `<name>`.
         :return: None
         """
-        logger.debug("Sent chat message with text: %s", text)
         if '\n' in text:
             lines = text.split('\n')
             for line in lines:
                 self.send_chat_message(line)
             return
+        if self.player is not None:
+            logger.trace("Calling send_chat_message from player %s on channel %d on world '%s' with reported username of %s with message: %s", self.player.name, channel, world, name, text)
         chat_data = packets.chat_received().build(Container(chat_channel=channel,
                                                             world=world,
                                                             client_id=0,
                                                             name=name,
                                                             message=text.encode("utf-8")))
+        logger.trace("Built chat payload. Data: %s", chat_data.encode("hex"))
         chat_packet = build_packet(packets.Packets.CHAT_RECEIVED,
                                    chat_data)
+        logger.trace("Built chat packet. Data: %s", chat_packet.encode("hex"))
         self.transport.write(chat_packet)
-
+        logger.debug("Sent chat message with text: %s", text)
     def write(self, data):
         """
         Convenience method to send data to the client.
@@ -430,26 +433,28 @@ class StarryPyServerProtocol(Protocol):
         :return: None
         """
         try:
-            x = build_packet(packets.Packets.CLIENT_DISCONNECT,
+            if self.client_protocol is not None:
+                x = build_packet(packets.Packets.CLIENT_DISCONNECT,
                              packets.client_disconnect().build(Container(data=0)))
-
-            if self.player is not None:
-                self.client_disconnect(x)
-                self.player.logged_in = False
+                if self.player is not None and self.player.logged_in:
+                    self.client_disconnect(x)
                 self.player.protocol = None
-            self.client_protocol.transport.write(x)
+                self.player = None
+                self.client_protocol.transport.write(x)
+                self.client_protocol.transport.abortConnection()
         except:
             logger.error("Couldn't disconnect protocol.")
         finally:
-            self.die()
+            try:
+                self.factory.protocols.pop(self.id)
+            except:
+                self.logger.trace("Protocol was not in factory list. This should not happen.")
+            finally:
+                logger.info("Lost connection from IP: %s", self.transport.getPeer().host)
+                self.transport.abortConnection()
 
     def die(self):
-        self.transport.abortConnection()
-        self.factory.protocols.pop(self.id)
-        try:
-            self.client_protocol.transport.abortConnection()
-        except AttributeError:
-            pass
+        self.connectionLost()
 
     def connectionFailed(self, *args, **kwargs):
         self.connectionLost()
@@ -536,7 +541,6 @@ class StarryPyServerFactory(ServerFactory):
         except FatalPluginError:
             logger.critical("Shutting Down.")
             sys.exit()
-        self.plugin_manager.activate_plugins()
         self.reaper = LoopingCall(self.reap_dead_protocols)
         self.registered_reactor_users.append(self.reaper)
         self.reaper.start(self.config.reap_time)
@@ -618,8 +622,6 @@ class StarboundClientFactory(ClientFactory):
         return protocol
 
 class UDPProxy(DatagramProtocol):
-    client = None
-
     def datagramReceived(self, datagram, addr):
         self.client.transport.write(datagram, (self.config.upstream_hostname, self.config.upstream_port))
 
@@ -640,7 +642,7 @@ def test_for_upstream():
         sock.close()
         logger.debug("Port check succeeded. Continuing.")
 
-def setup(config_path="config/config.json"):
+def setup(config_path=None):
     global config
     global logger
     logger = logging.getLogger('starrypy')
@@ -662,7 +664,7 @@ def setup(config_path="config/config.json"):
     logger.addHandler(fh_w)
     logger.trace("Attempting initialization of configuration manager singleton.")
 
-    config = ConfigurationManager(config_path)
+    config = ConfigurationManager()
     logger.trace("Attemping to set logging formatters from configuration.")
     console_formatter = logging.Formatter(config.logging_format_console)
     logfile_formatter = logging.Formatter(config.logging_format_logfile)

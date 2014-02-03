@@ -1,4 +1,5 @@
 from base_plugin import BasePlugin
+from packets import connect_response
 
 
 class Announcer(BasePlugin):
@@ -13,8 +14,10 @@ class Announcer(BasePlugin):
 
     def after_connect_response(self, data):
         try:
-            self.factory.broadcast(
-                self.protocol.player.colored_name(self.config.colors) + " joined.", 0, "", "Announcer")
+            c = connect_response().parse(data.data)
+            if c.success:
+                self.factory.broadcast(
+                    self.protocol.player.colored_name(self.config.colors) + " joined.", 0, "", "Announcer")
         except AttributeError:
             self.logger.debug("Attribute error in after_connect_response.")
             return
@@ -23,7 +26,7 @@ class Announcer(BasePlugin):
             raise
 
     def on_client_disconnect(self, data):
-        if not self.protocol.player.logged_in:
+        if self.protocol.player is not None:
             self.factory.broadcast(self.protocol.player.colored_name(self.config.colors) + " left.", 0,
                                    "", "Announcer")
 

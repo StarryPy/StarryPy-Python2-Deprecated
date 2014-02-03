@@ -18,10 +18,13 @@ class ColoredNames(BasePlugin):
     def on_chat_received(self, data):
         try:
             p = chat_received().parse(data.data)
+            if p.name == "server":
+                return
             sender = self.player_manager.get_logged_in_by_name(p.name)
             p.name = sender.colored_name(self.config.colors)
             self.protocol.transport.write(build_packet(Packets.CHAT_RECEIVED, chat_received().build(p)))
-        except AttributeError:
+        except AttributeError as e:
+            self.logger.warning("Received AttributeError in colored_name. %s", str(e))
             self.protocol.transport.write(data.original_data)
         return False
 
