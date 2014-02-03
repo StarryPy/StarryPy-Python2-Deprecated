@@ -12,6 +12,7 @@ class CommandDispatchPlugin(BasePlugin):
 
     def on_chat_sent(self, data):
         data = chat_sent().parse(data.data)
+        data.message = data.message.decode("utf-8")
         if data.message[0] == self.command_prefix:
             split_command = data.message[1:].split()
             command = split_command[0]

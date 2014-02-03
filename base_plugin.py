@@ -1,6 +1,3 @@
-import logging
-
-
 class BasePlugin(object):
     """
     Defines an interface for all plugins to inherit from. Note that the __init__
@@ -21,16 +18,14 @@ class BasePlugin(object):
     name = "Base Plugin"
     description = "The common class for all plugins to inherit from."
     version = ".1"
-    depends = None
+    depends = []
     auto_activate = True
 
-    def __init__(self, config):
-        self.config = config
-        self.protocol = None
-        self.plugins = {}
-        self.active = False
-        self.logger = logging.getLogger('starrypy.plugin.%s' % self.name)
-        self.logger.debug("%s plugin object created.", self.name)
+    def __init__(self):
+        plugin_config = self.config.plugin_config
+        if 'auto_activate' not in plugin_config:
+            plugin_config['auto_activate'] = self.auto_activate
+        self.config.plugin_config = plugin_config
 
     def activate(self):
         """
@@ -350,10 +345,6 @@ class SimpleCommandPlugin(BasePlugin):
     commands = []
     command_aliases = {}
     auto_activate = True
-
-    def __init__(self, config):
-        super(SimpleCommandPlugin, self).__init__(config)
-        self.previously_activated = False
 
     def activate(self):
         super(SimpleCommandPlugin, self).activate()

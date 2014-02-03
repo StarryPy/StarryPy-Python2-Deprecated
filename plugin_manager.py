@@ -32,6 +32,12 @@ class MissingDependency(PluginNotFound):
     """
 
 
+class UnresolvedOrCircularDependencyError(Exception):
+    """
+    Raised whenever there is a circular dependency detected in the loading of of plugins.
+    """
+
+
 class PluginManager(object):
     logger = logging.getLogger('starrypy.plugin_manager.PluginManager')
 
@@ -44,21 +50,17 @@ class PluginManager(object):
 
         :param base_class: The base class to use while searching for plugins.
         """
-        self.plugins = []
-        self.plugin_names = []
         self.config = ConfigurationManager("config/config.json")
         self.base_class = base_class
         self.factory = factory
-        self.core_plugin_dir = os.path.join(os.path.dirname(__file__), self.config.core_plugin_path)
-        sys.path.append(self.core_plugin_dir)
-        self.load_plugins(self.core_plugin_dir)
-
-        self.plugin_dir = os.path.join(os.path.dirname(__file__), self.config.plugin_path)
+        self.plugins = {}
+        self.load_order = []
+        self.plugin_dir = os.path.realpath(self.config.plugin_path)
         sys.path.append(self.plugin_dir)
         self.load_plugins(self.plugin_dir)
 
         self.logger.info("Loaded plugins:\n%s" % "\n".join(
-            ["%s, Active: %s" % (plugin.name, plugin.auto_activate) for plugin in self.plugins]))
+            ["%s, Active: %s" % (plugin.name, plugin.active) for plugin in self.plugins.itervalues()]))
 
     def load_plugins(self, plugin_dir):
         """
@@ -68,6 +70,7 @@ class PluginManager(object):
         :param plugin_dir: The directory to search for plugins.
         :return: None
         """
+        seen_plugins = []
         for f in os.listdir(plugin_dir):
             if f.endswith(".py"):
                 name = f[:-3]
@@ -79,23 +82,44 @@ class PluginManager(object):
                 mod = __import__(name, globals(), locals(), [], 0)
                 for _, plugin in inspect.getmembers(mod, inspect.isclass):
                     if issubclass(plugin,
-                                  self.base_class) and plugin is not self.base_class:
-                        plugin_instance = plugin(self.config)
-                        if plugin_instance.name in self.plugin_names:
-                            continue
-                        plugin_instance.factory = self.factory
+                                  self.base_class) and plugin is not self.base_class and plugin not in seen_plugins:
+                        plugin.config = self.config
+                        plugin.factory = self.factory
+                        plugin.active = False
+                        plugin.protocol = None
+                        plugin.plugins = {}
+                        plugin.logger = logging.getLogger('starrypy.plugins.%s' % plugin.name)
+                        seen_plugins.append(plugin)
 
-                        if plugin_instance.depends is not None:
-                            for dependency in plugin_instance.depends:
-                                try:
-                                    dependency_instance = self.get_by_name(dependency)
-                                except PluginNotFound:
-                                    raise MissingDependency(dependency)
-                                else:
-                                    plugin_instance.plugins[dependency] = dependency_instance
-                        self.plugins.append(plugin_instance)
             except ImportError:
-                self.logger.debug("Import error for %s", name)
+                self.logger.critical("Import error for %s", name)
+                sys.exit()
+        try:
+            dependencies = {x.name: set(x.depends) for x in seen_plugins}
+            classes = {x.name: x for x in seen_plugins}
+            while len(dependencies) > 0:
+                ready = [x for x, d in dependencies.iteritems() if len(d) == 0]
+                if len(ready) == 0:
+                    ex = []
+                    for n, d in dependencies.iteritems():
+                        for dep in d:
+                            ex.append("%s->%s" % (n, dep))
+                    raise UnresolvedOrCircularDependencyError(
+                        "Unresolved or circular dependencies found:\n%s" % "\n".join(ex))
+                for name in ready:
+                    self.plugins[name] = classes[name]()
+                    self.load_order.append(name)
+                    self.logger.debug("Instantiated plugin '%s'" % name)
+                    del (dependencies[name])
+                for name, depends in dependencies.iteritems():
+                    to_load = depends & set(self.plugins.iterkeys())
+                    dependencies[name] = dependencies[name].difference(set(self.plugins.iterkeys()))
+                    for plugin in to_load:
+                        classes[name].plugins[plugin] = self.plugins[plugin]
+        except UnresolvedOrCircularDependencyError as e:
+            self.logger.critical(str(e))
+        self.activate_plugins()
+
 
     def reload_plugins(self):
         self.logger.warning("Reloading plugins.")
@@ -103,7 +127,6 @@ class PluginManager(object):
             del x
         self.plugins = []
         try:
-            self.load_plugins(self.core_plugin_dir)
             self.load_plugins(self.plugin_dir)
             self.activate_plugins()
         except:
@@ -112,12 +135,16 @@ class PluginManager(object):
 
 
     def activate_plugins(self):
-        for plugin in self.plugins:
-            if plugin.auto_activate:
-                plugin.activate()
+        for plugin in [self.plugins[x] for x in self.load_order]:
+            if self.config.config['plugin_config'][plugin.name]['auto_activate']:
+                try:
+                    plugin.activate()
+                except FatalPluginError as e:
+                    self.logger.critical("A plugin reported a fatal error. Error: %s", str(e))
+                    raise
 
     def deactivate_plugins(self):
-        for plugin in self.plugins:
+        for plugin in [self.plugins[x] for x in reversed(self.load_order)]:
             plugin.deactivate()
 
     def do(self, protocol, command, data):
@@ -134,7 +161,7 @@ class PluginManager(object):
         return_values = []
         if protocol is None:
             return True
-        for plugin in self.plugins:
+        for plugin in self.plugins.itervalues():
             try:
                 if not plugin.active:
                     continue
@@ -158,10 +185,14 @@ class PluginManager(object):
         :rtype : BasePlugin subclassed instance.
         :raises : PluginNotFound
         """
-        for plugin in self.plugins:
-            if plugin.name.lower() == name.lower():
-                return plugin
-        raise PluginNotFound("No plugin with name=%s found." % name.lower())
+        try:
+            return self.plugins[name.lower()]
+        except KeyError:
+            raise PluginNotFound("No plugin with name=%s found." % name.lower())
+
+    def die(self):
+        for plugin in self.plugins.itervalues():
+            plugin.deactivate()
 
 
 def route(func):
@@ -186,3 +217,7 @@ def route(func):
         logger.error("Deferred function failure. %s", f)
 
     return wrapped_function
+
+
+class FatalPluginError(Exception):
+    pass

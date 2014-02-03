@@ -1,5 +1,5 @@
 from base_plugin import SimpleCommandPlugin
-from core_plugins.player_manager import UserLevels, permissions
+from plugins.core.player_manager import UserLevels, permissions
 from packets import entity_create, EntityType, star_string
 
 
@@ -32,7 +32,7 @@ class PlanetProtectPlugin(SimpleCommandPlugin):
         self.player_manager = self.plugins.get("player_manager", [])
 
     def planet_check(self):
-        if self.protocol.player.planet in self.protected_planets and self.protocol.player.access_level < UserLevels.REGISTERED:
+        if not self.protocol.player.on_ship and self.protocol.player.planet in self.protected_planets and self.protocol.player.access_level < UserLevels.REGISTERED:
             return False
         else:
             return True
@@ -80,5 +80,7 @@ class PlanetProtectPlugin(SimpleCommandPlugin):
                 if entity.entity_type == EntityType.PROJECTILE:
                     p_type = star_string("").parse(entity.entity)
                     if p_type in self.blacklist:
-                        self.logger.info("Player %s attempted to use a prohibited projectile, %s, on a protected planet.", self.protocol.player.name, p_type)
+                        self.logger.info(
+                            "Player %s attempted to use a prohibited projectile, %s, on a protected planet.",
+                            self.protocol.player.name, p_type)
                         return False
