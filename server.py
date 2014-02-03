@@ -537,7 +537,6 @@ class StarryPyServerFactory(ServerFactory):
         except FatalPluginError:
             logger.critical("Shutting Down.")
             sys.exit()
-        self.plugin_manager.activate_plugins()
         self.reaper = LoopingCall(self.reap_dead_protocols)
         self.reaper.start(self.config.reap_time)
         logger.debug("Factory created, endpoint of port %d" % self.config.bind_port)
