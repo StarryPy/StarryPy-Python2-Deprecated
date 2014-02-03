@@ -109,7 +109,7 @@ class StarryPyServerProtocol(Protocol):
         self.plugin_manager = self.factory.plugin_manager
         self.packet_stream = PacketStream(self)
         self.packet_stream.direction = packets.Direction.CLIENT
-        logger.info("Connection established from IP: %s" % self.transport.getPeer().host)
+        logger.info("Connection established from IP: %s", self.transport.getPeer().host)
         reactor.connectTCP(self.config.upstream_hostname, self.config.upstream_port,
                            StarboundClientFactory(self), timeout=self.config.server_connect_timeout)
 
@@ -402,7 +402,8 @@ class StarryPyServerProtocol(Protocol):
             for line in lines:
                 self.send_chat_message(line)
             return
-        logger.trace("Calling send_chat_message from player %s on channel %d on world '%s' with reported username of %s with message: %s", self.player.name, channel, world, name, text)
+        if self.player is not None:
+            logger.trace("Calling send_chat_message from player %s on channel %d on world '%s' with reported username of %s with message: %s", self.player.name, channel, world, name, text)
         chat_data = packets.chat_received().build(Container(chat_channel=channel,
                                                             world=world,
                                                             client_id=0,
@@ -429,27 +430,28 @@ class StarryPyServerProtocol(Protocol):
         :return: None
         """
         try:
-            x = build_packet(packets.Packets.CLIENT_DISCONNECT,
+            if self.client_protocol is not None:
+                x = build_packet(packets.Packets.CLIENT_DISCONNECT,
                              packets.client_disconnect().build(Container(data=0)))
-
-            if self.player is not None:
-                if self.protocol is None:
+                if self.player is not None and self.player.logged_in:
                     self.client_disconnect(x)
-                self.player.logged_in = False
                 self.player.protocol = None
-            self.client_protocol.transport.write(x)
+                self.player = None
+                self.client_protocol.transport.write(x)
+                self.client_protocol.transport.abortConnection()
         except:
             logger.error("Couldn't disconnect protocol.")
         finally:
-            self.die()
+            try:
+                self.factory.protocols.pop(self.id)
+            except:
+                self.logger.trace("Protocol was not in factory list. This should not happen.")
+            finally:
+                logger.info("Lost connection from IP: %s", self.transport.getPeer().host)
+                self.transport.abortConnection()
 
     def die(self):
-        self.transport.abortConnection()
-        self.factory.protocols.pop(self.id)
-        try:
-            self.client_protocol.transport.abortConnection()
-        except AttributeError:
-            pass
+        self.connectionLost()
 
     def connectionFailed(self, *args, **kwargs):
         self.connectionLost()
