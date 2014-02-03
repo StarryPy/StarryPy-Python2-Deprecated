@@ -28,7 +28,7 @@ class StarboundConfigManager(SimpleCommandPlugin):
                     e))
         if self.config.upstream_port != starbound_config['gamePort']:
             raise FatalPluginError(
-                "The starbound gamePort option (%d) does not match the config.json value (%d)." % (
+                "The starbound gamePort option (%d) does not match the config.json upstream_port (%d)." % (
                     starbound_config['gamePort'], self.config.upstream_port))
         self._spawn = starbound_config['defaultWorldCoordinate'].split(":")
 
