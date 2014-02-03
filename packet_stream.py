@@ -73,8 +73,10 @@ class PacketStream(object):
                     except zlib.error:
 
                         self.logger.error("Decompression error in check_packet.")
+                        self.logger.trace("Parsed packet:")
+                        self.logger.trace(pprint.pformat(p_parsed))
                         self.logger.trace("Packet data:")
-                        self.logger.trace(pprint.pformat(p_parsed.original_data))
+                        self.logger.trace(pprint.pformat(p_parsed.original_data.enocde("hex")))
                         self.logger.trace("Following packet data:")
                         self.logger.trace(pprint.pformat(self._stream.encode("hex")))
                         raise
