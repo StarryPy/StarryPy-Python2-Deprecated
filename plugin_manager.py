@@ -4,14 +4,13 @@ functionality in StarryPy.
 """
 import inspect
 import logging
-import os
 import sys
 from twisted.internet import reactor
 from twisted.internet.task import deferLater
 
 from base_plugin import BasePlugin
 from config import ConfigurationManager
-
+from utility_functions import path
 
 class DuplicatePluginError(Exception):
     """
@@ -55,8 +54,9 @@ class PluginManager(object):
         self.base_class = base_class
         self.factory = factory
         self.load_order = []
-        self.plugin_dir = os.path.realpath(self.config.plugin_path)
-        sys.path.append(self.plugin_dir)
+        #self.plugin_dir = os.path.realpath(self.config.plugin_path)
+        self.plugin_dir = path.child(self.config.plugin_path)
+        sys.path.append(self.plugin_dir.path)
         self.load_plugins(self.plugin_dir)
 
         self.logger.info("Loaded plugins:\n%s" % "\n".join(
@@ -71,11 +71,11 @@ class PluginManager(object):
         :return: None
         """
         seen_plugins = []
-        for f in os.listdir(plugin_dir):
-            if f.endswith(".py"):
-                name = f[:-3]
-            elif os.path.isdir(os.path.join(plugin_dir, f)):
-                name = f
+        for f in plugin_dir.globChildren("*"):
+            if f.splitext()[1] == ".py":
+                name = f.basename()[:-3]
+            elif f.isdir():
+                name = f.basename()
             else:
                 continue
             try:
