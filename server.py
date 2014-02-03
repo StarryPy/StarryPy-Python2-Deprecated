@@ -110,6 +110,9 @@ class StarryPyServerProtocol(Protocol):
         self.packet_stream = PacketStream(self)
         self.packet_stream.direction = packets.Direction.CLIENT
         logger.info("Connection established from IP: %s" % self.transport.getPeer().host)
+        self.connect_to_upstream()
+
+    def connect_to_upstream(self):
         reactor.connectTCP(self.config.upstream_hostname, self.config.upstream_port,
                            StarboundClientFactory(self), timeout=self.config.server_connect_timeout)
 
@@ -525,6 +528,7 @@ class StarryPyServerFactory(ServerFactory):
         protocols.
         """
         self.config = ConfigurationManager()
+        self.registered_reactor_users = []
         self.protocol.factory = self
         self.protocols = {}
         try:
@@ -534,6 +538,7 @@ class StarryPyServerFactory(ServerFactory):
             sys.exit()
         self.plugin_manager.activate_plugins()
         self.reaper = LoopingCall(self.reap_dead_protocols)
+        self.registered_reactor_users.append(self.reaper)
         self.reaper.start(self.config.reap_time)
         logger.debug("Factory created, endpoint of port %d" % self.config.bind_port)
 
@@ -612,15 +617,32 @@ class StarboundClientFactory(ClientFactory):
         protocol.server_protocol = self.server_protocol
         return protocol
 
-
 class UDPProxy(DatagramProtocol):
     client = None
 
     def datagramReceived(self, datagram, addr):
         self.client.transport.write(datagram, (self.config.upstream_hostname, self.config.upstream_port))
 
+def test_for_upstream():
+   if config.port_check:
+        logger.debug("Port check enabled. Performing port check to %s:%d", config.upstream_hostname,
+                     config.upstream_port)
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(1)
+        result = sock.connect_ex((config.upstream_hostname, config.upstream_port))
+        if result != 0:
+            logger.critical("The starbound server is not connectable at the address %s:%d." % (
+                config.upstream_hostname, config.upstream_port))
+            logger.critical(
+                "Please ensure that you are running starbound_server on the correct port and that is reflected in the StarryPy configuration.")
+            sys.exit()
+        sock.shutdown(SHUT_RDWR)
+        sock.close()
+        logger.debug("Port check succeeded. Continuing.")
 
-if __name__ == '__main__':
+def setup(config_path="config/config.json"):
+    global config
+    global logger
     logger = logging.getLogger('starrypy')
     logger.setLevel(9)
     if TRACE:
@@ -639,7 +661,8 @@ if __name__ == '__main__':
     logger.addHandler(fh_d)
     logger.addHandler(fh_w)
     logger.trace("Attempting initialization of configuration manager singleton.")
-    config = ConfigurationManager()
+
+    config = ConfigurationManager(config_path)
     logger.trace("Attemping to set logging formatters from configuration.")
     console_formatter = logging.Formatter(config.logging_format_console)
     logfile_formatter = logging.Formatter(config.logging_format_logfile)
@@ -647,21 +670,8 @@ if __name__ == '__main__':
     fh_d.setFormatter(debugfile_formatter)
     fh_w.setFormatter(logfile_formatter)
     sh.setFormatter(console_formatter)
-    if config.port_check:
-        logger.debug("Port check enabled. Performing port check to %s:%d", config.upstream_hostname,
-                     config.upstream_port)
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.settimeout(1)
-        result = sock.connect_ex((config.upstream_hostname, config.upstream_port))
-        if result != 0:
-            logger.critical("The starbound server is not connectable at the address %s:%d." % (
-                config.upstream_hostname, config.upstream_port))
-            logger.critical(
-                "Please ensure that you are running starbound_server on the correct port and that is reflected in the StarryPy configuration.")
-            sys.exit()
-        sock.shutdown(SHUT_RDWR)
-        sock.close()
-        logger.debug("Port check succeeded. Continuing.")
+
+def run():
     logger.info("Started StarryPy server version %s" % VERSION)
     factory = StarryPyServerFactory()
     logger.debug("Attempting to listen on TCP port %d", factory.config.bind_port)
@@ -678,3 +688,8 @@ if __name__ == '__main__':
             "Could not listen on UDP port %d. Will continue running, but please note that steam statistics will be unavailable.",
             factory.config.bind_port)
     reactor.run()
+
+if __name__ == '__main__':
+    setup()
+    test_for_upstream()
+    run()

@@ -50,10 +50,10 @@ class PluginManager(object):
 
         :param base_class: The base class to use while searching for plugins.
         """
-        self.plugins = {}
-        self.config = ConfigurationManager()
+        self.config = ConfigurationManager("config/config.json")
         self.base_class = base_class
         self.factory = factory
+        self.plugins = {}
         self.load_order = []
         self.plugin_dir = os.path.realpath(self.config.plugin_path)
         sys.path.append(self.plugin_dir)
@@ -209,6 +209,7 @@ def route(func):
         if res:
             res = func(self, data)
             d = deferLater(reactor, 1, self.plugin_manager.do, self, after, data)
+            self.factory.registered_reactor_users.append(d)
             d.addErrback(print_this_defered_failure)
         return res
 

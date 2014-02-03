@@ -19,6 +19,7 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
         super(PlayerManagerPlugin, self).activate()
         self.player_manager = PlayerManager(self.config)
         self.l_call = LoopingCall(self.check_logged_in)
+        self.factory.registered_reactor_users.append(self.l_call)
         self.l_call.start(1, now=False)
         self.regexes = self.config.plugin_config['name_removal_regexes']
 

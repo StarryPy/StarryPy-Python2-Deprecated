@@ -20,9 +20,9 @@ class ConfigurationManager(object):
     __metaclass__ = Singleton
     logger = logging.getLogger("starrypy.config.ConfigurationManager")
 
-    def __init__(self):
+    def __init__(self, config_path):
         try:
-            with open("config/config.json.default", "r") as default_config:
+            with open(config_path+".default", "r") as default_config:
                 default = json.load(default_config)
         except IOError:
             self.logger.critical("The configuration defaults file (config.json.default) doesn't exist! Shutting down.")
@@ -31,7 +31,7 @@ class ConfigurationManager(object):
             self.logger.critical("The configuration defaults file (config.json.default) contains invalid JSON. Please run it against a JSON linter, such as http://jsonlint.com. Shutting down." )
             sys.exit()
         try:
-            with open("config/config.json", "r") as c:
+            with open(config_path, "r") as c:
                 config = json.load(c)
                 self.config = recursive_dictionary_update(default, config)
         except IOError:
@@ -48,13 +48,13 @@ class ConfigurationManager(object):
         except ValueError:
             self.logger.critical("The configuration file (config.json) contains invalid JSON. Please run it against a JSON linter, such as http://jsonlint.com. Shutting down.")
             sys.exit()
-
         self.logger.debug("Created configuration manager.")
+        self.config_path = config_path
         self.save()
 
     def save(self):
         try:
-            with io.open("config/config.json", "w", encoding="utf-8") as config:
+            with io.open(self.config_path, "w", encoding="utf-8") as config:
                 self.logger.debug("Writing configuration file.")
                 config.write(json.dumps(self.config, indent=4, separators=(',', ': '), sort_keys=True, ensure_ascii = False))
         except Exception as e:
@@ -79,7 +79,6 @@ class ConfigurationManager(object):
             else:
                 self.logger.error("Couldn't find configuration option %s in configuration file.", item)
                 raise AttributeError
-
 
     def __setattr__(self, key, value):
         if key == "config":
