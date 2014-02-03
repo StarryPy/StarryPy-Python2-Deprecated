@@ -614,11 +614,8 @@ class StarboundClientFactory(ClientFactory):
 
 
 class UDPProxy(DatagramProtocol):
-    client = None
-
     def datagramReceived(self, datagram, addr):
-        self.client.transport.write(datagram, (self.config.upstream_hostname, self.config.upstream_port))
-
+        self.transport.write(datagram, (self.config.upstream_hostname, self.config.upstream_port))
 
 if __name__ == '__main__':
     logger = logging.getLogger('starrypy')
