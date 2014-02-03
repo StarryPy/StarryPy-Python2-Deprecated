@@ -7,6 +7,7 @@ import socket
 import datetime
 
 import construct
+import twisted
 from twisted.internet import reactor
 from twisted.internet.error import CannotListenError
 from twisted.internet.protocol import ClientFactory, ServerFactory, Protocol, connectionDone, DatagramProtocol
@@ -432,19 +433,24 @@ class StarryPyServerProtocol(Protocol):
             x = build_packet(packets.Packets.CLIENT_DISCONNECT,
                              packets.client_disconnect().build(Container(data=0)))
 
-            if self.player is not None:
-                if self.protocol is not None:
+            if hasattr(self, "protocol") and self.protocol is not None:
+                if self.player is not None:
                     self.client_disconnect(x)
                 self.player.logged_in = False
                 self.player.protocol = None
-            self.client_protocol.transport.write(x)
-        except:
-            logger.error("Couldn't disconnect protocol.")
+            if self.client_protocol is not None:
+                self.client_protocol.transport.write(x)
+                del self.client_protocol
+        except twisted.internet.error.ConnectionDone:
+            logger.debug("Connection was closed cleanly.")
+        except Exception as e:
+            logger.error("Couldn't disconnect protocol. %s", str(e))
         finally:
             self.die()
 
     def die(self):
-        self.transport.abortConnection()
+        if self.player.protocol is not None:
+            self.transport.abortConnection()
         self.factory.protocols.pop(self.id)
         try:
             self.client_protocol.transport.abortConnection()
