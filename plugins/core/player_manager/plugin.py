@@ -89,7 +89,7 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
         if coords is not None:
             parent_system = coords['parentSystem']
             location = parent_system['location']
-            l = location['data']
+            l = location
             self.protocol.player.on_ship = False
             planet = Planet(parent_system['sector'], l[0], l[1], l[2],
                             coords['planetaryOrbitNumber'], coords['satelliteOrbitNumber'])

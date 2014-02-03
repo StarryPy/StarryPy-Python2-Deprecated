@@ -20,7 +20,6 @@ class UserCommandPlugin(SimpleCommandPlugin):
     def activate(self):
         super(UserCommandPlugin, self).activate()
         self.player_manager = self.plugins['player_manager'].player_manager
-        self.godmode = {}
 
     @permissions(UserLevels.GUEST)
     def who(self, data):

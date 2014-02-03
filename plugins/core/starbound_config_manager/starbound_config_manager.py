@@ -34,7 +34,7 @@ class StarboundConfigManager(SimpleCommandPlugin):
 
     @permissions(UserLevels.GUEST)
     def spawn(self, data):
-        """Warps you to spawn. Syntax: /spawn"""
-        self.plugins['warpy_plugin'].move_player_ship(self.protocol, self._spawn)
+        """Moves your ship to spawn. Syntax: /move_ship_to_spawn"""
+        print self._spawn
+        self.plugins['warpy_plugin'].move_player_ship(self.protocol, [x for x in self._spawn])
         self.protocol.send_chat_message("Moving your ship to spawn.")
-
