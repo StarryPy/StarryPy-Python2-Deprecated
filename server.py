@@ -21,7 +21,7 @@ from plugin_manager import PluginManager, route, FatalPluginError
 from utility_functions import build_packet
 
 VERSION = "1.2.3"
-TRACE = False
+TRACE = True
 TRACE_LVL = 9
 logging.addLevelName(9, "TRACE")
 logging.Logger.trace = lambda s, m, *a, **k: s._log(TRACE_LVL, m, a, **k)
@@ -433,7 +433,8 @@ class StarryPyServerProtocol(Protocol):
                              packets.client_disconnect().build(Container(data=0)))
 
             if self.player is not None:
-                self.client_disconnect(x)
+                if self.protocol is None:
+                    self.client_disconnect(x)
                 self.player.logged_in = False
                 self.player.protocol = None
             self.client_protocol.transport.write(x)
