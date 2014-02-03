@@ -83,7 +83,10 @@ class Warpy(SimpleCommandPlugin):
             self.protocol.send_chat_message(self.warp.__doc__)
 
     def move_player_ship(self, protocol, location):
-        satellite = int(location.pop())
+        if len(location) == 5:
+            satellite = 0
+        else:
+            satellite = int(location.pop())
         planet = int(location.pop())
         z = int(location.pop())
         y = int(location.pop())

@@ -20,7 +20,7 @@ import packets
 from plugin_manager import PluginManager, route, FatalPluginError
 from utility_functions import build_packet
 
-VERSION = "1.2.1"
+VERSION = "1.2.2"
 TRACE = False
 TRACE_LVL = 9
 logging.addLevelName(9, "TRACE")
@@ -614,11 +614,8 @@ class StarboundClientFactory(ClientFactory):
 
 
 class UDPProxy(DatagramProtocol):
-    client = None
-
     def datagramReceived(self, datagram, addr):
-        self.client.transport.write(datagram, (self.config.upstream_hostname, self.config.upstream_port))
-
+        self.transport.write(datagram, (self.config.upstream_hostname, self.config.upstream_port))
 
 if __name__ == '__main__':
     logger = logging.getLogger('starrypy')
