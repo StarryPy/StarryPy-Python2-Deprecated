@@ -403,7 +403,8 @@ class StarryPyServerProtocol(Protocol):
             for line in lines:
                 self.send_chat_message(line)
             return
-        logger.trace("Calling send_chat_message from player %s on channel %d on world '%s' with reported username of %s with message: %s", self.player.name, channel, world, name, text)
+        if self.player is not None:
+            logger.trace("Calling send_chat_message from player %s on channel %d on world '%s' with reported username of %s with message: %s", self.player.name, channel, world, name, text)
         chat_data = packets.chat_received().build(Container(chat_channel=channel,
                                                             world=world,
                                                             client_id=0,
