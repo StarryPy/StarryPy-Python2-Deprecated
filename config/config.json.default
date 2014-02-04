@@ -25,9 +25,6 @@
         "announcer_plugin": {
             "auto_activate": true
         },
-        "bouncer": {
-            "auto_activate": false
-        },
         "chat_logger": {
             "auto_activate": true
         },
