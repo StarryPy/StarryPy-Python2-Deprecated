@@ -25,9 +25,6 @@
         "announcer_plugin": {
             "auto_activate": true
         },
-        "bouncer": {
-            "auto_activate": false
-        },
         "chat_logger": {
             "auto_activate": true
         },
@@ -57,6 +54,18 @@
         },
         "planet_protect": {
             "auto_activate": true,
+            "protect_everything": false,
+            "bad_packets": [
+                "CONNECT_WIRE",
+                "DISCONNECT_ALL_WIRES",
+                "OPEN_CONTAINER",
+                "CLOSE_CONTAINER",
+                "SWAP_IN_CONTAINER",
+                "DAMAGE_TILE",
+                "DAMAGE_TILE_GROUP",
+                "REQUEST_DROP",
+                "MODIFY_TILE_LIST"
+            ],
             "blacklist": [
                 "bomb",
                 "bombblockexplosion",
