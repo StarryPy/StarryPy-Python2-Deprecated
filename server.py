@@ -565,7 +565,7 @@ class StarryPyServerFactory(ServerFactory):
     def reap_dead_protocols(self):
         logger.debug("Reaping dead connections.")
         count = 0
-        start_time = datetime.datetime.now()
+        start_time = datetime.datetime.utcnow()
         for protocol in self.protocols.itervalues():
             if (
                     protocol.packet_stream.last_received_timestamp - start_time).total_seconds() > self.config.reap_time:
