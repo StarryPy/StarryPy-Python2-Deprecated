@@ -149,19 +149,23 @@ class UserCommandPlugin(SimpleCommandPlugin):
         name, reason = extract_name(data)
         if reason is None:
             reason = "no reason given"
+        else:
+            reason = " ".join(reason)
         info = self.player_manager.whois(name)
         if info and info.logged_in:
             tp = self.factory.protocols[info.protocol]
-            tp.loseConnection()
+            tp.transport.loseConnection()
             self.factory.broadcast("%s kicked %s (reason: %s)" %
                                    (self.protocol.player.name,
                                     info.name,
-                                    " ".join(reason)))
-            self.logger.info("%s kicked %s (reason: %s", self.protocol.player.name, info.name,
-                             " ".join(reason))
+                                    reason))
+            self.logger.info("%s kicked %s (reason: %s)", self.protocol.player.name, info.name,
+                             reason)
         else:
             self.protocol.send_chat_message("Couldn't find a user by the name %s." % name)
         return False
+
+
 
     @permissions(UserLevels.ADMIN)
     def ban(self, data):
