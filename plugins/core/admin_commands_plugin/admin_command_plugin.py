@@ -172,7 +172,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
         """Bans an IP (retrieved by /whois). Syntax: /ban [ip address]"""
         try:
             ip = data[0]
-            socket.inet_aton(ip)
+            print socket.inet_aton(ip)
             self.logger.debug("Banning IP address %s" % ip)
             self.player_manager.ban(ip)
             self.protocol.send_chat_message("Banned IP: %s" % ip)

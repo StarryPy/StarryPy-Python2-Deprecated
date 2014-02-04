@@ -93,7 +93,6 @@ class PluginManager(object):
 
             except ImportError:
                 self.logger.critical("Import error for %s", name)
-                sys.exit()
         try:
             dependencies = {x.name: set(x.depends) for x in seen_plugins}
             classes = {x.name: x for x in seen_plugins}
@@ -171,8 +170,7 @@ class PluginManager(object):
                     res = True
                 return_values.append(res)
             except:
-                self.logger.exception("Error in plugin %s with function %s.", str(plugin), command,
-                                      exc_info=True)
+                self.logger.exception("Error in plugin %s with function %s.", str(plugin), command)
         return all(return_values)
 
     def get_by_name(self, name):

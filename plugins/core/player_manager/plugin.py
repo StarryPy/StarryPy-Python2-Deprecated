@@ -72,16 +72,21 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
         self.protocol.transport.write(rejection)
         self.protocol.transport.loseConnection()
 
-    def after_connect_response(self, data):
-        connection_parameters = connect_response().parse(data.data)
-        if not connection_parameters.success:
-            self.protocol.transport.loseConnection()
-        else:
-            self.protocol.player.client_id = connection_parameters.client_id
-            self.protocol.player.logged_in = True
-            self.logger.info("Player %s (UUID: %s, IP: %s) logged in" % (
-                self.protocol.player.name, self.protocol.player.uuid,
-                self.protocol.transport.getPeer().host))
+    def on_connect_response(self, data):
+        try:
+            connection_parameters = connect_response().parse(data.data)
+            if not connection_parameters.success:
+                self.protocol.transport.loseConnection()
+            else:
+                self.protocol.player.client_id = connection_parameters.client_id
+                self.protocol.player.logged_in = True
+                self.logger.info("Player %s (UUID: %s, IP: %s) logged in" % (
+                    self.protocol.player.name, self.protocol.player.uuid,
+                    self.protocol.transport.getPeer().host))
+        except:
+            self.logger.exception("Exception in on_connect_response, player info may not have been logged.")
+        finally:
+            return True
 
     def after_world_start(self, data):
             world_start = packets.world_start().parse(data.data)

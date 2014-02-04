@@ -478,7 +478,7 @@ class ClientProtocol(Protocol):
                     packet):
                 self.server_protocol.write(packet.original_data)
         except construct.core.FieldError:
-            logger.exception("Construct field error in string_received.", exc_info=True)
+            logger.exception("Construct field error in string_received.")
             self.server_protocol.write(
                 packet.original_data)
 
@@ -550,7 +550,7 @@ class StarryPyServerFactory(ServerFactory):
             try:
                 p.send_chat_message(text)
             except:
-                logger.exception("Exception in broadcast.", exc_info=True)
+                logger.exception("Exception in broadcast.")
 
     def buildProtocol(self, address):
         """

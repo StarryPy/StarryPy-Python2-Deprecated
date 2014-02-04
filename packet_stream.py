@@ -56,7 +56,7 @@ class PacketStream(object):
                 self.packet_size = self.payload_size + self.header_length
                 return True
         except:
-            self.logger.exception("Unknown error in start_packet.", exc_info=True)
+            self.logger.exception("Unknown error in start_packet.")
             return False
 
     def check_packet(self):
@@ -89,7 +89,7 @@ class PacketStream(object):
                 if self.start_packet():
                     self.check_packet()
         except:
-            self.logger.exception("Unknown error in check_packet", exc_info=True)
+            self.logger.exception("Unknown error in check_packet")
 
     def reset(self):
         self.id = None
