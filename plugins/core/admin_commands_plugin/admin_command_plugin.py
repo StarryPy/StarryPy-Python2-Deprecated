@@ -293,9 +293,9 @@ class MuteManager(BasePlugin):
     def on_chat_sent(self, data):
         data = chat_sent().parse(data.data)
         if self.protocol.player.muted and data.message[0] != self.config.command_prefix and data.message[
-                                                                                            :2] != "##":
+                                                                                            :2] != self.config.chat_prefix*2:
             self.protocol.send_chat_message(
-                "You are currently muted and cannot speak. You are limited to commands and admin chat (prefix your lines with ## for admin chat.")
+                "You are currently muted and cannot speak. You are limited to commands and admin chat (prefix your lines with %s for admin chat." % (self.config.chat_prefix*2))
             return False
         return True
 
