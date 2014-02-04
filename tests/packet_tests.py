@@ -4,6 +4,7 @@ import unittest
 from nose.tools import *
 
 from packets import *
+from utility_functions import path
 
 # Tests for packet type 0x01: Protocol Version, Server -> Client
 
@@ -70,7 +71,7 @@ class UniverseTimeUpdateTest(unittest.TestCase):
 
 class ClientConnectTest(unittest.TestCase):
     def testParseBuild(self):
-        with open("tests/large_packets.json", "r+") as large_packets:
+        with path.child("tests").child("large_packets.json").open("r") as large_packets:
             packet = json.load(large_packets)['client_connect'].decode("hex")
         parsed = client_connect().parse(packet)
 
@@ -177,7 +178,7 @@ class ClientContextUpdateTest(unittest.TestCase):
 
 class WorldStartTest(unittest.TestCase):
     def testParseBuild(self):
-        with open("tests/large_packets.json", "r+") as large_packets:
+        with path.child("tests").child("large_packets.json").open("r") as large_packets:
             packet = json.load(large_packets)['world_start'].decode("hex")
         parsed = world_start().parse(packet)
 
