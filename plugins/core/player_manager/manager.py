@@ -186,7 +186,7 @@ class PlayerManager(object):
         else:
             logger.info("Adding new player with name: %s" % name)
             player = Player(uuid=uuid, name=name,
-                            last_seen=datetime.datetime.now(),
+                            last_seen=datetime.datetime.utcnow(),
                             access_level=int(UserLevels.GUEST),
                             logged_in=False,
                             protocol=protocol,

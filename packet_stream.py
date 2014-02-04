@@ -29,7 +29,7 @@ class PacketStream(object):
         self.packet_size = None
         self.protocol = protocol
         self.direction = None
-        self.last_received_timestamp = datetime.datetime.now()
+        self.last_received_timestamp = datetime.datetime.utcnow()
 
     def __add__(self, other):
         self._stream += other
@@ -39,7 +39,7 @@ class PacketStream(object):
         except:
             pass
         finally:
-            self.last_received_timestamp = datetime.datetime.now()
+            self.last_received_timestamp = datetime.datetime.utcnow()
         return self
 
     def start_packet(self):
