@@ -9,7 +9,7 @@ import datetime
 import construct
 from twisted.internet import reactor
 from twisted.internet.error import CannotListenError
-from twisted.internet.protocol import ClientFactory, ServerFactory, Protocol, connectionDone, DatagramProtocol
+from twisted.internet.protocol import ClientFactory, ServerFactory, Protocol, connectionDone
 from construct import Container
 import construct.core
 from twisted.internet.task import LoopingCall
@@ -602,11 +602,6 @@ class StarboundClientFactory(ClientFactory):
         protocol.server_protocol = self.server_protocol
         return protocol
 
-
-class UDPProxy(DatagramProtocol):
-    def datagramReceived(self, datagram, addr):
-        self.transport.write(datagram, (self.config.upstream_hostname, self.config.upstream_port))
-
 if __name__ == '__main__':
     logger = logging.getLogger('starrypy')
     logger.setLevel(9)
@@ -658,10 +653,4 @@ if __name__ == '__main__':
         logger.critical("Cannot listen on TCP port %d. Exiting.", factory.config.bind_port)
         sys.exit()
     logger.info("Listening on port %s" % factory.config.bind_port)
-    try:
-        reactor.listenUDP(config.bind_port, UDPProxy())
-    except CannotListenError:
-        logger.error(
-            "Could not listen on UDP port %d. Will continue running, but please note that steam statistics will be unavailable.",
-            factory.config.bind_port)
     reactor.run()
