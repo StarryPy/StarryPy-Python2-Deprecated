@@ -84,25 +84,26 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
                 self.protocol.transport.getPeer().host))
 
     def after_world_start(self, data):
-        world_start = packets.world_start().parse(data.data)
-        coords = world_start.planet['config']['coordinate']
-        if coords is not None:
-            parent_system = coords['parentSystem']
-            location = parent_system['location']
-            l = location
-            self.protocol.player.on_ship = False
-            planet = Planet(parent_system['sector'], l[0], l[1], l[2],
-                            coords['planetaryOrbitNumber'], coords['satelliteOrbitNumber'])
-            self.protocol.player.planet = str(planet)
-            self.logger.debug("Player %s is now at planet: %s", self.protocol.player.name, str(planet))
-        else:
-            self.logger.info("Player %s is now on a ship.", self.protocol.player.name)
-            self.protocol.player.on_ship = True
+            world_start = packets.world_start().parse(data.data)
+            coords = world_start.planet['config']['coordinate']
+            if coords is not None:
+                parent_system = coords['parentSystem']
+                location = parent_system['location']
+                l = location
+                self.protocol.player.on_ship = False
+                planet = Planet(parent_system['sector'], l[0], l[1], l[2],
+                                coords['planetaryOrbitNumber'], coords['satelliteOrbitNumber'])
+                self.protocol.player.planet = str(planet)
+                self.logger.debug("Player %s is now at planet: %s", self.protocol.player.name, str(planet))
+            else:
+                self.logger.info("Player %s is now on a ship.", self.protocol.player.name)
+                self.protocol.player.on_ship = True
 
     def on_client_disconnect(self, player):
         if self.protocol.player is not None and self.protocol.player.logged_in:
             self.logger.info("Player disconnected: %s", self.protocol.player.name)
             self.protocol.player.logged_in = False
+        return True
 
     @permissions(UserLevels.ADMIN)
     def delete_player(self, data):

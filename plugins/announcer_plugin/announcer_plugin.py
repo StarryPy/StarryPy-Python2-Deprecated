@@ -23,7 +23,7 @@ class Announcer(BasePlugin):
             return
         except:
             self.logger.exception("Unknown error in after_connect_response.", exc_info=True)
-            raise
+            return
 
     def on_client_disconnect(self, data):
         if self.protocol.player is not None:

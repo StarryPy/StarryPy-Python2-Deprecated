@@ -96,6 +96,9 @@ class StarryPyServerProtocol(Protocol):
             packets.Packets.HEARTBEAT: self.heartbeat,
         }
         self.client_protocol = None
+        self.packet_stream = PacketStream(self)
+        self.packet_stream.direction = packets.Direction.CLIENT
+        self.plugin_manager = self.factory.plugin_manager
 
     def connectionMade(self):
         """
@@ -106,9 +109,6 @@ class StarryPyServerProtocol(Protocol):
         actual starbound server using StarboundClientFactory()
         :rtype : None
         """
-        self.plugin_manager = self.factory.plugin_manager
-        self.packet_stream = PacketStream(self)
-        self.packet_stream.direction = packets.Direction.CLIENT
         logger.info("Connection established from IP: %s", self.transport.getPeer().host)
         reactor.connectTCP(self.config.upstream_hostname, self.config.upstream_port,
                            StarboundClientFactory(self), timeout=self.config.server_connect_timeout)
@@ -429,33 +429,16 @@ class StarryPyServerProtocol(Protocol):
         :param reason: The reason for the disconnection.
         :return: None
         """
+        logger.info("Losing connection from IP: %s", self.transport.getPeer().host)
+        if self.player is not None:
+            self.player.logged_in = False
+            self.client_disconnect("")
+        if self.client_protocol is not None:
+            self.client_protocol.disconnect()
         try:
-            if self.client_protocol is not None:
-                x = build_packet(packets.Packets.CLIENT_DISCONNECT,
-                             packets.client_disconnect().build(Container(data=0)))
-                if self.player is not None and self.player.logged_in:
-                    self.client_disconnect(x)
-                self.player.protocol = None
-                self.player = None
-                self.client_protocol.transport.write(x)
-                self.client_protocol.transport.abortConnection()
+            self.factory.protocols.pop(self.id)
         except:
-            logger.error("Couldn't disconnect protocol.")
-        finally:
-            try:
-                self.factory.protocols.pop(self.id)
-            except:
-                self.logger.trace("Protocol was not in factory list. This should not happen.")
-            finally:
-                logger.info("Lost connection from IP: %s", self.transport.getPeer().host)
-                self.transport.abortConnection()
-
-    def die(self):
-        self.connectionLost()
-
-    def connectionFailed(self, *args, **kwargs):
-        self.connectionLost()
-
+            self.logger.trace("Protocol was not in factory list. This should not happen.")
 
 class ClientProtocol(Protocol):
     """
@@ -476,7 +459,6 @@ class ClientProtocol(Protocol):
         :return: None
         """
         self.server_protocol.client_protocol = self
-        self.parsing = False
 
 
     def string_received(self, packet):
@@ -517,6 +499,10 @@ class ClientProtocol(Protocol):
         else:
             self.packet_stream += data
 
+    def disconnect(self):
+        x = build_packet(packets.Packets.CLIENT_DISCONNECT, packets.client_disconnect().build(Container(data=0)))
+        self.transport.write(x)
+        self.transport.abortConnection()
 
 class StarryPyServerFactory(ServerFactory):
     """

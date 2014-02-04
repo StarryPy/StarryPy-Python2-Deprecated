@@ -152,7 +152,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
         info = self.player_manager.whois(name)
         if info and info.logged_in:
             tp = self.factory.protocols[info.protocol]
-            tp.die()
+            tp.loseConnection()
             self.factory.broadcast("%s kicked %s (reason: %s)" %
                                    (self.protocol.player.name,
                                     info.name,
