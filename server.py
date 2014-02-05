@@ -552,6 +552,24 @@ class StarryPyServerFactory(ServerFactory):
             except:
                 logger.exception("Exception in broadcast.")
 
+    def broadcast_planet(self, text, planet, name=''):
+        """
+        Convenience method to send a broadcasted message to all clients on the
+        current planet (and ships orbiting it).
+
+        :param text: Message text
+        :param planet: The planet to send the message to
+        :param name: The name to prepend before the message, format is <name>, not prepanded when empty
+        :return: None
+        """
+        for p in self.protocols.itervalues():
+            if p.player.planet == planet:
+                try:
+                    p.send_chat_message(text)
+                except:
+                    logger.exception("Exception in broadcast.")
+
+
     def buildProtocol(self, address):
         """
         Builds the protocol to a given address.
