@@ -13,13 +13,20 @@ class UserCommandPlugin(SimpleCommandPlugin):
     """
     name = "user_management_commands"
     depends = ['command_dispatcher', 'player_manager']
-    commands = ["who", "whois", "promote", "kick", "ban", "give_item", "planet", "mute", "unmute",
+    commands = ["me", "who", "whois", "promote", "kick", "ban", "give_item", "planet", "mute", "unmute",
                 "passthrough", "shutdown"]
     auto_activate = True
 
     def activate(self):
         super(UserCommandPlugin, self).activate()
         self.player_manager = self.plugins['player_manager'].player_manager
+
+    @permissions(UserLevels.GUEST)
+    def me(self, data):
+        """Preforms a player emote. Syntax: /me <emote sentance>"""
+        emote = " ".join(data)
+        self.factory.broadcast_planet("^#CCCCCC;%s %s" % (self.protocol.player.name, emote), planet=self.protocol.player.planet)
+        return False
 
     @permissions(UserLevels.GUEST)
     def who(self, data):
