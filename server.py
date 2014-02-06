@@ -66,7 +66,7 @@ class StarryPyServerProtocol(Protocol):
             packets.Packets.TILE_LIQUID_UPDATE: self.tile_liquid_update,
             packets.Packets.TILE_DAMAGE_UPDATE: self.tile_damage_update,
             packets.Packets.TILE_MODIFICATION_FAILURE: self.tile_modification_failure,
-            packets.Packets.GIVE_ITEM: self.give_item,
+            packets.Packets.GIVE_ITEM: self.item,
             packets.Packets.SWAP_IN_CONTAINER_RESULT: self.swap_in_container_result,
             packets.Packets.ENVIRONMENT_UPDATE: self.environment_update,
             packets.Packets.ENTITY_INTERACT_RESULT: self.entity_interact_result,
@@ -213,7 +213,7 @@ class StarryPyServerProtocol(Protocol):
         return True
 
     @route
-    def give_item(self, data):
+    def item(self, data):
         return True
 
     @route
@@ -566,6 +566,23 @@ class StarryPyServerFactory(ServerFactory):
                 p.send_chat_message(text)
             except:
                 logger.exception("Exception in broadcast.", exc_info=True)
+
+    def broadcast_planet(self, text, planet, name=''):
+        """
+        Convenience method to send a broadcasted message to all clients on the
+        current planet (and ships orbiting it).
+
+        :param text: Message text
+        :param planet: The planet to send the message to
+        :param name: The name to prepend before the message, format is <name>, not prepanded when empty
+        :return: None
+        """
+        for p in self.protocols.itervalues():
+            if p.player.planet == planet:
+                try:
+                    p.send_chat_message(text)
+                except:
+                    logger.exception("Exception in broadcast.")
 
     def buildProtocol(self, address):
         """

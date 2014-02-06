@@ -13,14 +13,14 @@ class UserCommandPlugin(SimpleCommandPlugin):
     """
     name = "user_management_commands"
     depends = ['command_dispatcher', 'player_manager']
-    commands = ["who", "whois", "promote", "kick", "ban", "give_item", "planet", "mute", "unmute",
+    commands = ["who", "players", "whois", "promote", "kick", "ban", "item", "planet", "mute", "unmute",
                 "passthrough", "shutdown"]
     auto_activate = True
 
     def activate(self):
         super(UserCommandPlugin, self).activate()
         self.player_manager = self.plugins['player_manager'].player_manager
-
+			
     @permissions(UserLevels.GUEST)
     def who(self, data):
         """Returns all current users on the server. Syntax: /who"""
@@ -29,11 +29,16 @@ class UserCommandPlugin(SimpleCommandPlugin):
         return False
 
     @permissions(UserLevels.GUEST)
+    def players(self, data):
+        """Returns all current users on the server. Syntax: /players"""
+        UserCommandPlugin.who(self, data)
+		
+    @permissions(UserLevels.GUEST)
     def planet(self, data):
-        """Displays who is on your current planet."""
+        """Displays who is on your current planet. Syntax: /planet"""
         who = [w.colored_name(self.config.colors) for w in self.player_manager.who() if
                w.planet == self.protocol.player.planet and not w.on_ship]
-        self.protocol.send_chat_message("%d players on your current planet: %s" % (len(who), ", ".join(who)))
+        self.protocol.send_chat_message("%d players on planet: %s" % (len(who), ", ".join(who)))
 
     @permissions(UserLevels.ADMIN)
     def whois(self, data):
@@ -202,8 +207,8 @@ class UserCommandPlugin(SimpleCommandPlugin):
         return False
 
     @permissions(UserLevels.ADMIN)
-    def give_item(self, data):
-        """Gives an item to a player. Syntax: /give [target player] [item name] [optional: item count]"""
+    def item(self, data):
+        """Gives an item to a player. Syntax: /item [target player] [item name] [optional: item count]"""
         if len(data) >= 2:
             try:
                 name, item = extract_name(data)
@@ -238,7 +243,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
                 self.protocol.send_chat_message("Couldn't find name: %s" % name)
             return False
         else:
-            self.protocol.send_chat_message(self.give_item.__doc__)
+            self.protocol.send_chat_message(self.item.__doc__)
 
     @permissions(UserLevels.MODERATOR)
     def mute(self, data):
