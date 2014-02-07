@@ -14,7 +14,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
     name = "user_management_commands"
     depends = ['command_dispatcher', 'player_manager']
     commands = ["who", "whois", "promote", "kick", "ban", "item", "planet", "mute", "unmute",
-                "passthrough", "shutdown"]
+                "passthrough", "shutdown", "chattimestamps"]
     auto_activate = True
 
     def activate(self):
@@ -282,6 +282,16 @@ class UserCommandPlugin(SimpleCommandPlugin):
         self.factory.broadcast("SERVER ANNOUNCEMENT: Server is shutting down in %s seconds!" % data[0])
         reactor.callLater(x, reactor.stop)
 
+    @permissions(UserLevels.OWNER)
+    def chattimestamps(self, data):
+        """Toggles chat time stamps. Syntax: /chattimestamps"""
+        if self.config.chattimestamps:
+            self.config.chattimestamps = False
+            self.factory.broadcast("Chat time stamps are now HIDDEN!")
+
+        else:
+            self.config.chattimestamps = True
+            self.factory.broadcast("Chat time stamps are now SHOWN!")
 
 class MuteManager(BasePlugin):
     name = "mute_manager"

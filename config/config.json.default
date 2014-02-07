@@ -1,6 +1,7 @@
 {
     "bind_port": 21025,
-    "chat_prefix": "@",
+    "chat_prefix": "#",
+    "chattimestamps": true,
     "colors": {
         "admin": "^#C443F7;",
         "default": "^#F7EB43;",
