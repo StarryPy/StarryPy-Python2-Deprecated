@@ -20,14 +20,14 @@ class UserCommandPlugin(SimpleCommandPlugin):
     def activate(self):
         super(UserCommandPlugin, self).activate()
         self.player_manager = self.plugins['player_manager'].player_manager
-			
+
     @permissions(UserLevels.GUEST)
     def who(self, data):
         """Returns all current users on the server. Syntax: /who"""
         who = [w.colored_name(self.config.colors) for w in self.player_manager.who()]
         self.protocol.send_chat_message("%d players online: %s" % (len(who), ", ".join(who)))
         return False
-		
+
     @permissions(UserLevels.GUEST)
     def planet(self, data):
         """Displays who is on your current planet. Syntax: /planet"""
