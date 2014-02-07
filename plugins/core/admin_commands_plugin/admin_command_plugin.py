@@ -13,7 +13,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
     """
     name = "user_management_commands"
     depends = ['command_dispatcher', 'player_manager']
-    commands = ["who", "players", "whois", "promote", "kick", "ban", "item", "planet", "mute", "unmute",
+    commands = ["who", "whois", "promote", "kick", "ban", "item", "planet", "mute", "unmute",
                 "passthrough", "shutdown"]
     auto_activate = True
 
@@ -27,11 +27,6 @@ class UserCommandPlugin(SimpleCommandPlugin):
         who = [w.colored_name(self.config.colors) for w in self.player_manager.who()]
         self.protocol.send_chat_message("%d players online: %s" % (len(who), ", ".join(who)))
         return False
-
-    @permissions(UserLevels.GUEST)
-    def players(self, data):
-        """Returns all current users on the server. Syntax: /players"""
-        UserCommandPlugin.who(self, data)
 		
     @permissions(UserLevels.GUEST)
     def planet(self, data):
@@ -294,9 +289,9 @@ class MuteManager(BasePlugin):
     def on_chat_sent(self, data):
         data = chat_sent().parse(data.data)
         if self.protocol.player.muted and data.message[0] != self.config.command_prefix and data.message[
-                                                                                            :2] != "##":
+                                                                                            :2] != self.config.chat_prefix*2:
             self.protocol.send_chat_message(
-                "You are currently muted and cannot speak. You are limited to commands and admin chat (prefix your lines with ## for admin chat.")
+                "You are currently muted and cannot speak. You are limited to commands and admin chat (prefix your lines with %s for admin chat." % (self.config.chat_prefix*2))
             return False
         return True
 
