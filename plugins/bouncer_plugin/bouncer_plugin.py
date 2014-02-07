@@ -30,4 +30,4 @@ class BouncerPlugin(BasePlugin):
     def after_connect_response(self, data):
         if self.protocol.player.access_level < UserLevels.REGISTERED:
             self.protocol.send_chat_message(
-                "^#FF0000;This server is protected. You can't build or perform any destructive actions. Speak to an administrator about becoming a registered user.^#F7EB43;")
+                "^#FF0000;Server is protected! Ask admins for rights.^#F7EB43;")
