@@ -155,10 +155,10 @@
         "pushover_plugin": {
             "api_key": "MY_API_KEY",
             "ignored_players": [
-                "Player1"
+                "Player1",
             ],
             "user_key": "MY_USER_KEY"
-        },
+        }
     },
     "plugin_path": "plugins",
     "port_check": true,
