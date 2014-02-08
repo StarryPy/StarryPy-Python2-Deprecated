@@ -120,7 +120,6 @@ class PluginManager(object):
             self.logger.critical(str(e))
         self.activate_plugins()
 
-
     def reload_plugins(self):
         self.logger.warning("Reloading plugins.")
         for x in self.plugins:
@@ -132,7 +131,6 @@ class PluginManager(object):
         except:
             self.logger.exception("Couldn't reload plugins!")
             raise
-
 
     def activate_plugins(self):
         for plugin in [self.plugins[x] for x in self.load_order]:
@@ -171,8 +169,7 @@ class PluginManager(object):
                     res = True
                 return_values.append(res)
             except:
-                self.logger.exception("Error in plugin %s with function %s.", str(plugin), command,
-                                      exc_info=True)
+                self.logger.exception("Error in plugin %s with function %s." % (str(plugin), command), exc_info=True)
         return all(return_values)
 
     def get_by_name(self, name):
