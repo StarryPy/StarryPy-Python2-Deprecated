@@ -40,9 +40,9 @@ using git:
 
 `git clone https://github.com/CarrotsAreMediocre/StarryPy`
 
-### Windows 
+### Windows
 
-As a reminder, though this worked for me I cannot guarantee it will fork for you.
+As a reminder, though this worked for me I cannot guarantee it will work for you.
 I offer no particular support for running StarryPy on windows as it has become a
 huge time sink that has dragged me away from development proper. If, however, you
 run into actual bugs with the server in Windows, please do let me know.
@@ -56,18 +56,18 @@ the 32-bit 2.7 version and not the python 3 version; the server will not run on
 Python 3, nor will it work with the 64-bit version on Windows due to licensing
 requirements.***
 
-#### Download StarryPy from GitHub. 
+#### Download StarryPy from GitHub.
 
 I personally recommend using git, but a zip file will suffice. Please note that if
 you choose not to use git (not too hard to figure out), future upgrades are far
 more likely to break everything.
 
-If not using git, click the Download zip file on the right side of the page. 
+If not using git, click the Download zip file on the right side of the page.
 
 Move the StarryPy-master folder somewhere convenient. You can rename it to
 whatever you like.
 
-#### Install requirements. 
+#### Install requirements.
 
 For this step, you'll need to get inside the StarryPy folder in the command
 prompt. For Vista or greater, which hopefully you are all running, you can simply
@@ -94,20 +94,24 @@ There are two areas of configuration that we are concerned with. The first is th
 StarryPy configuration, and the second is Starbound configuration.
 
 For StarryPy, you will have to create a configuration file. Copy
-config.json.example to config.json in the config/ folder, and edit the following
+config.json.default to config.json in the config/ folder, and edit the following
 variables:
 
 * upstream_port: This is the port that Starbound will be running on. I recommend
   `21026`. It **must** match the port in your starbound.config file.
 * upstream_hostname: Change this if you are hosting the wrapper on a different
   computer than your server.
-* bind_port: This should be 21025 normally; it is the port that StarryPy listens
+* bind_port: This should be `21025` normally; it is the port that StarryPy listens
   on.
 * passthrough: **Make sure this is false.** It is an emergency off switch for
   StarryPy.
 
 Finally, find starbound.config and change `gameport` to be exactly the same as
 `upstream_port` in config.json.
+
+If you're on windows, be sure to set `starbound_path` to the correct path
+(remembering to escape backslashes, e.g.,
+`C:\\Program Files\\Steam\\SteamApps\\common\\StarBound`)
 
 ## Run it
 
@@ -121,7 +125,7 @@ StarryPy is nearly entirely plugin driven (our plugin manager is a plugin!), so
 there are quite a few built-in plugins. The truly important plugins are in the
 core\_plugins folder. If you remove any of those, it's likely that most other
 plugins will break. We'll break them down by core plugin and normal plugin
-classes. 
+classes.
 
 If you are looking for commands, they have been removed from the listing due to
 the constant flux and the time required for documentation. For a list of commands
@@ -168,27 +172,27 @@ This plugin simply announces whenever a player joins or quits the server.
 #### Bouncer
 
 This plugin prevents non-registered users from building or destroying anything. It
-is disabled by default. 
+is disabled by default.
 
 #### Colored names
 
 This plugin displays color codes for each username depending on rank. The colors
 are set in config.json.
 
-#### MOTD    
+#### MOTD
 
-This plugin sends a Message of the Day on login. 
+This plugin sends a Message of the Day on login.
 
 #### New Player Greeter
 
 Greets first-time players on the server. Gives them a greeting (located in
 new\_player\_message.txt) and gives them a pack of starter items (located in
-starter\_items.txt). Default items are 200 `coalore` and 5 `alienburger`s. 
+starter\_items.txt). Default items are 200 `coalore` and 5 `alienburger`s.
 
 #### Planet Protection
 
 This plugin protects specified planets against modification in any way. Currently
-if a planet is protected only registered users may modify it. 
+if a planet is protected only registered users may modify it.
 
 #### Plugin Manager
 
@@ -279,7 +283,7 @@ issues page.
 
 We're absolutely happy to accept pull requests. There is a freenode channel
 called [##starbound-dev](http://webchat.freenode.net/?channels=##starbound-dev)
-that we discuss our development on primarily. 
+that we discuss our development on primarily.
 
 Other than that, please report any bugs you find with the appropriate section of
 the debug.log file that is generated.

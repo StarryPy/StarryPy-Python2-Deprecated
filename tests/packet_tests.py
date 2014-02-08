@@ -18,7 +18,6 @@ class ProtocolVersionTest(unittest.TestCase):
 
 # Tests for packet type 0x02: Connect Response, Server -> Client
 
-
 class ConnectResponseTest(unittest.TestCase):
     def testParseBuild(self):
         packet = "010100".decode("hex")
@@ -32,11 +31,10 @@ class ConnectResponseTest(unittest.TestCase):
 
 class ServerDisconnectTest(unittest.TestCase):
     def testParseBuild(self):
-        raise "not implemented, no test data available"
+        raise StandardError("not implemented, no test data available")
 
 
 # Tests for packet type 0x04: Handshake Challenge, Server -> Client
-
 
 class HandshakeChallengeTest(unittest.TestCase):
     def testParseBuild(self):
@@ -52,6 +50,7 @@ class HandshakeChallengeTest(unittest.TestCase):
 
 class ChatReceivedTest(unittest.TestCase):
     def testChatReceived(self):
+        raise StandardError("not implemented, no test data available")
         packet = "TODO: NO TEST DATA".decode("hex")
         parsed = chat_received().parse(packet)
 
@@ -170,7 +169,7 @@ class ChatSentTest(unittest.TestCase):
 
 class ClientContextUpdateTest(unittest.TestCase):
     def testParseBuild(self):
-        raise "not yet understood"
+        raise StandardError("not yet understood")
 
 
 #Tests for packet types 0x0D: World Start, Server -> Client
