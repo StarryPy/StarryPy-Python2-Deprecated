@@ -1,10 +1,11 @@
+import unittest
 import json
 from nose.tools import *
 
 from packets import *
 
 '''
-Tests for packet type 0x01: Protocol Version, Server -> Client 
+Tests for packet type 0x01: Protocol Version, Server -> Client
 '''
 
 
@@ -17,7 +18,7 @@ class ProtocolVersionTest(unittest.TestCase):
 
 
 '''
-Tests for packet type 0x02: Connect Response, Server -> Client 
+Tests for packet type 0x02: Connect Response, Server -> Client
 '''
 
 
@@ -30,17 +31,17 @@ class ConnectRsponseTest(unittest.TestCase):
 
 
 '''
-Tests for packet type 0x03: Server Disconnect, Server -> Client 
+Tests for packet type 0x03: Server Disconnect, Server -> Client
 '''
 
 
 class ServerDisconnectTest(unittest.TestCase):
     def testParseBuild(self):
-        raise "not implemented, no test data available"
+        raise StandardError("not implemented, no test data available")
 
 
 '''
-Tests for packet type 0x04: Handshake Challenge, Server -> Client 
+Tests for packet type 0x04: Handshake Challenge, Server -> Client
 '''
 
 
@@ -55,12 +56,13 @@ class HandshakeChallangeTest(unittest.TestCase):
 
 
 '''
-Tests for packet type 0x05: Chat Received, Server -> Client 
+Tests for packet type 0x05: Chat Received, Server -> Client
 '''
 
 
 class ChatReceivedTest(unittest.TestCase):
     def testChatReceived(self):
+        raise StandardError("not implemented, no test data available")
         packet = "TODO: NO TEST DATA".decode("hex")
         parsed = chat_received().parse(packet)
 
@@ -68,7 +70,7 @@ class ChatReceivedTest(unittest.TestCase):
 
 
 '''
-Tests for packet type 0x06: Universe Time Update, Server -> Client 
+Tests for packet type 0x06: Universe Time Update, Server -> Client
 '''
 
 
@@ -81,7 +83,7 @@ class UniverseTimeUpdateTest(unittest.TestCase):
 
 
 '''
-Tests for packet type 0x07: Client Connect, Server -> Client, compressed 
+Tests for packet type 0x07: Client Connect, Server -> Client, compressed
 '''
 
 
@@ -95,7 +97,7 @@ class ClientConnectTest(unittest.TestCase):
 
 
 '''
-Tests for packet type 0x08: Client Disconnect, Server -> Client, compressed 
+Tests for packet type 0x08: Client Disconnect, Server -> Client, compressed
 '''
 
 
@@ -196,7 +198,7 @@ Tests for packet types  0x0C: Client Context Update , Client -> Server
 
 class ClientContextUpdateTest(unittest.TestCase):
     def testParseBuild(self):
-        raise "not yet understood"
+        raise StandardError("not yet understood")
 
 
 '''
