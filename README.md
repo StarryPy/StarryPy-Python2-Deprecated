@@ -40,6 +40,10 @@ using git:
 
 `git clone https://github.com/CarrotsAreMediocre/StarryPy`
 
+Then install the Python requirements:
+
+`sudo pip install -r StarryPy/requirements.txt`
+
 ### Windows
 
 As a reminder, though this worked for me I cannot guarantee it will work for you.
