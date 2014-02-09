@@ -102,7 +102,7 @@ config.json.default to config.json in the config/ folder, and edit the following
 variables:
 
 * upstream_port: This is the port that Starbound will be running on. I recommend
-  `21026`. It **must** match the port in your starbound.config file.
+  `21024`. It **must** match the port in your starbound.config file.
 * upstream_hostname: Change this if you are hosting the wrapper on a different
   computer than your server.
 * bind_port: This should be `21025` normally; it is the port that StarryPy listens
