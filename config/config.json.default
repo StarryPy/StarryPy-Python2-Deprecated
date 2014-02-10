@@ -5,6 +5,7 @@
         "admin": "^#C443F7;",
         "default": "^#F7EB43;",
         "guest": "^#F7EB43;",
+        "irc": "^#495449;",
         "moderator": "^#4385F7;",
         "owner": "^#F7434C;",
         "registered": "^#A0F743;"
@@ -33,6 +34,15 @@
         },
         "command_dispatcher": {
             "auto_activate": true
+        },
+        "irc": {
+            "auto_activate": false,
+            "bot_nickname": "StarryPy",
+            "channel": "!!REPLACE ME!!",
+            "echo_from_channel": true,
+            "nickserv_password": "!!REPLACE ME!!",
+            "port": 6667,
+            "server": "irc.freenet.org"
         },
         "motd_plugin": {
             "auto_activate": true,

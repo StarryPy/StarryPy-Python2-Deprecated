@@ -115,7 +115,7 @@ class StarryPyServerProtocol(Protocol):
 
     def string_received(self, packet):
         """
-        This method is called whenever a completed packet is received from the 
+        This method is called whenever a completed packet is received from the
         client going to the Starbound server.
         This is the first and only time where these packets can be modified,
         stopped, or allowed.
@@ -415,6 +415,7 @@ class StarryPyServerProtocol(Protocol):
         logger.trace("Built chat packet. Data: %s", chat_packet.encode("hex"))
         self.transport.write(chat_packet)
         logger.debug("Sent chat message with text: %s", text)
+
     def write(self, data):
         """
         Convenience method to send data to the client.
@@ -477,7 +478,6 @@ class ClientProtocol(Protocol):
         """
         self.server_protocol.client_protocol = self
         self.parsing = False
-
 
     def string_received(self, packet):
         """
