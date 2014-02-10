@@ -14,7 +14,7 @@ class UDPForwader(BasePlugin):
 
         super(UDPForwader, self).activate()
         try:
-            reactor.listenUDP(self.config.bind_port, UDPProxy(self.config.upstream_hostname, self.config.upstream_port))
+            reactor.listenUDP(self.config.bind_port, UDPProxy(self.config.upstream_hostname, self.config.upstream_port), interface=self.config.bind_address)
             self.logger.info("Listening for UDP on port %d" % self.config.bind_port)
         except CannotListenError:
             self.logger.error(

@@ -666,7 +666,7 @@ if __name__ == '__main__':
     factory = StarryPyServerFactory()
     logger.debug("Attempting to listen on TCP port %d", factory.config.bind_port)
     try:
-        reactor.listenTCP(factory.config.bind_port, factory)
+        reactor.listenTCP(factory.config.bind_port, factory, interface=factory.config.bind_address)
     except CannotListenError:
         logger.critical("Cannot listen on TCP port %d. Exiting.", factory.config.bind_port)
         sys.exit()
