@@ -9,7 +9,7 @@ import datetime
 import construct
 from twisted.internet import reactor
 from twisted.internet.error import CannotListenError
-from twisted.internet.protocol import ClientFactory, ServerFactory, Protocol, connectionDone, DatagramProtocol
+from twisted.internet.protocol import ClientFactory, ServerFactory, Protocol, connectionDone
 from construct import Container
 import construct.core
 from twisted.internet.task import LoopingCall
@@ -25,6 +25,21 @@ TRACE = False
 TRACE_LVL = 9
 logging.addLevelName(9, "TRACE")
 logging.Logger.trace = lambda s, m, *a, **k: s._log(TRACE_LVL, m, a, **k)
+
+
+def port_check(upstream_hostname, upstream_port):
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(1)
+        result = sock.connect_ex((upstream_hostname, upstream_port))
+
+        if result != 0:
+            sock.close()
+            return False
+        else:
+            sock.shutdown(SHUT_RDWR)
+            sock.close()
+
+        return True
 
 
 class StarryPyServerProtocol(Protocol):
@@ -96,6 +111,9 @@ class StarryPyServerProtocol(Protocol):
             packets.Packets.HEARTBEAT: self.heartbeat,
         }
         self.client_protocol = None
+        self.packet_stream = PacketStream(self)
+        self.packet_stream.direction = packets.Direction.CLIENT
+        self.plugin_manager = self.factory.plugin_manager
 
     def connectionMade(self):
         """
@@ -106,16 +124,13 @@ class StarryPyServerProtocol(Protocol):
         actual starbound server using StarboundClientFactory()
         :rtype : None
         """
-        self.plugin_manager = self.factory.plugin_manager
-        self.packet_stream = PacketStream(self)
-        self.packet_stream.direction = packets.Direction.CLIENT
         logger.info("Connection established from IP: %s", self.transport.getPeer().host)
         reactor.connectTCP(self.config.upstream_hostname, self.config.upstream_port,
                            StarboundClientFactory(self), timeout=self.config.server_connect_timeout)
 
     def string_received(self, packet):
         """
-        This method is called whenever a completed packet is received from the 
+        This method is called whenever a completed packet is received from the
         client going to the Starbound server.
         This is the first and only time where these packets can be modified,
         stopped, or allowed.
@@ -415,6 +430,7 @@ class StarryPyServerProtocol(Protocol):
         logger.trace("Built chat packet. Data: %s", chat_packet.encode("hex"))
         self.transport.write(chat_packet)
         logger.debug("Sent chat message with text: %s", text)
+
     def write(self, data):
         """
         Convenience method to send data to the client.
@@ -429,32 +445,16 @@ class StarryPyServerProtocol(Protocol):
         :param reason: The reason for the disconnection.
         :return: None
         """
+        logger.info("Losing connection from IP: %s", self.transport.getPeer().host)
+        if self.player is not None:
+            self.player.logged_in = False
+            self.client_disconnect("")
+        if self.client_protocol is not None:
+            self.client_protocol.disconnect()
         try:
-            if self.client_protocol is not None:
-                x = build_packet(packets.Packets.CLIENT_DISCONNECT,
-                             packets.client_disconnect().build(Container(data=0)))
-                if self.player is not None and self.player.logged_in:
-                    self.client_disconnect(x)
-                self.player.protocol = None
-                self.player = None
-                self.client_protocol.transport.write(x)
-                self.client_protocol.transport.abortConnection()
+            self.factory.protocols.pop(self.id)
         except:
-            logger.error("Couldn't disconnect protocol.")
-        finally:
-            try:
-                self.factory.protocols.pop(self.id)
-            except:
-                self.logger.trace("Protocol was not in factory list. This should not happen.")
-            finally:
-                logger.info("Lost connection from IP: %s", self.transport.getPeer().host)
-                self.transport.abortConnection()
-
-    def die(self):
-        self.connectionLost()
-
-    def connectionFailed(self, *args, **kwargs):
-        self.connectionLost()
+            self.logger.trace("Protocol was not in factory list. This should not happen.")
 
 
 class ClientProtocol(Protocol):
@@ -476,8 +476,6 @@ class ClientProtocol(Protocol):
         :return: None
         """
         self.server_protocol.client_protocol = self
-        self.parsing = False
-
 
     def string_received(self, packet):
         """
@@ -496,10 +494,9 @@ class ClientProtocol(Protocol):
                     packet):
                 self.server_protocol.write(packet.original_data)
         except construct.core.FieldError:
-            logger.exception("Construct field error in string_received.", exc_info=True)
+            logger.exception("Construct field error in string_received.")
             self.server_protocol.write(
                 packet.original_data)
-
 
     def dataReceived(self, data):
         """
@@ -516,6 +513,11 @@ class ClientProtocol(Protocol):
             self.server_protocol.write(data)
         else:
             self.packet_stream += data
+
+    def disconnect(self):
+        x = build_packet(packets.Packets.CLIENT_DISCONNECT, packets.client_disconnect().build(Container(data=0)))
+        self.transport.write(x)
+        self.transport.abortConnection()
 
 
 class StarryPyServerFactory(ServerFactory):
@@ -537,7 +539,6 @@ class StarryPyServerFactory(ServerFactory):
         except FatalPluginError:
             logger.critical("Shutting Down.")
             sys.exit()
-        self.plugin_manager.activate_plugins()
         self.reaper = LoopingCall(self.reap_dead_protocols)
         self.reaper.start(self.config.reap_time)
         logger.debug("Factory created, endpoint of port %d" % self.config.bind_port)
@@ -565,7 +566,24 @@ class StarryPyServerFactory(ServerFactory):
             try:
                 p.send_chat_message(text)
             except:
-                logger.exception("Exception in broadcast.", exc_info=True)
+                logger.exception("Exception in broadcast.")
+
+    def broadcast_planet(self, text, planet, name=''):
+        """
+        Convenience method to send a broadcasted message to all clients on the
+        current planet (and ships orbiting it).
+
+        :param text: Message text
+        :param planet: The planet to send the message to
+        :param name: The name to prepend before the message, format is <name>, not prepanded when empty
+        :return: None
+        """
+        for p in self.protocols.itervalues():
+            if p.player.planet == planet:
+                try:
+                    p.send_chat_message(text)
+                except:
+                    logger.exception("Exception in broadcast.")
 
     def buildProtocol(self, address):
         """
@@ -580,7 +598,7 @@ class StarryPyServerFactory(ServerFactory):
     def reap_dead_protocols(self):
         logger.debug("Reaping dead connections.")
         count = 0
-        start_time = datetime.datetime.now()
+        start_time = datetime.datetime.utcnow()
         for protocol in self.protocols.itervalues():
             if (
                     protocol.packet_stream.last_received_timestamp - start_time).total_seconds() > self.config.reap_time:
@@ -617,20 +635,17 @@ class StarboundClientFactory(ClientFactory):
         protocol.server_protocol = self.server_protocol
         return protocol
 
-
-class UDPProxy(DatagramProtocol):
-    def datagramReceived(self, datagram, addr):
-        self.transport.write(datagram, (self.config.upstream_hostname, self.config.upstream_port))
-
 if __name__ == '__main__':
     logger = logging.getLogger('starrypy')
     logger.setLevel(9)
+
     if TRACE:
         trace_logger = logging.FileHandler("trace.log")
         trace_logger.setLevel("TRACE")
         trace_logger.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
         logger.addHandler(trace_logger)
         logger.trace("Initialized trace logger.")
+
     fh_d = logging.FileHandler("debug.log")
     fh_d.setLevel(logging.DEBUG)
     fh_w = logging.FileHandler("server.log")
@@ -649,34 +664,29 @@ if __name__ == '__main__':
     fh_d.setFormatter(debugfile_formatter)
     fh_w.setFormatter(logfile_formatter)
     sh.setFormatter(console_formatter)
+
     if config.port_check:
         logger.debug("Port check enabled. Performing port check to %s:%d", config.upstream_hostname,
                      config.upstream_port)
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.settimeout(1)
-        result = sock.connect_ex((config.upstream_hostname, config.upstream_port))
-        if result != 0:
+
+        if port_check(config.upstream_hostname, config.upstream_port):
             logger.critical("The starbound server is not connectable at the address %s:%d." % (
                 config.upstream_hostname, config.upstream_port))
             logger.critical(
                 "Please ensure that you are running starbound_server on the correct port and that is reflected in the StarryPy configuration.")
             sys.exit()
-        sock.shutdown(SHUT_RDWR)
-        sock.close()
+
         logger.debug("Port check succeeded. Continuing.")
+
     logger.info("Started StarryPy server version %s" % VERSION)
     factory = StarryPyServerFactory()
     logger.debug("Attempting to listen on TCP port %d", factory.config.bind_port)
+
     try:
-        reactor.listenTCP(factory.config.bind_port, factory)
+        reactor.listenTCP(factory.config.bind_port, factory, interface=factory.config.bind_address)
     except CannotListenError:
         logger.critical("Cannot listen on TCP port %d. Exiting.", factory.config.bind_port)
         sys.exit()
+
     logger.info("Listening on port %s" % factory.config.bind_port)
-    try:
-        reactor.listenUDP(config.bind_port, UDPProxy())
-    except CannotListenError:
-        logger.error(
-            "Could not listen on UDP port %d. Will continue running, but please note that steam statistics will be unavailable.",
-            factory.config.bind_port)
     reactor.run()

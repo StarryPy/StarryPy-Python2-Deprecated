@@ -15,24 +15,17 @@ class PlanetProtectPlugin(SimpleCommandPlugin):
 
     def activate(self):
         super(PlanetProtectPlugin, self).activate()
-        bad_packets = [
-            "CONNECT_WIRE",
-            "DISCONNECT_ALL_WIRES",
-            "OPEN_CONTAINER",
-            "CLOSE_CONTAINER",
-            "SWAP_IN_CONTAINER",
-            "DAMAGE_TILE",
-            "DAMAGE_TILE_GROUP",
-            "REQUEST_DROP",
-            "MODIFY_TILE_LIST"]
+        bad_packets = self.config.plugin_config.get("bad_packets", [])
         for n in ["on_" + n.lower() for n in bad_packets]:
             setattr(self, n, (lambda x: self.planet_check()))
         self.protected_planets = self.config.plugin_config.get("protected_planets", [])
         self.blacklist = self.config.plugin_config.get("blacklist", [])
         self.player_manager = self.plugins.get("player_manager", [])
+        self.protect_everything = self.config.plugin_config.get("protect_everything", [])
 
     def planet_check(self):
-        if not self.protocol.player.on_ship and self.protocol.player.planet in self.protected_planets and self.protocol.player.access_level < UserLevels.REGISTERED:
+        if self.protect_everything or (
+                not self.protocol.player.on_ship and self.protocol.player.planet in self.protected_planets and self.protocol.player.access_level < UserLevels.REGISTERED):
             return False
         else:
             return True

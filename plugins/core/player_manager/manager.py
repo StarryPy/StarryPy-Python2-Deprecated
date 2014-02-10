@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 import datetime
 from functools import wraps
 import inspect
@@ -6,11 +7,27 @@ import json
 
 from enum import Enum
 from sqlalchemy.ext.mutable import Mutable
-from sqlalchemy.orm import Session, relationship, backref
+from sqlalchemy.orm import sessionmaker, relationship, backref
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey, Boolean, func
 from sqlalchemy.ext.declarative import declarative_base as sqla_declarative_base
 from twisted.words.ewords import AlreadyLoggedIn
 from sqlalchemy.types import TypeDecorator, VARCHAR
+from utility_functions import path
+
+
+@contextmanager
+def _autoclosing_session(sm):
+    session = sm()
+
+    try:
+        yield session
+
+    except:
+        session.rollback()
+        raise
+
+    finally:
+        session.close()
 
 
 class JSONEncodedDict(TypeDecorator):
@@ -91,6 +108,32 @@ class MutableDict(Mutable, dict):
 MutableDict.associate_with(JSONEncodedDict)
 
 
+class RecordWithAttachedSession(object):
+    def __init__(self, record, sessionmaker):
+        self.__dict__['record'] = record
+        self.__dict__['sessionmaker'] = sessionmaker
+
+    def __getattr__(self, name):
+        with _autoclosing_session(self.sessionmaker) as session:
+            if sessionmaker.object_session(self.record) != session:
+                session.add(self.record)
+            session.refresh(self.record)
+            val = getattr(self.record, name)
+
+        return val
+
+    def __setattr__(self, name, val):
+        with _autoclosing_session(self.sessionmaker) as session:
+            if sessionmaker.object_session(self.record) != session:
+                session.add(self.record)
+            session.refresh(self.record)
+            setattr(self.record, name, val)
+            session.merge(self.record)
+            session.commit()
+
+        return val
+
+
 class Player(Base):
     __tablename__ = 'players'
 
@@ -159,76 +202,145 @@ class Ban(Base):
 class PlayerManager(object):
     def __init__(self, config):
         self.config = config
-        self.engine = create_engine('sqlite:///%s' % self.config.player_db)
-        self.session = Session(self.engine)
+        self.engine = create_engine('sqlite:///%s' % path.preauthChild(self.config.player_db).path)
         Base.metadata.create_all(self.engine)
-        for player in self.session.query(Player).all():
-            player.logged_in = False
-            player.protocol = None
+        self.sessionmaker = sessionmaker(bind=self.engine, autoflush=True)
+        with _autoclosing_session(self.sessionmaker) as session:
+            for player in session.query(Player).all():
+                player.logged_in = False
+                player.protocol = None
+                session.commit()
+
+    def _cache_and_return_from_session(self, session, record, collection=False):
+        to_return = record
+
+        if not isinstance(record, Base):
+            return to_return
+
+        if collection:
+            to_return = []
+            for r in record:
+                to_return.append(RecordWithAttachedSession(r, self.sessionmaker))
+        else:
+            to_return = RecordWithAttachedSession(record, self.sessionmaker)
+
+        return to_return
 
     def fetch_or_create(self, uuid, name, ip, protocol=None):
-        if self.session.query(Player).filter_by(uuid=uuid, logged_in=True).first():
-            raise AlreadyLoggedIn
-        if self.check_bans(ip):
-            raise Banned
-        while self.whois(name):
-            logger.info("Got a duplicate player, affixing _ to name")
-            name += "_"
-        player = self.session.query(Player).filter_by(uuid=uuid).first()
-        if player:
-            if player.name != name:
-                logger.info("Detected username change.")
-                player.name = name
-            if ip not in player.ips:
-                player.ips.append(IPAddress(ip=ip))
-                player.ip = ip
-            player.protocol = protocol
-        else:
-            logger.info("Adding new player with name: %s" % name)
-            player = Player(uuid=uuid, name=name,
-                            last_seen=datetime.datetime.now(),
-                            access_level=int(UserLevels.GUEST),
-                            logged_in=False,
-                            protocol=protocol,
-                            client_id=-1,
-                            ip=ip,
-                            planet="",
-                            on_ship=True)
-            player.ips = [IPAddress(ip=ip)]
-            self.session.add(player)
-        if uuid == self.config.owner_uuid:
-            player.access_level = int(UserLevels.OWNER)
-        try:
-            self.session.commit()
-        except:
-            self.session.rollback()
-            raise
-        return player
+        with _autoclosing_session(self.sessionmaker) as session:
+            if session.query(Player).filter_by(uuid=uuid, logged_in=True).first():
+                raise AlreadyLoggedIn
+            if self.check_bans(ip):
+                raise Banned
+            while self.whois(name):
+                logger.info("Got a duplicate player, affixing _ to name")
+                name += "_"
+            player = session.query(Player).filter_by(uuid=uuid).first()
+            if player:
+                if player.name != name:
+                    logger.info("Detected username change.")
+                    player.name = name
+                if ip not in player.ips:
+                    player.ips.append(IPAddress(ip=ip))
+                    player.ip = ip
+                player.protocol = protocol
+            else:
+                logger.info("Adding new player with name: %s" % name)
+                player = Player(uuid=uuid, name=name,
+                                last_seen=datetime.datetime.now(),
+                                access_level=int(UserLevels.GUEST),
+                                logged_in=False,
+                                protocol=protocol,
+                                client_id=-1,
+                                ip=ip,
+                                planet="",
+                                on_ship=True)
+                player.ips = [IPAddress(ip=ip)]
+                session.add(player)
+            if uuid == self.config.owner_uuid:
+                player.access_level = int(UserLevels.OWNER)
+
+            session.commit()
+
+            return self._cache_and_return_from_session(session, player)
+
+    def delete(self, player_cache):
+        with _autoclosing_session(self.sessionmaker) as session:
+            session.delete(player_cache.record)
+            session.commit()
 
     def who(self):
-        return self.session.query(Player).filter_by(logged_in=True).all()
+        with _autoclosing_session(self.sessionmaker) as session:
+            return self._cache_and_return_from_session(
+                session,
+                session.query(Player).filter_by(logged_in=True).all(),
+                collection=True,
+                )
+
+    def all(self):
+        with _autoclosing_session(self.sessionmaker) as session:
+            return self._cache_and_return_from_session(
+                session,
+                session.query(Player).all(),
+                collection=True,
+                )
+
+    def all_like(self, regex):
+        with _autoclosing_session(self.sessionmaker) as session:
+            return self._cache_and_return_from_session(
+                session,
+                session.query(Player).filter(Player.name.like(regex)).all(),
+                collection=True,
+                )
 
     def whois(self, name):
-        return self.session.query(Player).filter(Player.logged_in == True,
-                                                 func.lower(Player.name) == func.lower(name)).first()
+        with _autoclosing_session(self.sessionmaker) as session:
+            return self._cache_and_return_from_session(
+                session,
+                session.query(Player).filter(
+                    Player.logged_in is True,
+                    func.lower(Player.name) == func.lower(name),
+                    ).first(),
+                )
 
     def check_bans(self, ip):
-        return self.session.query(Ban).filter_by(ip=ip).first() is not None
+        with _autoclosing_session(self.sessionmaker) as session:
+            return session.query(Ban).filter_by(ip=ip).first() is not None
 
     def ban(self, ip):
-        self.session.add(Ban(ip=ip))
-        try:
-            self.session.commit()
-        except:
-            self.session.rollback()
-            raise
+        with _autoclosing_session(self.sessionmaker) as session:
+            session.add(Ban(ip=ip))
+            session.commit()
+
+    @property
+    def bans(self):
+        with _autoclosing_session(self.sessionmaker) as session:
+            return self._cache_and_return_from_session(
+                session,
+                session.query(Ban).all(),
+                )
+
+    def delete_ban(self, ban_cache):
+        with _autoclosing_session(self.sessionmaker) as session:
+            session.delete(ban_cache.record)
+            session.commit()
 
     def get_by_name(self, name):
-        return self.session.query(Player).filter(func.lower(Player.name) == func.lower(name)).first()
+        with _autoclosing_session(self.sessionmaker) as session:
+            return self._cache_and_return_from_session(
+                session,
+                session.query(Player).filter(func.lower(Player.name) == func.lower(name)).first(),
+                )
 
     def get_logged_in_by_name(self, name):
-        return self.session.query(Player).filter(Player.logged_in == True,
-                                                 func.lower(Player.name) == func.lower(name)).first()
+        with _autoclosing_session(self.sessionmaker) as session:
+            return self._cache_and_return_from_session(
+                session,
+                session.query(Player).filter(
+                    Player.logged_in,
+                    func.lower(Player.name) == func.lower(name),
+                    ).first(),
+                )
 
 
 def permissions(level=UserLevels.OWNER):

@@ -107,41 +107,21 @@ class UserCommandPlugin(SimpleCommandPlugin):
     def make_guest(self, player):
         self.logger.trace("Setting %s to GUEST", player.name)
         player.access_level = UserLevels.GUEST
-        try:
-            self.player_manager.session.commit()
-        except:
-            self.player_manager.session.rollback()
-            raise
 
     @permissions(UserLevels.MODERATOR)
     def make_registered(self, player):
         self.logger.trace("Setting %s to REGISTERED", player.name)
         player.access_level = UserLevels.REGISTERED
-        try:
-            self.player_manager.session.commit()
-        except:
-            self.player_manager.session.rollback()
-            raise
 
     @permissions(UserLevels.ADMIN)
     def make_mod(self, player):
         player.access_level = UserLevels.MODERATOR
         self.logger.trace("Setting %s to MODERATOR", player.name)
-        try:
-            self.player_manager.session.commit()
-        except:
-            self.player_manager.session.rollback()
-            raise
 
     @permissions(UserLevels.OWNER)
     def make_admin(self, player):
         self.logger.trace("Setting %s to ADMIN", player.name)
         player.access_level = UserLevels.ADMIN
-        try:
-            self.player_manager.session.commit()
-        except:
-            self.player_manager.session.rollback()
-            raise
 
     @permissions(UserLevels.MODERATOR)
     def kick(self, data):
@@ -149,26 +129,30 @@ class UserCommandPlugin(SimpleCommandPlugin):
         name, reason = extract_name(data)
         if reason is None:
             reason = "no reason given"
+        else:
+            reason = " ".join(reason)
         info = self.player_manager.whois(name)
         if info and info.logged_in:
             tp = self.factory.protocols[info.protocol]
-            tp.die()
+            tp.transport.loseConnection()
             self.factory.broadcast("%s kicked %s (reason: %s)" %
                                    (self.protocol.player.name,
                                     info.name,
-                                    " ".join(reason)))
-            self.logger.info("%s kicked %s (reason: %s", self.protocol.player.name, info.name,
-                             " ".join(reason))
+                                    reason))
+            self.logger.info("%s kicked %s (reason: %s)", self.protocol.player.name, info.name,
+                             reason)
         else:
             self.protocol.send_chat_message("Couldn't find a user by the name %s." % name)
         return False
+
+
 
     @permissions(UserLevels.ADMIN)
     def ban(self, data):
         """Bans an IP (retrieved by /whois). Syntax: /ban [ip address]"""
         try:
             ip = data[0]
-            socket.inet_aton(ip)
+            print socket.inet_aton(ip)
             self.logger.debug("Banning IP address %s" % ip)
             self.player_manager.ban(ip)
             self.protocol.send_chat_message("Banned IP: %s" % ip)
@@ -194,7 +178,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
         ip = data[0]
         for ban in self.player_manager.bans:
             if ban.ip == ip:
-                self.player_manager.session.delete(ban)
+                self.player_manager.remove_ban(ban)
                 self.protocol.send_chat_message("Unbanned IP: %s" % ip)
                 break
         else:
@@ -289,9 +273,9 @@ class MuteManager(BasePlugin):
     def on_chat_sent(self, data):
         data = chat_sent().parse(data.data)
         if self.protocol.player.muted and data.message[0] != self.config.command_prefix and data.message[
-                                                                                            :2] != "##":
+                                                                                            :2] != self.config.chat_prefix*2:
             self.protocol.send_chat_message(
-                "You are currently muted and cannot speak. You are limited to commands and admin chat (prefix your lines with ## for admin chat.")
+                "You are currently muted and cannot speak. You are limited to commands and admin chat (prefix your lines with %s for admin chat." % (self.config.chat_prefix*2))
             return False
         return True
 

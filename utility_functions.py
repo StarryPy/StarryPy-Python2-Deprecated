@@ -1,11 +1,14 @@
 import collections
 import logging
+import os
 
 from construct import Container
+from twisted.python.filepath import FilePath
 
 import packets
 
 
+path = FilePath(os.path.dirname(os.path.abspath(__file__)))
 logger = logging.getLogger("starrypy.utility_functions")
 
 
@@ -86,3 +89,4 @@ def extract_name(l):
             name.append(s)
     raise ValueError("Final terminator character of <%s> not found" %
                      terminator)
+

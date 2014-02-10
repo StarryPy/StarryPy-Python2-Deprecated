@@ -44,7 +44,7 @@ class MOTDPlugin(SimpleCommandPlugin):
             self.logger.info("MOTD changed to: %s", self._motd)
             self.send_motd()
         except:
-            self.logger.exception("Couldn't change message of the day.", exc_info=True)
+            self.logger.exception("Couldn't change message of the day.")
             raise
 
 
