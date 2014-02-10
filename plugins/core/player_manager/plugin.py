@@ -132,10 +132,10 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
     def format_player_response(self, players):
         if len(players) <= 25:
             self.protocol.send_chat_message(
-                "Results: %s" % "\n".join(["%s: %s" % (player.uuid, player.name) for player in players]))
+                "Results:\n%s" % "\n".join(["^shadow,cyan;%s: ^shadow,yellow;%s" % (player.uuid, player.name) for player in players]))
         else:
             self.protocol.send_chat_message(
-                "Results: %s" % "\n".join(["%s: %s" % (player.uuid, player.name) for player in players[:25]]))
+                "Results:\n%s" % "\n".join(["^shadow,cyan;%s: ^shadow,yellow;%s" % (player.uuid, player.name) for player in players[:25]]))
             self.protocol.send_chat_message(
                 "And %d more. Narrow it down with SQL like syntax. Feel free to use a *, it will be replaced appropriately." % (
                     len(players) - 25))

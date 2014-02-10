@@ -16,11 +16,11 @@ class PluginManagerPlugin(SimpleCommandPlugin):
     @permissions(UserLevels.ADMIN)
     def list_plugins(self, data):
         """Lists all currently loaded plugins. Syntax: /list_plugins"""
-        self.protocol.send_chat_message("Currently loaded plugins: %s" % " ".join(
+        self.protocol.send_chat_message("Currently loaded plugins: ^shadow,yellow;%s" % "^shadow,green;, ^shadow,yellow;".join(
             [plugin.name for plugin in self.plugin_manager.plugins.itervalues() if plugin.active]))
         inactive = [plugin.name for plugin in self.plugin_manager.plugins.itervalues() if not plugin.active]
         if len(inactive) > 0:
-            self.protocol.send_chat_message("Inactive plugins: %s" % " ".join(
+            self.protocol.send_chat_message("Inactive plugins: ^shadow,red;%s" % "^shadow,green;, ^shadow,red;".join(
                 [plugin.name for plugin in self.plugin_manager.plugins.itervalues() if not plugin.active]))
 
     @permissions(UserLevels.ADMIN)
@@ -79,5 +79,5 @@ class PluginManagerPlugin(SimpleCommandPlugin):
                     available.append(name)
             available.sort(key=str.lower)
             self.protocol.send_chat_message(
-                "Available commands: %s\nAlso try /help command" % ", ".join(available))
+                "Available commands: ^shadow,yellow;%s\n^shadow,green;Get more help on commands with ^shadow,yellow;/help <command>" % "^shadow,green;, ^shadow,yellow;".join(available))
             return True

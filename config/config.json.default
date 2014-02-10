@@ -32,6 +32,9 @@
         "chat_logger": {
             "auto_activate": true
         },
+        "colored_names_plugin": {
+            "auto_activate": true
+        },
         "command_dispatcher": {
             "auto_activate": true
         },
@@ -52,24 +55,13 @@
         "starteritems_plugin": {
             "auto_activate": true,
             "items": [
-            [ "bandage", 200 ],
-            [ "burger", 100 ],
+            [ "bandage", 20 ],
+            [ "burger", 20 ],
             [ "stoneaxe", 1 ],
             [ "stonehoe", 1 ],
             [ "stonepickaxe", 1 ],
-            [ "coalore", 500 ],
-            [ "copperore", 400 ],
-            [ "ironore", 300 ],
-            [ "silverore", 200 ],
-            [ "goldore", 100 ],
-            [ "plantfibre", 500 ],
-            [ "fullwood1", 500 ],
-            [ "darkwoodmaterial", 500 ],
-            [ "cobblestonematerial", 500 ],
-            [ "doublejumpTech-chip", 1 ],
-            [ "painttool", 1 ],
-            [ "solariumore", 125 ],
-            [ "money", 10000 ]
+            [ "solariumore", 30 ],
+            [ "money", 1000 ]
                
             ],
             "message": "You were given a set of starter items ;)"

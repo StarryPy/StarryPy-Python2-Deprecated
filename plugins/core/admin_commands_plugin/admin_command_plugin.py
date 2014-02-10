@@ -266,12 +266,12 @@ class UserCommandPlugin(SimpleCommandPlugin):
         target_protocol.send_chat_message("You have been unmuted.")
         self.protocol.send_chat_message("%s has been unmuted." % name)
 
-    @permissions(UserLevels.ADMIN)
+    @permissions(UserLevels.OWNER)
     def passthrough(self, data):
         """Sets the server to passthrough mode. *This is irreversible without restart.* Syntax: /passthrough"""
         self.config.passthrough = True
 
-    @permissions(UserLevels.ADMIN)
+    @permissions(UserLevels.OWNER)
     def shutdown(self, data):
         """Shutdown the server in n seconds. Syntax: /shutdown [number of seconds] (>0)"""
         try:
@@ -284,14 +284,14 @@ class UserCommandPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.OWNER)
     def chattimestamps(self, data):
-        """Toggles chat time stamps. Syntax: /chattimestamps"""
+        """Toggles chat timestamps. Syntax: /chattimestamps"""
         if self.config.chattimestamps:
             self.config.chattimestamps = False
-            self.factory.broadcast("Chat time stamps are now HIDDEN!")
+            self.factory.broadcast("Chat timestamps are now ^shadow,red;HIDDEN")
 
         else:
             self.config.chattimestamps = True
-            self.factory.broadcast("Chat time stamps are now SHOWN!")
+            self.factory.broadcast("Chat timestamps are now ^shadow,yellow;SHOWN")
 
 class MuteManager(BasePlugin):
     name = "mute_manager"
