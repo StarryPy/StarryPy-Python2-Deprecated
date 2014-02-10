@@ -161,7 +161,12 @@
         },
         "warpy_plugin": {
             "auto_activate": true
+        },
+        "web_monitor": {
+            "auto_activate": true,
+            "port": 8000
         }
+
     },
     "plugin_path": "plugins",
     "port_check": true,
