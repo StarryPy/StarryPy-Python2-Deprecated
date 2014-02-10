@@ -27,6 +27,21 @@ logging.addLevelName(9, "TRACE")
 logging.Logger.trace = lambda s, m, *a, **k: s._log(TRACE_LVL, m, a, **k)
 
 
+def port_check(upstream_hostname, upstream_port):
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(1)
+        result = sock.connect_ex((upstream_hostname, upstream_port))
+
+        if result != 0:
+            sock.close()
+            return False
+        else:
+            sock.shutdown(SHUT_RDWR)
+            sock.close()
+
+        return True
+
+
 class StarryPyServerProtocol(Protocol):
     """
     The main protocol class for handling connections from Starbound clients.
@@ -115,7 +130,7 @@ class StarryPyServerProtocol(Protocol):
 
     def string_received(self, packet):
         """
-        This method is called whenever a completed packet is received from the 
+        This method is called whenever a completed packet is received from the
         client going to the Starbound server.
         This is the first and only time where these packets can be modified,
         stopped, or allowed.
@@ -415,6 +430,7 @@ class StarryPyServerProtocol(Protocol):
         logger.trace("Built chat packet. Data: %s", chat_packet.encode("hex"))
         self.transport.write(chat_packet)
         logger.debug("Sent chat message with text: %s", text)
+
     def write(self, data):
         """
         Convenience method to send data to the client.
@@ -440,6 +456,7 @@ class StarryPyServerProtocol(Protocol):
         except:
             self.logger.trace("Protocol was not in factory list. This should not happen.")
 
+
 class ClientProtocol(Protocol):
     """
     The protocol class which handles the connection to the Starbound server.
@@ -459,7 +476,6 @@ class ClientProtocol(Protocol):
         :return: None
         """
         self.server_protocol.client_protocol = self
-
 
     def string_received(self, packet):
         """
@@ -482,7 +498,6 @@ class ClientProtocol(Protocol):
             self.server_protocol.write(
                 packet.original_data)
 
-
     def dataReceived(self, data):
         """
         Called whenever a packet is received. Generally this should not be
@@ -503,6 +518,7 @@ class ClientProtocol(Protocol):
         x = build_packet(packets.Packets.CLIENT_DISCONNECT, packets.client_disconnect().build(Container(data=0)))
         self.transport.write(x)
         self.transport.abortConnection()
+
 
 class StarryPyServerFactory(ServerFactory):
     """
@@ -569,7 +585,6 @@ class StarryPyServerFactory(ServerFactory):
                 except:
                     logger.exception("Exception in broadcast.")
 
-
     def buildProtocol(self, address):
         """
         Builds the protocol to a given address.
@@ -623,12 +638,14 @@ class StarboundClientFactory(ClientFactory):
 if __name__ == '__main__':
     logger = logging.getLogger('starrypy')
     logger.setLevel(9)
+
     if TRACE:
         trace_logger = logging.FileHandler("trace.log")
         trace_logger.setLevel("TRACE")
         trace_logger.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
         logger.addHandler(trace_logger)
         logger.trace("Initialized trace logger.")
+
     fh_d = logging.FileHandler("debug.log")
     fh_d.setLevel(logging.DEBUG)
     fh_w = logging.FileHandler("server.log")
@@ -647,28 +664,29 @@ if __name__ == '__main__':
     fh_d.setFormatter(debugfile_formatter)
     fh_w.setFormatter(logfile_formatter)
     sh.setFormatter(console_formatter)
+
     if config.port_check:
         logger.debug("Port check enabled. Performing port check to %s:%d", config.upstream_hostname,
                      config.upstream_port)
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.settimeout(1)
-        result = sock.connect_ex((config.upstream_hostname, config.upstream_port))
-        if result != 0:
+
+        if port_check(config.upstream_hostname, config.upstream_port):
             logger.critical("The starbound server is not connectable at the address %s:%d." % (
                 config.upstream_hostname, config.upstream_port))
             logger.critical(
                 "Please ensure that you are running starbound_server on the correct port and that is reflected in the StarryPy configuration.")
             sys.exit()
-        sock.shutdown(SHUT_RDWR)
-        sock.close()
+
         logger.debug("Port check succeeded. Continuing.")
+
     logger.info("Started StarryPy server version %s" % VERSION)
     factory = StarryPyServerFactory()
     logger.debug("Attempting to listen on TCP port %d", factory.config.bind_port)
+
     try:
         reactor.listenTCP(factory.config.bind_port, factory, interface=factory.config.bind_address)
     except CannotListenError:
         logger.critical("Cannot listen on TCP port %d. Exiting.", factory.config.bind_port)
         sys.exit()
+
     logger.info("Listening on port %s" % factory.config.bind_port)
     reactor.run()

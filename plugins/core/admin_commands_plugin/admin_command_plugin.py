@@ -107,41 +107,21 @@ class UserCommandPlugin(SimpleCommandPlugin):
     def make_guest(self, player):
         self.logger.trace("Setting %s to GUEST", player.name)
         player.access_level = UserLevels.GUEST
-        try:
-            self.player_manager.session.commit()
-        except:
-            self.player_manager.session.rollback()
-            raise
 
     @permissions(UserLevels.MODERATOR)
     def make_registered(self, player):
         self.logger.trace("Setting %s to REGISTERED", player.name)
         player.access_level = UserLevels.REGISTERED
-        try:
-            self.player_manager.session.commit()
-        except:
-            self.player_manager.session.rollback()
-            raise
 
     @permissions(UserLevels.ADMIN)
     def make_mod(self, player):
         player.access_level = UserLevels.MODERATOR
         self.logger.trace("Setting %s to MODERATOR", player.name)
-        try:
-            self.player_manager.session.commit()
-        except:
-            self.player_manager.session.rollback()
-            raise
 
     @permissions(UserLevels.OWNER)
     def make_admin(self, player):
         self.logger.trace("Setting %s to ADMIN", player.name)
         player.access_level = UserLevels.ADMIN
-        try:
-            self.player_manager.session.commit()
-        except:
-            self.player_manager.session.rollback()
-            raise
 
     @permissions(UserLevels.MODERATOR)
     def kick(self, data):
@@ -198,7 +178,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
         ip = data[0]
         for ban in self.player_manager.bans:
             if ban.ip == ip:
-                self.player_manager.session.delete(ban)
+                self.player_manager.remove_ban(ban)
                 self.protocol.send_chat_message("Unbanned IP: %s" % ip)
                 break
         else:
