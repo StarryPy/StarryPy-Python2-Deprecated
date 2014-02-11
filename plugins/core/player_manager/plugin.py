@@ -26,7 +26,7 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
         del self.player_manager
 
     def check_logged_in(self):
-        for player in self.player_manager.session.query(Player).filter_by(logged_in=True).all():
+        for player in self.player_manager.who():
             if player.protocol not in self.factory.protocols.keys():
                 player.logged_in = False
 
@@ -45,8 +45,11 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
                 name=client_data.name,
                 uuid=str(client_data.uuid),
                 ip=self.protocol.transport.getPeer().host,
-                protocol=self.protocol.id)
+                protocol=self.protocol.id,
+                )
+
             return True
+
         except AlreadyLoggedIn:
             self.reject_with_reason(
                 "You're already logged in! If this is not the case, please wait 10 seconds and try again.")
@@ -123,17 +126,16 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
                 self.protocol.send_chat_message(
                     "Couldn't find a player named %s. Please check the spelling and try again." % name)
                 return False
-            self.player_manager.session.delete(player)
+            self.player_manager.delete(player)
             self.protocol.send_chat_message("Deleted player with name %s." % name)
 
     @permissions(UserLevels.ADMIN)
     def list_players(self, data):
         if len(data) == 0:
-            self.format_player_response(self.player_manager.session.query(Player).all())
+            self.format_player_response(self.player_manager.all())
         else:
             rx = re.sub(r"[\*]", "%", " ".join(data))
-            self.format_player_response(
-                self.player_manager.session.query(Player).filter(Player.name.like(rx)).all())
+            self.format_player_response(self.player_manager.all_like(rx))
 
     def format_player_response(self, players):
         if len(players) <= 25:

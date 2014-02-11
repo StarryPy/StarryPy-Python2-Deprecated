@@ -27,4 +27,3 @@ class ColoredNames(BasePlugin):
             self.logger.warning("Received AttributeError in colored_name. %s", str(e))
             self.protocol.transport.write(data.original_data)
         return False
-
