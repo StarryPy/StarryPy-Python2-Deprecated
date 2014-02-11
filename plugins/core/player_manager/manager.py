@@ -164,7 +164,7 @@ class Player(Base):
 
     @property
     def storage(self):
-        caller = inspect.stack()[1][0].f_locals["self"].__class__.name
+        caller = inspect.stack()[2][0].f_locals["self"].__class__.name
         if self.plugin_storage is None:
             self.plugin_storage = {}
         try:
@@ -175,7 +175,7 @@ class Player(Base):
 
     @storage.setter
     def storage(self, store):
-        caller = inspect.stack()[1][0].f_locals["self"].__class__.name
+        caller = inspect.stack()[2][0].f_locals["self"].__class__.name
         self.plugin_storage[caller] = store
 
     def as_dict(self):
