@@ -212,8 +212,23 @@ class PlayerManager(object):
         return self.session.query(Player).filter(Player.logged_in == True,
                                                  func.lower(Player.name) == func.lower(name)).first()
 
+    def list_bans(self):
+        return self.session.query(Ban).all()
+
     def check_bans(self, ip):
         return self.session.query(Ban).filter_by(ip=ip).first() is not None
+
+    def unban(self, ip):
+        res = self.session.query(Ban).filter_by(ip=ip).first()
+        if res == None:
+            #self.protocol.send_chat_message(self.user_management_commands.unban.__doc__)
+            return
+        self.session.delete(res)
+        try:
+            self.session.commit()
+        except:
+            self.session.rollback()
+            raise
 
     def ban(self, ip):
         self.session.add(Ban(ip=ip))

@@ -445,7 +445,7 @@ class StarryPyServerProtocol(Protocol):
             try:
                 self.factory.protocols.pop(self.id)
             except:
-                self.logger.trace("Protocol was not in factory list. This should not happen.")
+                logger.trace("Protocol was not in factory list. This should not happen.")
             finally:
                 logger.info("Lost connection from IP: %s", self.transport.getPeer().host)
                 self.transport.abortConnection()
