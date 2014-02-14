@@ -38,7 +38,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
     @permissions(UserLevels.ADMIN)
     def whois(self, data):
         """Returns client data about the specified user. Syntax: /whois [user name]"""
-        name = " ".join(data)
+        name = extract_name(data) 
         info = self.player_manager.whois(name)
         if info:
             self.protocol.send_chat_message(
@@ -54,9 +54,9 @@ class UserCommandPlugin(SimpleCommandPlugin):
         """Promotes/demoates a user to a specific rank. Syntax: /promote [username] [rank] (where rank is either: registered, moderator, admin, or guest))"""
         self.logger.trace("Promote command received with the following data: %s" % ":".join(data))
         if len(data) > 0:
-            name = " ".join(data[:-1])
+            name, rank = extract_name(data)
             self.logger.trace("Extracted the name %s in promote command." % name)
-            rank = data[-1].lower()
+            rank = rank[0].lower()
             self.logger.trace("Extracted the rank %s in the promote command." % rank)
             player = self.player_manager.get_by_name(name)
             self.logger.trace("Player object in promote command, found by name, is %s." % str(player))
@@ -243,7 +243,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
     @permissions(UserLevels.MODERATOR)
     def mute(self, data):
         """Mute a player. Syntax: /mute [player name]"""
-        name = " ".join(data)
+        name = extract_name(data)
         player = self.player_manager.get_logged_in_by_name(name)
         if player is None:
             self.protocol.send_chat_message("Couldn't find a user by the name %s" % name)
@@ -256,7 +256,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
     @permissions(UserLevels.MODERATOR)
     def unmute(self, data):
         """Unmute a currently muted player. Syntax: /unmute [player name]"""
-        name = " ".join(data)
+        name = extract_name(data)
         player = self.player_manager.get_logged_in_by_name(name)
         if player is None:
             self.protocol.send_chat_message("Couldn't find a user by the name %s" % name)
