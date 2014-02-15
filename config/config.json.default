@@ -142,6 +142,7 @@
                 "spinningrocket",
                 "stationaryrocket"
             ],
+            "player_planets": {},
             "protected_planets": []
         },
         "player_manager": {
