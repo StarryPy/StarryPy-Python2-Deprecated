@@ -42,7 +42,8 @@ only admins can build. Planets are unprotected by default.
                 return True
             else:
                 name = self.protocol.player.name
-                for self.protocol.player.planet in self.player_planets.keys():
+                planet = self.protocol.player.planet
+                for planet in self.player_planets:
                     if name in self.player_planets[self.protocol.player.planet]:
                         return True
                     else:
@@ -125,9 +126,9 @@ only admins can build. Planets are unprotected by default.
         else:
             if first_name in self.player_planets[planet]:
                 self.player_planets[planet].remove(first_name)
-                self.protocol.send_chat_message("Removed " + first_name_color + "from planet")
+                self.protocol.send_chat_message("Removed " + first_name_color + " from planet list")
             else:
-                self.protocol.send_chat_message("Cannot remove " + first_name_color + "from planet - Not registered")
+                self.protocol.send_chat_message("Cannot remove " + first_name_color + "from planet list - Not in list")
         self.save()
 
     def save(self):
