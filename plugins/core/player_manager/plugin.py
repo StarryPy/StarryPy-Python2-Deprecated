@@ -123,6 +123,11 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
                 return False
             self.player_manager.session.delete(player)
             self.protocol.send_chat_message("Deleted player with name %s." % name)
+            try:
+                self.player_manager.session.commit()
+            except:
+                self.player_manager.session.rollback()
+                raise
 
     @permissions(UserLevels.ADMIN)
     def list_players(self, data):
