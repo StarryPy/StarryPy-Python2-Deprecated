@@ -71,6 +71,7 @@
             "blacklist": [
                 "bomb",
                 "bombblockexplosion",
+                "boneswoosh",
                 "bouldersmashexplosion",
                 "bouncycluster",
                 "bouncyclustergrenade",

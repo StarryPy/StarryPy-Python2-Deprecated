@@ -1,5 +1,3 @@
-### ADD            "player_planets": {},    to config.json !!!
-
 from base_plugin import SimpleCommandPlugin
 from plugins.core.player_manager import UserLevels, permissions
 from packets import entity_create, EntityType, star_string
