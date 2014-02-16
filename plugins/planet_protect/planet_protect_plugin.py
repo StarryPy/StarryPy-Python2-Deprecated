@@ -62,7 +62,16 @@ only admins can build. Planets are unprotected by default.
         else:
             addplayer = data[0]
             first_name_color = str(data[0])
+
         first_name = str(addplayer)
+
+        for planet in self.player_planets:
+            if first_name in self.player_planets[self.protocol.player.planet]:
+                self.protocol.send_chat_message("Cannot add ^shadow,yellow;%s^shadow,green; to planet list (already in list)" % first_name )
+                return 
+
+        planet = self.protocol.player.planet # reset planet back to current planet
+
         if on_ship:
             self.protocol.send_chat_message("Can't protect ships (at the moment)")
             return
@@ -75,7 +84,7 @@ only admins can build. Planets are unprotected by default.
                     self.player_planets[planet] = [first_name]
                 else:
                     self.player_planets[planet] = self.player_planets[planet] + [first_name]
-                self.protocol.send_chat_message("Adding player to planet list: " + first_name_color)
+                self.protocol.send_chat_message("Adding ^shadow,yellow;%s^shadow,green; to planet list" % first_name_color)
         else:
             if len(first_name) == 0:
                 self.protocol.send_chat_message("Planet is already protected!")
@@ -84,7 +93,7 @@ only admins can build. Planets are unprotected by default.
                     self.player_planets[planet] = [first_name]
                 else:
                     self.player_planets[planet] = self.player_planets[planet] + [first_name]
-                self.protocol.send_chat_message("Adding player to planet list: " + first_name_color)
+                self.protocol.send_chat_message("Adding ^shadow,yellow;%s^shadow,green; to planet list" % first_name_color)
         self.save()
 
     @permissions(UserLevels.ADMIN)
@@ -126,9 +135,9 @@ only admins can build. Planets are unprotected by default.
         else:
             if first_name in self.player_planets[planet]:
                 self.player_planets[planet].remove(first_name)
-                self.protocol.send_chat_message("Removed " + first_name_color + " from planet list")
+                self.protocol.send_chat_message("Removed ^shadow,yellow;" + first_name_color + "^shadow,green; from planet list")
             else:
-                self.protocol.send_chat_message("Cannot remove " + first_name_color + "from planet list - Not in list")
+                self.protocol.send_chat_message("Cannot remove ^shadow,yellow;" + first_name_color + "^shadow,green; from planet list (not in list)")
         self.save()
 
     def save(self):
