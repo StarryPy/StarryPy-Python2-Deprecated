@@ -92,6 +92,7 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
 
     def after_world_start(self, data):
             world_start = packets.world_start().parse(data.data)
+            print world_start
             if 'fuel.max' in world_start['world_properties']:
                 self.logger.info("Player %s is now on a ship.", self.protocol.player.name)
                 self.protocol.player.on_ship = True
@@ -118,16 +119,16 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
         name = " ".join(data)
         if self.player_manager.get_logged_in_by_name(name) is not None:
             self.protocol.send_chat_message(
-                "That player is currently logged in. Refusing to delete logged in character.")
+                _("That player is currently logged in. Refusing to delete logged in character."))
             return False
         else:
             player = self.player_manager.get_by_name(name)
             if player is None:
                 self.protocol.send_chat_message(
-                    "Couldn't find a player named %s. Please check the spelling and try again." % name)
+                    _("Couldn't find a player named %s. Please check the spelling and try again.") % name)
                 return False
             self.player_manager.delete(player)
-            self.protocol.send_chat_message("Deleted player with name %s." % name)
+            self.protocol.send_chat_message(_("Deleted player with name %s.") % name)
 
     @permissions(UserLevels.ADMIN)
     def list_players(self, data):
@@ -140,10 +141,10 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
     def format_player_response(self, players):
         if len(players) <= 25:
             self.protocol.send_chat_message(
-                "Results: %s" % "\n".join(["%s: %s" % (player.uuid, player.name) for player in players]))
+                _("Results: %s") % "\n".join(["%s: %s" % (player.uuid, player.name) for player in players]))
         else:
             self.protocol.send_chat_message(
-                "Results: %s" % "\n".join(["%s: %s" % (player.uuid, player.name) for player in players[:25]]))
+                _("Results: %s)" % "\n".join(["%s: %s" % (player.uuid, player.name) for player in players[:25]])))
             self.protocol.send_chat_message(
-                "And %d more. Narrow it down with SQL like syntax. Feel free to use a *, it will be replaced appropriately." % (
+                _("And %d more. Narrow it down with SQL like syntax. Feel free to use a *, it will be replaced appropriately.") % (
                     len(players) - 25))

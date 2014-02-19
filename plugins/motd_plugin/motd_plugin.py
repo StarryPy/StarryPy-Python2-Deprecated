@@ -25,11 +25,11 @@ class MOTDPlugin(SimpleCommandPlugin):
         self.send_motd()
 
     def send_motd(self):
-        self.protocol.send_chat_message("Message of the Day:\n%s" % self._motd)
+        self.protocol.send_chat_message(_("Message of the Day:\n%s") % self._motd)
 
     @permissions(UserLevels.GUEST)
     def motd(self, data):
-        """Displays the message of the day. Usage: /motd"""
+        __doc__ = _("""Displays the message of the day. Usage: /motd""")
         if len(data) == 0:
             self.send_motd()
         else:
@@ -37,7 +37,7 @@ class MOTDPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.MODERATOR)
     def set_motd(self, motd):
-        """Sets the message of the day to a new value. Usage: /set_motd [New message of the day]"""
+        __doc__ = _("""Sets the message of the day to a new value. Usage: /set_motd [New message of the day]""")
         try:
             self._motd = " ".join(motd).encode("utf-8")
             self.config.plugin_config['motd'] = self._motd

@@ -362,7 +362,7 @@ def permissions(level=UserLevels.OWNER):
             if self.protocol.player.access_level >= level:
                 return f(self, *args, **kwargs)
             else:
-                self.protocol.send_chat_message("You are not an admin.")
+                self.protocol.send_chat_message(_("You are not an admin."))
                 return False
 
         return wrapped_function

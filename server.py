@@ -1,5 +1,7 @@
 # -*- coding: UTF-8 -*-
 from _socket import SHUT_RDWR
+import gettext
+import locale
 import logging
 from uuid import uuid4
 import sys
@@ -636,11 +638,22 @@ class StarboundClientFactory(ClientFactory):
         protocol = ClientFactory.buildProtocol(self, address)
         protocol.server_protocol = self.server_protocol
         return protocol
+def init_localization():
+    locale.setlocale(locale.LC_ALL, '')
+    loc = locale.getlocale()
+    filename = "res/messages_%s.mo" % locale.getlocale()[0][0:2]
+    try:
+        print "Opening message file %s for locale %s." % (filename, loc[0])
+        trans = gettext.GNUTranslations(open(filename, "rb" ))
+    except IOError:
+        print "Locale not found. Using default messages."
+        trans = gettext.NullTranslations()
+    trans.install()
 
 if __name__ == '__main__':
+    init_localization()
     logger = logging.getLogger('starrypy')
     logger.setLevel(9)
-
     if TRACE:
         trace_logger = logging.FileHandler("trace.log")
         trace_logger.setLevel("TRACE")

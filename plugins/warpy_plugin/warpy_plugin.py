@@ -19,7 +19,7 @@ class Warpy(SimpleCommandPlugin):
 
     @permissions(UserLevels.ADMIN)
     def warp(self, name):
-        """Warps you to a player's ship, or a player to another player's ship. Syntax: /warp [player name] OR /warp [player 1] [player 2]"""
+        __doc__ = _("""Warps you to a player's ship, or a player to another player's ship. Syntax: /warp [player name] OR /warp [player 1] [player 2]""")
         if len(name) == 0:
             self.protocol.send_chat_message(self.warp.__doc__)
             return
@@ -40,7 +40,7 @@ class Warpy(SimpleCommandPlugin):
 
     @permissions(UserLevels.ADMIN)
     def move_ship(self, location):
-        """Move your ship to another player or specific coordinates. Syntax: /move_ship [player_name] OR /move_ship [from player] [to player]"""
+        __doc__ = _("""Move your ship to another player or specific coordinates. Syntax: /move_ship [player_name] OR /move_ship [from player] [to player]""")
         try:
             first_name, rest = extract_name(location)
             if not rest:
@@ -51,7 +51,7 @@ class Warpy(SimpleCommandPlugin):
             self.protocol.send_chat_message(str(e))
             self.protocol.send_chat_message(self.move_ship.__doc__)
         except AttributeError:
-            self.protocol.send_chat_message("Couldn't find one or both of the users you specified.")
+            self.protocol.send_chat_message(_("Couldn't find one or both of the users you specified."))
 
     def warp_self_to_player(self, name):
         self.logger.debug("Warp command called by %s to %s", self.protocol.player.name, name)
@@ -75,18 +75,18 @@ class Warpy(SimpleCommandPlugin):
                                                warp_command_write(t='WARP_UP'))
                     print warp_packet.encode("hex")
             else:
-                self.protocol.send_chat_message("No player by the name %s found." % to_string)
+                self.protocol.send_chat_message(_("No player by the name %s found.") % to_string)
                 self.protocol.send_chat_message(self.warp.__doc__)
                 return
         else:
-            self.protocol.send_chat_message("No player by the name %s found." % from_string)
+            self.protocol.send_chat_message(_("No player by the name %s found.") % from_string)
             self.protocol.send_chat_message(self.warp.__doc__)
 
     def move_player_ship(self, protocol, location):
         if len(location) < 5:
-            self.logger.warning("Couldn't derive a warp location in move_player_ship. Coordinates given: %s",
+            self.logger.warning(_("Couldn't derive a warp location in move_player_ship. Coordinates given: %s"),
                                 ":".join(location))
-            self.protocol.send_chat_message("Sorry, an error occurred.")
+            self.protocol.send_chat_message(_("Sorry, an error occurred."))
             return
         if len(location) == 5:
             satellite = 0
@@ -105,7 +105,7 @@ class Warpy(SimpleCommandPlugin):
             raise ValueError
         if t.planet == u"":
             self.protocol.send_chat_message(
-                "Sorry, we don't have a tracked planet location for %s. Perhaps they haven't warped down to a planet since logging in?" % t.name)
+                _("Sorry, we don't have a tracked planet location for %s. Perhaps they haven't warped down to a planet since logging in?") % t.name)
             return
         self.move_player_ship(self.protocol, t.planet.split(":"))
 
@@ -117,7 +117,7 @@ class Warpy(SimpleCommandPlugin):
             raise ValueError
         if t.planet == u"":
             self.protocol.send_chat_message(
-                "Sorry, we don't have a tracked planet location for %s. Perhaps they haven't warped to a planet since logging in?" % to_player)
+                _("Sorry, we don't have a tracked planet location for %s. Perhaps they haven't warped to a planet since logging in?") % to_player)
             return
         self.move_player_ship(self.factory.protocols[f.protocol], t.planet.split(":"))
 

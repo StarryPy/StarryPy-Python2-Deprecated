@@ -27,7 +27,7 @@ class AdminMessenger(BasePlugin):
         for protocol in self.factory.protocols.itervalues():
             if protocol.player.access_level >= UserLevels.MODERATOR:
                 protocol.send_chat_message(
-                    "Received an admin message from %s: %s." % (self.protocol.player.name,
+                    _("Received an admin message from %s: %s.") % (self.protocol.player.name,
                                                                 message.message[2:]))
                 self.logger.info("Received an admin message from %s. Message: %s", self.protocol.player.name,
                                  message.message[2:])
@@ -35,7 +35,7 @@ class AdminMessenger(BasePlugin):
     @permissions(UserLevels.ADMIN)
     def broadcast_message(self, message):
         for protocol in self.factory.protocols.itervalues():
-            protocol.send_chat_message("%sSERVER BROADCAST: %s%s" % (
+            protocol.send_chat_message(_("%sSERVER BROADCAST: %s%s") % (
                 self.config.colors["admin"], message.message[3:], self.config.colors["default"]))
             self.logger.info("Broadcast from %s. Message: %s", self.protocol.player.name,
                              message.message[3:])
