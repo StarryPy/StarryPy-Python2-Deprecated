@@ -3,11 +3,11 @@ class BasePlugin(object):
     Defines an interface for all plugins to inherit from. Note that the __init__
     method should generally not be overrode; all setup work should be done in
     activate() if possible. If you do override __init__, remember to super()!
-    
+
     Note that only one instance of each plugin will be instantiated for *all*
     connected clients. self.protocol will be changed by the plugin manager to
     the current protocol.
-    
+
     You may access the factory if necessary via self.factory.protocols
     to access other clients, but this "Is Not A Very Good Idea" (tm)
 
@@ -32,7 +32,6 @@ class BasePlugin(object):
         Called when the plugins are activated, do any setup work here.
         """
         self.active = True
-        self.logger.debug("%s plugin object activated.", self.name)
         return True
 
     def deactivate(self):
@@ -41,7 +40,6 @@ class BasePlugin(object):
         as it is likely that the plugin will soon be destroyed.
         """
         self.active = False
-        self.logger.debug("%s plugin object deactivated", self.name)
         return True
 
     def on_protocol_version(self, data):
@@ -356,7 +354,6 @@ class SimpleCommandPlugin(BasePlugin):
         for command, alias_list in self.command_aliases.iteritems():
             for alias in alias_list:
                 self.plugins['command_dispatcher'].register(alias, command)
-
 
     def deactivate(self):
         super(SimpleCommandPlugin, self).deactivate()

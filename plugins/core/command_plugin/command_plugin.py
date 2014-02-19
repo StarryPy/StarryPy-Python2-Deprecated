@@ -24,7 +24,7 @@ class CommandDispatchPlugin(BasePlugin):
                     return True
                 return False
             except:
-                self.logger.exception("Error in on_chat_sent.", exc_info=True)
+                self.logger.exception("Error in on_chat_sent.")
                 raise
 
     def register(self, f, names):

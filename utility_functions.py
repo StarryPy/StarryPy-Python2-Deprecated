@@ -1,16 +1,18 @@
 import collections
 import logging
+import os
 
 from construct import Container
+from twisted.python.filepath import FilePath
 
 import packets
 
 
+path = FilePath(os.path.dirname(os.path.abspath(__file__)))
 logger = logging.getLogger("starrypy.utility_functions")
 
 
 def give_item_to_player(player_protocol, item, count=1):
-    logger.debug("Giving item %s (count: %s) to %s", item, count, player_protocol.player.name)
     item_count = int(count)
     maximum = 1000
     while item_count > 0:
@@ -86,3 +88,4 @@ def extract_name(l):
             name.append(s)
     raise ValueError("Final terminator character of <%s> not found" %
                      terminator)
+

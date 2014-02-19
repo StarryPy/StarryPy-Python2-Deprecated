@@ -26,7 +26,7 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
         del self.player_manager
 
     def check_logged_in(self):
-        for player in self.player_manager.session.query(Player).filter_by(logged_in=True).all():
+        for player in self.player_manager.who():
             if player.protocol not in self.factory.protocols.keys():
                 player.logged_in = False
 
@@ -41,15 +41,13 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
             if client_data.name != original_name:
                 self.logger.info("Player tried to log in with name %s, replaced with %s.",
                                  original_name, client_data.name)
-            duplicate_user=self.player_manager.session.query(Player).filter_by(name=client_data.name).first()
-            if duplicate_user.name==client_data.name and duplicate_user.uuid!=client_data.uuid:
-                self.logger.info("Got a duplicate player, asking player to change name")
-                raise NameError("The name of this character is already taken on the server! Please, create a new character with a different name or use Starcheat and change the name.")
             self.protocol.player = self.player_manager.fetch_or_create(
                 name=client_data.name,
                 uuid=str(client_data.uuid),
                 ip=self.protocol.transport.getPeer().host,
-                protocol=self.protocol.id)
+                protocol=self.protocol.id,
+                )
+
             return True
         except AlreadyLoggedIn:
             self.reject_with_reason(
@@ -76,37 +74,42 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
         self.protocol.transport.write(rejection)
         self.protocol.transport.loseConnection()
 
-    def after_connect_response(self, data):
-        connection_parameters = connect_response().parse(data.data)
-        if not connection_parameters.success:
-            self.protocol.transport.loseConnection()
-        else:
-            self.protocol.player.client_id = connection_parameters.client_id
-            self.protocol.player.logged_in = True
-            self.logger.info("Player %s (UUID: %s, IP: %s) logged in" % (
-                self.protocol.player.name, self.protocol.player.uuid,
-                self.protocol.transport.getPeer().host))
+    def on_connect_response(self, data):
+        try:
+            connection_parameters = connect_response().parse(data.data)
+            if not connection_parameters.success:
+                self.protocol.transport.loseConnection()
+            else:
+                self.protocol.player.client_id = connection_parameters.client_id
+                self.protocol.player.logged_in = True
+                self.logger.info("Player %s (UUID: %s, IP: %s) logged in" % (
+                    self.protocol.player.name, self.protocol.player.uuid,
+                    self.protocol.transport.getPeer().host))
+        except:
+            self.logger.exception("Exception in on_connect_response, player info may not have been logged.")
+        finally:
+            return True
 
     def after_world_start(self, data):
-        world_start = packets.world_start().parse(data.data)
-        coords = world_start.planet['config']['coordinate']
-        if coords is not None:
-            parent_system = coords['parentSystem']
-            location = parent_system['location']
-            l = location
-            self.protocol.player.on_ship = False
-            planet = Planet(parent_system['sector'], l[0], l[1], l[2],
-                            coords['planetaryOrbitNumber'], coords['satelliteOrbitNumber'])
-            self.protocol.player.planet = str(planet)
-            self.logger.debug("Player %s is now at planet: %s", self.protocol.player.name, str(planet))
-        else:
-            self.logger.info("Player %s is now on a ship.", self.protocol.player.name)
-            self.protocol.player.on_ship = True
+            world_start = packets.world_start().parse(data.data)
+            if 'fuel.max' in world_start['world_properties']:
+                self.logger.info("Player %s is now on a ship.", self.protocol.player.name)
+                self.protocol.player.on_ship = True
+            else:
+                coords = world_start.planet['celestialParameters']['coordinate']
+                parent_system = coords
+                location = parent_system['location']
+                l = location
+                self.protocol.player.on_ship = False
+                planet = Planet(parent_system['sector'], l[0], l[1], l[2],
+                                coords['planet'], coords['satellite'])
+                self.protocol.player.planet = str(planet)
 
     def on_client_disconnect(self, player):
         if self.protocol.player is not None and self.protocol.player.logged_in:
             self.logger.info("Player disconnected: %s", self.protocol.player.name)
             self.protocol.player.logged_in = False
+        return True
 
     @permissions(UserLevels.ADMIN)
     def delete_player(self, data):
@@ -121,22 +124,16 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
                 self.protocol.send_chat_message(
                     "Couldn't find a player named %s. Please check the spelling and try again." % name)
                 return False
-            self.player_manager.session.delete(player)
+            self.player_manager.delete(player)
             self.protocol.send_chat_message("Deleted player with name %s." % name)
-            try:
-                self.player_manager.session.commit()
-            except:
-                self.player_manager.session.rollback()
-                raise
 
     @permissions(UserLevels.ADMIN)
     def list_players(self, data):
         if len(data) == 0:
-            self.format_player_response(self.player_manager.session.query(Player).all())
+            self.format_player_response(self.player_manager.all())
         else:
             rx = re.sub(r"[\*]", "%", " ".join(data))
-            self.format_player_response(
-                self.player_manager.session.query(Player).filter(Player.name.like(rx)).all())
+            self.format_player_response(self.player_manager.all_like(rx))
 
     def format_player_response(self, players):
         if len(players) <= 25:

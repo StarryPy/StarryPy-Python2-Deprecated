@@ -1,13 +1,11 @@
 {
     "bind_port": 21025,
     "bind_address": "",
-    "chat_prefix": "#",
-    "chattimestamps": true,
+    "chat_prefix": "@",
     "colors": {
         "admin": "^#C443F7;",
         "default": "^#F7EB43;",
         "guest": "^#F7EB43;",
-        "irc": "^#e39313;",
         "moderator": "^#4385F7;",
         "owner": "^#F7434C;",
         "registered": "^#A0F743;"
@@ -28,35 +26,10 @@
         "announcer_plugin": {
             "auto_activate": true
         },
-        "bookmarks_plugin": {
-            "auto_activate": true
-        },
-        "bouncer": {
-            "auto_activate": false
-        },
         "chat_logger": {
             "auto_activate": true
         },
-        "colored_names_plugin": {
-            "auto_activate": true
-        },
         "command_dispatcher": {
-            "auto_activate": true
-        },
-        "emotes_plugin": {
-            "auto_activate": true
-        },
-        "irc": {
-            "auto_activate": false,
-            "bot_nickname": "botname",
-            "channel": "#channel",
-            "color": "^#e39313;",
-            "echo_from_channel": true,
-            "nickserv_password": "password",
-            "port": 6667,
-            "server": "irc.freenode.net"
-        },
-        "loginwho_plugin": {
             "auto_activate": true
         },
         "motd_plugin": {
@@ -69,24 +42,16 @@
         "new_player_greeter_plugin": {
             "auto_activate": true,
             "items": [
-               
+                [
+                    "coalore",
+                    200
+                ],
+                [
+                    "alienburger",
+                    5
+                ]
             ],
-            "message": "Welcome new Starbounder ;)"
-        },
-        "starteritems_plugin": {
-            "auto_activate": true,
-            "items": [
-            [ "bandage", 20 ],
-            [ "burger", 20 ],
-            [ "stoneaxe", 1 ],
-            [ "stonehoe", 1 ],
-            [ "stonepickaxe", 1 ],
-            [ "solariumore", 30 ],
-            [ "money", 1000 ]
-
-               
-            ],
-            "message": "You were given a set of starter items ;)"
+            "message": "Welcome to the server! Here are some starter items to get you off to a good start."
         },
         "planet_protect": {
             "auto_activate": true,
@@ -177,7 +142,6 @@
                 "spinningrocket",
                 "stationaryrocket"
             ],
-            "player_planets": {},
             "protected_planets": []
         },
         "player_manager": {
@@ -187,25 +151,10 @@
                 "[^ \\w]+"
             ]
         },
-        "planet_visitor_announcer_plugin": {
-            "auto_activate": true
-        },
-        "planet_warps_plugin": {
-            "auto_activate": true
-        },
-        "players_plugin": {
-            "auto_activate": true
-        },
         "plugin_manager": {
             "auto_activate": true
         },
-        "pushover_plugin": {
-            "auto_activate": false
-        },
         "starbound_config_manager": {
-            "auto_activate": true
-        },
-        "uptime_plugin": {
             "auto_activate": true
         },
         "user_management_commands": {

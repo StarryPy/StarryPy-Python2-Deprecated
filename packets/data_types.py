@@ -26,7 +26,7 @@ class SignedVLQ(Construct):
                 value -= 1
             VLQ("")._build(value, stream, context)
         except:
-            self.logger.exception("Error building SignedVLQ.", exc_info=True)
+            self.logger.exception("Error building SignedVLQ.")
             raise
 
 
@@ -73,11 +73,8 @@ class StarStringAdapter(Adapter):
 class Joiner(Adapter):
     def _encode(self, obj, context):
         return obj
-
     def _decode(self, obj, context):
         return "".join(obj)
-
-
 star_string_struct = lambda name="star_string": Struct(name,
                                                        VLQ("length"),
                                                        String("string", lambda ctx: ctx.length)
@@ -121,6 +118,6 @@ class StarByteArray(Construct):
     def _parse(self, stream, context):
         l = VLQ("").parse_stream(stream)
         return _read_stream(stream, l)
-
     def _build(self, obj, stream, context):
-        _write_stream(stream, len(obj), VLQ("").build(len(obj)) + obj)
+        _write_stream(stream, len(obj), VLQ("").build(len(obj))+obj)
+

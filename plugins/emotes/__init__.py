@@ -1,0 +1,1 @@
+from emotes import EmotesPlugin

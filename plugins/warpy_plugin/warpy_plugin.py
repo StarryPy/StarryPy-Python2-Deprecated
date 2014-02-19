@@ -1,6 +1,6 @@
 from base_plugin import SimpleCommandPlugin
 from plugins.core.player_manager import permissions, UserLevels
-from packets import warp_command_write, Packets
+from packets import warp_command_write, Packets, warp_command
 from utility_functions import build_packet, move_ship_to_coords, extract_name
 
 
@@ -54,13 +54,10 @@ class Warpy(SimpleCommandPlugin):
             self.protocol.send_chat_message("Couldn't find one or both of the users you specified.")
 
     def warp_self_to_player(self, name):
-        self.logger.debug("Warp command called by %s to %s", self.protocol.player.name, name)
         name = " ".join(name)
         self.warp_player_to_player(self.protocol.player.name, name)
 
     def warp_player_to_player(self, from_string, to_string):
-        self.logger.debug("Warp player-to-player command called by %s: %s to %s", self.protocol.player.name,
-                          from_string, to_string)
         from_player = self.player_manager.get_logged_in_by_name(from_string)
         to_player = self.player_manager.get_logged_in_by_name(to_string)
         if from_player is not None:
@@ -73,7 +70,7 @@ class Warpy(SimpleCommandPlugin):
                 else:
                     warp_packet = build_packet(Packets.WARP_COMMAND,
                                                warp_command_write(t='WARP_UP'))
-                from_protocol.client_protocol.transport.write(warp_packet)
+                    print warp_packet.encode("hex")
             else:
                 self.protocol.send_chat_message("No player by the name %s found." % to_string)
                 self.protocol.send_chat_message(self.warp.__doc__)

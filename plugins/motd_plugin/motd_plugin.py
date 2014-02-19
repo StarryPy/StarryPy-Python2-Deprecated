@@ -25,7 +25,8 @@ class MOTDPlugin(SimpleCommandPlugin):
         self.send_motd()
 
     def send_motd(self):
-        self.protocol.send_chat_message("Message of the Day:\n%s" % self._motd)
+        #self.protocol.send_chat_message("^shadow,yellow;%s" % self._motd)
+        self.protocol.send_chat_message("^#00FFFF;WELCOME TO ^#FF0000;tejC.Com ^#00FFFF;STARBOUND SERVER\n^shadow,yellow;------------------------------------------------------------------\n^shadow,yellow;Type: ^shadow,green;/help ^shadow,yellow;for list of available commands\n^shadow,yellow;Type: ^shadow,green;/starteritems ^shadow,yellow;for some starter items\n^shadow,yellow;Type: ^shadow,green;/w <PlayerName> ^shadow,yellow;to send whispers to other players\n^shadow,yellow;Legend: ^#F7434C;Owner^shadow,yellow;, ^#C443F7;Admin^shadow,yellow;, ^#4385F7;Moderator^shadow,yellow;, ^#A0F743;Registered user^shadow,yellow;, Guest\n^shadow,yellow;------------------------------------------------------------------\n%s" % self._motd)
 
     @permissions(UserLevels.GUEST)
     def motd(self, data):

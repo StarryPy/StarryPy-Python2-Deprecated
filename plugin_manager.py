@@ -4,14 +4,13 @@ functionality in StarryPy.
 """
 import inspect
 import logging
-import os
 import sys
 from twisted.internet import reactor
 from twisted.internet.task import deferLater
 
 from base_plugin import BasePlugin
 from config import ConfigurationManager
-
+from utility_functions import path
 
 class DuplicatePluginError(Exception):
     """
@@ -55,8 +54,9 @@ class PluginManager(object):
         self.base_class = base_class
         self.factory = factory
         self.load_order = []
-        self.plugin_dir = os.path.realpath(self.config.plugin_path)
-        sys.path.append(self.plugin_dir)
+        #self.plugin_dir = os.path.realpath(self.config.plugin_path)
+        self.plugin_dir = path.child(self.config.plugin_path)
+        sys.path.append(self.plugin_dir.path)
         self.load_plugins(self.plugin_dir)
 
         self.logger.info("Loaded plugins:\n%s" % "\n".join(
@@ -71,11 +71,11 @@ class PluginManager(object):
         :return: None
         """
         seen_plugins = []
-        for f in os.listdir(plugin_dir):
-            if f.endswith(".py"):
-                name = f[:-3]
-            elif os.path.isdir(os.path.join(plugin_dir, f)):
-                name = f
+        for f in plugin_dir.globChildren("*"):
+            if f.splitext()[1] == ".py":
+                name = f.basename()[:-3]
+            elif f.isdir():
+                name = f.basename()
             else:
                 continue
             try:
@@ -93,7 +93,6 @@ class PluginManager(object):
 
             except ImportError:
                 self.logger.critical("Import error for %s", name)
-                sys.exit()
         try:
             dependencies = {x.name: set(x.depends) for x in seen_plugins}
             classes = {x.name: x for x in seen_plugins}
@@ -109,7 +108,6 @@ class PluginManager(object):
                 for name in ready:
                     self.plugins[name] = classes[name]()
                     self.load_order.append(name)
-                    self.logger.debug("Instantiated plugin '%s'" % name)
                     del (dependencies[name])
                 for name, depends in dependencies.iteritems():
                     to_load = depends & set(self.plugins.iterkeys())
@@ -119,7 +117,6 @@ class PluginManager(object):
         except UnresolvedOrCircularDependencyError as e:
             self.logger.critical(str(e))
         self.activate_plugins()
-
 
     def reload_plugins(self):
         self.logger.warning("Reloading plugins.")
@@ -132,7 +129,6 @@ class PluginManager(object):
         except:
             self.logger.exception("Couldn't reload plugins!")
             raise
-
 
     def activate_plugins(self):
         for plugin in [self.plugins[x] for x in self.load_order]:
@@ -171,8 +167,7 @@ class PluginManager(object):
                     res = True
                 return_values.append(res)
             except:
-                self.logger.exception("Error in plugin %s with function %s.", str(plugin), command,
-                                      exc_info=True)
+                self.logger.exception("Error in plugin %s with function %s.", str(plugin), command)
         return all(return_values)
 
     def get_by_name(self, name):
@@ -208,7 +203,7 @@ def route(func):
         res = self.plugin_manager.do(self, on, data)
         if res:
             res = func(self, data)
-            d = deferLater(reactor, 1, self.plugin_manager.do, self, after, data)
+            d = deferLater(reactor, .01, self.plugin_manager.do, self, after, data)
             d.addErrback(print_this_defered_failure)
         return res
 

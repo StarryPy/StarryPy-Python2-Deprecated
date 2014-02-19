@@ -56,7 +56,7 @@ class PacketStream(object):
                 self.packet_size = self.payload_size + self.header_length
                 return True
         except:
-            self.logger.exception("Unknown error in start_packet.", exc_info=True)
+            self.logger.exception("Unknown error in start_packet.")
             return False
 
     def check_packet(self):
@@ -73,12 +73,6 @@ class PacketStream(object):
                     except zlib.error:
 
                         self.logger.error("Decompression error in check_packet.")
-                        self.logger.trace("Parsed packet:")
-                        self.logger.trace(pprint.pformat(p_parsed))
-                        self.logger.trace("Packet data:")
-                        self.logger.trace(pprint.pformat(p_parsed.original_data.encode("hex")))
-                        self.logger.trace("Following packet data:")
-                        self.logger.trace(pprint.pformat(self._stream.encode("hex")))
                         raise
                 packet = Packet(packet_id=p_parsed.id, payload_size=p_parsed.payload_size, data=p_parsed.data,
                                 original_data=p, direction=self.direction)
@@ -89,7 +83,7 @@ class PacketStream(object):
                 if self.start_packet():
                     self.check_packet()
         except:
-            self.logger.exception("Unknown error in check_packet", exc_info=True)
+            self.logger.exception("Unknown error in check_packet")
 
     def reset(self):
         self.id = None
