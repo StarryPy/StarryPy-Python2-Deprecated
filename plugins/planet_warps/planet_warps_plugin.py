@@ -93,10 +93,11 @@ class PlanetWarps(SimpleCommandPlugin):
                                                               planet=planet,
                                                               satellite=satellite))
                 self.protocol.client_protocol.transport.write(warp_packet)
-                warp_packet = build_packet(Packets.WARP_COMMAND,
-                                           warp_command_write(t="WARP_DOWN"))
-                self.protocol.client_protocol.transport.write(warp_packet)
-                self.protocol.send_chat_message("Beamed down to ^shadow,yellow;%s^shadow,green; and your ship will arrive soon." % name)
+#                warp_packet = build_packet(Packets.WARP_COMMAND,
+#                                           warp_command_write(t="WARP_DOWN"))
+#                self.protocol.client_protocol.transport.write(warp_packet)
+#                self.protocol.send_chat_message("Beamed down to ^shadow,yellow;%s^shadow,green; and your ship will arrive soon." % name)
+                self.protocol.send_chat_message("Warp drive engaged! Warping to ^shadow,yellow;%s^shadow,green;." % name)
                 return
         self.protocol.send_chat_message("There is no PoI with that name!")
 
