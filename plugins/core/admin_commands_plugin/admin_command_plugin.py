@@ -64,7 +64,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
                     return
                 if rank == "owner":
                     self.make_owner(player)
-                if rank == "admin":
+                elif rank == "admin":
                     self.make_admin(player)
                 elif rank == "moderator":
                     self.make_mod(player)
