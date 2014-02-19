@@ -69,11 +69,9 @@ class PlanetProtectPlugin(SimpleCommandPlugin):
     def on_entity_create(self, data):
         if self.protocol.player.planet in self.protected_planets and self.protocol.player.access_level <= UserLevels.MODERATOR:
             entities = entity_create.parse(data.data)
-            print entities
             for entity in entities.entity:
                 if entity.entity_type == EntityType.PROJECTILE:
                     p_type = star_string("").parse(entity.entity)
-                    print p_type
                     if p_type in self.blacklist:
                         self.logger.debug(
                             "Player %s attempted to use a prohibited projectile, %s, on a protected planet.",
