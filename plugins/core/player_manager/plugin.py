@@ -105,7 +105,7 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
                 planet = Planet(parent_system['sector'], l[0], l[1], l[2],
                                 coords['planet'], coords['satellite'])
                 self.protocol.player.planet = str(planet)
-                self.logger.debug("Player %s is now at planet: %s", self.protocol.player.name, str(planet))
+                self.logger.info("Player %s is now at planet: %s", self.protocol.player.name, str(planet))
 
 
     def on_client_disconnect(self, player):

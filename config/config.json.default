@@ -148,7 +148,7 @@
             "auto_activate": true,
             "name_removal_regexes": [
                 "\\^#[\\w]+;",
-                "[^ \\w]+"
+                "[\\w]+"
             ]
         },
         "plugin_manager": {
