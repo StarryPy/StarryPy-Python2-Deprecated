@@ -73,17 +73,25 @@ class Base(object):
 class Banned(Exception):
     pass
 
+class _UserLevels(object):
+    ranks = dict(
+    GUEST = 0,
+    REGISTERED = 1,
+    MODERATOR = 10,
+    ADMIN = 100,
+    OWNER = 1000)
+    ranks_reverse = dict(zip(ranks.values(), ranks.keys()))
 
-class IntEnum(int, Enum):
-    pass
+    def __call__(self, lvl, *args, **kwargs):
+        return self.ranks_reverse[lvl]
 
+    def __getattr__(self, item):
+        if item in ['GUEST', 'REGISTERED', 'MODERATOR', 'ADMIN', 'OWNER']:
+            return super(_UserLevels, self).__getattribute__('ranks')[item]
+        else:
+            return super(_UserLevels, self).__getattribute__(item)
 
-class UserLevels(IntEnum):
-    GUEST = 0
-    REGISTERED = 1
-    MODERATOR = 10
-    ADMIN = 100
-    OWNER = 1000
+UserLevels = _UserLevels()
 
 
 class MutableDict(Mutable, dict):
@@ -154,7 +162,7 @@ class Player(Base):
 
     def colored_name(self, colors):
         logger.trace("Building colored name.")
-        color = colors[str(UserLevels(self.access_level)).split(".")[1].lower()]
+        color = colors[UserLevels(self.access_level).lower()]
         logger.trace("Color is %s", color)
         name = self.name
         logger.trace("Name is %s", name)

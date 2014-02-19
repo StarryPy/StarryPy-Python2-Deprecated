@@ -86,7 +86,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
 
                 self.logger.trace("Sending promotion message to promoter.")
                 self.protocol.send_chat_message("%s: %s -> %s" % (
-                    player.colored_name(self.config.colors), str(UserLevels(old_rank)).split(".")[1],
+                    player.colored_name(self.config.colors), UserLevels(old_rank),
                     rank.upper()))
                 self.logger.trace("Sending promotion message to promoted player.")
                 try:
