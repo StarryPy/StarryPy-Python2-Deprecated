@@ -73,20 +73,20 @@ class UserCommandPlugin(SimpleCommandPlugin):
                 elif rank == "guest":
                     self.make_guest(player)
                 else:
-                    self.protocol.send_chat_message("No such rank!\n" + self.promote.__doc__)
+                    self.protocol.send_chat_message(_("No such rank!\n") + self.promote.__doc__)
                     return
 
-                self.protocol.send_chat_message("%s: %s -> %s" % (
-                    player.colored_name(self.config.colors), str(UserLevels(old_rank)).split(".")[1],
+                self.protocol.send_chat_message(_("%s: %s -> %s") % (
+                    player.colored_name(self.config.colors), UserLevels(old_rank),
                     rank.upper()))
                 try:
                     self.factory.protocols[player.protocol].send_chat_message(
-                        "%s has promoted you to %s" % (
+                        _("%s has promoted you to %s") % (
                             self.protocol.player.colored_name(self.config.colors), rank.upper()))
                 except KeyError:
                     self.logger.info("Promoted player is not logged in.")
             else:
-                self.protocol.send_chat_message("Player not found!\n" + self.promote.__doc__)
+                self.protocol.send_chat_message(_("Player not found!\n") + self.promote.__doc__)
                 return
         else:
             self.protocol.send_chat_message(self.promote.__doc__)
@@ -94,47 +94,22 @@ class UserCommandPlugin(SimpleCommandPlugin):
     @permissions(UserLevels.OWNER)
     def make_guest(self, player):
         player.access_level = UserLevels.GUEST
-        try:
-            self.player_manager.session.commit()
-        except:
-            self.player_manager.session.rollback()
-            raise
 
     @permissions(UserLevels.MODERATOR)
     def make_registered(self, player):
         player.access_level = UserLevels.REGISTERED
-        try:
-            self.player_manager.session.commit()
-        except:
-            self.player_manager.session.rollback()
-            raise
 
     @permissions(UserLevels.ADMIN)
     def make_mod(self, player):
         player.access_level = UserLevels.MODERATOR
-        try:
-            self.player_manager.session.commit()
-        except:
-            self.player_manager.session.rollback()
-            raise
 
     @permissions(UserLevels.OWNER)
     def make_admin(self, player):
         player.access_level = UserLevels.ADMIN
-        try:
-            self.player_manager.session.commit()
-        except:
-            self.player_manager.session.rollback()
-            raise
 
     @permissions(UserLevels.OWNER)
     def make_owner(self, player):
         player.access_level = UserLevels.OWNER
-        try:
-            self.player_manager.session.commit()
-        except:
-            self.player_manager.session.rollback()
-            raise
 
     @permissions(UserLevels.MODERATOR)
     def kick(self, data):
