@@ -78,6 +78,8 @@ class StarryPyServerProtocol(Protocol):
             packets.Packets.WORLD_STOP: self.world_stop,
             packets.Packets.TILE_ARRAY_UPDATE: self.tile_array_update,
             packets.Packets.TILE_UPDATE: self.tile_update,
+            packets.Packets.CELESTIALRESPONSE: lambda x: True,
+            packets.Packets.CELESTIALREQUEST: lambda x: True,
             packets.Packets.TILE_LIQUID_UPDATE: self.tile_liquid_update,
             packets.Packets.TILE_DAMAGE_UPDATE: self.tile_damage_update,
             packets.Packets.TILE_MODIFICATION_FAILURE: self.tile_modification_failure,

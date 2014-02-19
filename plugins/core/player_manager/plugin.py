@@ -49,7 +49,6 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
                 )
 
             return True
-
         except AlreadyLoggedIn:
             self.reject_with_reason(
                 "You're already logged in! If this is not the case, please wait 10 seconds and try again.")
@@ -93,19 +92,20 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
 
     def after_world_start(self, data):
             world_start = packets.world_start().parse(data.data)
-            coords = world_start.planet['config']['coordinate']
-            if coords is not None:
-                parent_system = coords['parentSystem']
+            if 'fuel.max' in world_start['world_properties']:
+                self.logger.info("Player %s is now on a ship.", self.protocol.player.name)
+                self.protocol.player.on_ship = True
+            else:
+                coords = world_start.planet['celestialParameters']['coordinate']
+                parent_system = coords
                 location = parent_system['location']
                 l = location
                 self.protocol.player.on_ship = False
                 planet = Planet(parent_system['sector'], l[0], l[1], l[2],
-                                coords['planetaryOrbitNumber'], coords['satelliteOrbitNumber'])
+                                coords['planet'], coords['satellite'])
                 self.protocol.player.planet = str(planet)
                 self.logger.debug("Player %s is now at planet: %s", self.protocol.player.name, str(planet))
-            else:
-                self.logger.info("Player %s is now on a ship.", self.protocol.player.name)
-                self.protocol.player.on_ship = True
+
 
     def on_client_disconnect(self, player):
         if self.protocol.player is not None and self.protocol.player.logged_in:

@@ -1,6 +1,6 @@
 from base_plugin import SimpleCommandPlugin
 from plugins.core.player_manager import permissions, UserLevels
-from packets import warp_command_write, Packets
+from packets import warp_command_write, Packets, warp_command
 from utility_functions import build_packet, move_ship_to_coords, extract_name
 
 
@@ -73,7 +73,7 @@ class Warpy(SimpleCommandPlugin):
                 else:
                     warp_packet = build_packet(Packets.WARP_COMMAND,
                                                warp_command_write(t='WARP_UP'))
-                from_protocol.client_protocol.transport.write(warp_packet)
+                    print warp_packet.encode("hex")
             else:
                 self.protocol.send_chat_message("No player by the name %s found." % to_string)
                 self.protocol.send_chat_message(self.warp.__doc__)
