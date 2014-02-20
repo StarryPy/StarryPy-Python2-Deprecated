@@ -15,7 +15,7 @@ class PlanetVisitorAnnouncer(BasePlugin):
     def after_warp_command(self, data):
         w = warp_command().parse(data.data)
         if w.warp_type == "WARP_DOWN" or w.warp_type == "WARP_HOME":
-            reactor.callLater(0.5, self.announce_on_planet, self.protocol.player)
+            reactor.callLater(1, self.announce_on_planet, self.protocol.player)
 
     def announce_on_planet(self, who_beamed):
         self.factory.broadcast_planet("%s^shadow,green; beamed down to the planet" % who_beamed.colored_name(self.config.colors), planet=self.protocol.player.planet)
