@@ -188,7 +188,7 @@ class Player(Base):
 
     def as_dict(self):
         d = super(Player, self).as_dict()
-        d['plugin_storage'] = json.loads(d['plugin_storage'])
+        d['plugin_storage'] = json.dumps(d['plugin_storage'])
         return d
 
 
