@@ -63,7 +63,7 @@ only admins can build. Planets are unprotected by default.
 
         planet = self.protocol.player.planet # reset planet back to current planet
 
-        if on_ship:
+        if on_ship and not ("force" in " ".join(data).lower()):
             self.protocol.send_chat_message("Can't protect ships (at the moment)")
             return
         if planet not in self.protected_planets:
@@ -92,7 +92,7 @@ only admins can build. Planets are unprotected by default.
         """Lists Users registered to the protected planet. Syntax: /protect_list"""
         planet = self.protocol.player.planet
         on_ship = self.protocol.player.on_ship
-        if on_ship:
+        if on_ship and not ("force" in " ".join(data).lower()):
             self.protocol.send_chat_message("Can't protect ships (at the moment)")
             return
         if planet in self.player_planets:
@@ -112,7 +112,7 @@ only admins can build. Planets are unprotected by default.
             addplayer = data[0]
             first_name_color = str(data[0])
         first_name = str(addplayer)
-        if on_ship:
+        if on_ship and not ("force" in " ".join(data).lower()):
             self.protocol.send_chat_message("Can't protect ships (at the moment)")
             return
         if len(data) == 0:
