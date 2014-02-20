@@ -170,7 +170,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
     def bans(self, data):
         __doc__ = _("""Lists the currently banned IPs. Syntax: /bans""")
         self.protocol.send_chat_message("\n".join(
-            _("IP: %s ") % self.player_manager.bans))
+            [_("IP: %s ") % x.ip for x in self.player_manager.bans]))
 
     @permissions(UserLevels.ADMIN)
     def unban(self, data):
