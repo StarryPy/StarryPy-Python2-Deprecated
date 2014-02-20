@@ -35,7 +35,7 @@ class PlanetProtectPlugin(SimpleCommandPlugin):
         __doc__ = _("""Protects the current planet. Only registered users can build on protected planets. Syntax: /protect""")
         planet = self.protocol.player.planet
         on_ship = self.protocol.player.on_ship
-        if on_ship:
+        if on_ship and not ("force" in " ".join(data).lower()):
             self.protocol.send_chat_message(_("Can't protect ships (at the moment)"))
             return
         if planet not in self.protected_planets:
@@ -51,7 +51,7 @@ class PlanetProtectPlugin(SimpleCommandPlugin):
         __doc__ = _("""Removes the protection from the current planet. Syntax: /unprotect""")
         planet = self.protocol.player.planet
         on_ship = self.protocol.player.on_ship
-        if on_ship:
+        if on_ship and not ("force" in " ".join(data).lower()):
             self.protocol.send_chat_message(_("Can't protect ships (at the moment)"))
             return
         if planet in self.protected_planets:
