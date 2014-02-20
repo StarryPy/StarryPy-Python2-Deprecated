@@ -306,7 +306,7 @@ class PlayerManager(object):
             return self._cache_and_return_from_session(
                 session,
                 session.query(Player).filter(
-                    Player.logged_in is True,
+                    Player.logged_in,
                     func.lower(Player.name) == func.lower(name),
                     ).first(),
                 )
