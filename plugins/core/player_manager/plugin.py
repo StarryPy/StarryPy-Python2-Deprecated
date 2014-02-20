@@ -41,6 +41,12 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
             if client_data.name != original_name:
                 self.logger.info("Player tried to log in with name %s, replaced with %s.",
                                  original_name, client_data.name)
+
+            for duplicate_player in self.player_manager.all():
+                if duplicate_player.name==client_data.name and duplicate_player.uuid!=client_data.uuid:
+                    self.logger.info("Got a duplicate player, asking player to change name")
+                    raise NameError("The name of this character is already taken on the server! Please, create a new character with a different name or use Starcheat and change the name.")
+
             self.protocol.player = self.player_manager.fetch_or_create(
                 name=client_data.name,
                 uuid=str(client_data.uuid),
