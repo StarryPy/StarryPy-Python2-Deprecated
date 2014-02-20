@@ -70,10 +70,11 @@ class Warpy(SimpleCommandPlugin):
                     warp_packet = build_packet(Packets.WARP_COMMAND,
                                                warp_command_write(t="WARP_OTHER_SHIP",
                                                                   player=to_player.name.encode('utf-8')))
+
                 else:
                     warp_packet = build_packet(Packets.WARP_COMMAND,
                                                warp_command_write(t='WARP_UP'))
-                    print warp_packet.encode("hex")
+
             else:
                 self.protocol.send_chat_message(_("No player by the name %s found.") % to_string)
                 self.protocol.send_chat_message(self.warp.__doc__)

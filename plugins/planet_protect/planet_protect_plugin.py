@@ -22,6 +22,7 @@ class PlanetProtectPlugin(SimpleCommandPlugin):
         self.blacklist = self.config.plugin_config.get("blacklist", [])
         self.player_manager = self.plugins.get("player_manager", [])
         self.protect_everything = self.config.plugin_config.get("protect_everything", [])
+        self.block_all = False
 
     def planet_check(self):
         if self.protect_everything or (
@@ -71,6 +72,7 @@ class PlanetProtectPlugin(SimpleCommandPlugin):
             entities = entity_create.parse(data.data)
             for entity in entities.entity:
                 if entity.entity_type == EntityType.PROJECTILE:
+                    if self.block_all: return False
                     p_type = star_string("").parse(entity.entity)
                     if p_type in self.blacklist:
                         self.logger.debug(

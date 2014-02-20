@@ -92,7 +92,6 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
 
     def after_world_start(self, data):
             world_start = packets.world_start().parse(data.data)
-            print world_start
             if 'fuel.max' in world_start['world_properties']:
                 self.logger.info("Player %s is now on a ship.", self.protocol.player.name)
                 self.protocol.player.on_ship = True
