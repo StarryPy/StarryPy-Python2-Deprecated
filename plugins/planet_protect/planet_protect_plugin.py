@@ -58,7 +58,7 @@ only admins can build. Planets are unprotected by default.
 
         for planet in self.player_planets:
             if first_name in self.player_planets[self.protocol.player.planet]:
-                self.protocol.send_chat_message("Cannot add ^shadow,yellow;%s^shadow,green; to planet list (already in list)" % first_name )
+                self.protocol.send_chat_message("Cannot add ^yellow;%s^green; to planet list (already in list)" % first_name )
                 return 
 
         planet = self.protocol.player.planet # reset planet back to current planet
@@ -75,7 +75,7 @@ only admins can build. Planets are unprotected by default.
                     self.player_planets[planet] = [first_name]
                 else:
                     self.player_planets[planet] = self.player_planets[planet] + [first_name]
-                self.protocol.send_chat_message("Adding ^shadow,yellow;%s^shadow,green; to planet list" % first_name_color)
+                self.protocol.send_chat_message("Adding ^yellow;%s^green; to planet list" % first_name_color)
         else:
             if len(first_name) == 0:
                 self.protocol.send_chat_message("Planet is already protected!")
@@ -84,7 +84,7 @@ only admins can build. Planets are unprotected by default.
                     self.player_planets[planet] = [first_name]
                 else:
                     self.player_planets[planet] = self.player_planets[planet] + [first_name]
-                self.protocol.send_chat_message("Adding ^shadow,yellow;%s^shadow,green; to planet list" % first_name_color)
+                self.protocol.send_chat_message("Adding ^yellow;%s^green; to planet list" % first_name_color)
         self.save()
 
     @permissions(UserLevels.ADMIN)
@@ -96,7 +96,7 @@ only admins can build. Planets are unprotected by default.
             self.protocol.send_chat_message("Can't protect ships (at the moment)")
             return
         if planet in self.player_planets:
-            self.protocol.send_chat_message("Players registered to this planet: ^shadow,yellow;" + '^shadow,green;, ^shadow,yellow;'.join(self.player_planets[planet]).replace('[', '').replace(']', '').replace("'",''))
+            self.protocol.send_chat_message("Players registered to this planet: ^yellow;" + '^green;, ^yellow;'.join(self.player_planets[planet]).replace('[', '').replace(']', '').replace("'",''))
         else:
             self.protocol.send_chat_message("Planet is not protected!")
 
@@ -126,9 +126,9 @@ only admins can build. Planets are unprotected by default.
         else:
             if first_name in self.player_planets[planet]:
                 self.player_planets[planet].remove(first_name)
-                self.protocol.send_chat_message("Removed ^shadow,yellow;" + first_name_color + "^shadow,green; from planet list")
+                self.protocol.send_chat_message("Removed ^yellow;" + first_name_color + "^green; from planet list")
             else:
-                self.protocol.send_chat_message("Cannot remove ^shadow,yellow;" + first_name_color + "^shadow,green; from planet list (not in list)")
+                self.protocol.send_chat_message("Cannot remove ^yellow;" + first_name_color + "^green; from planet list (not in list)")
         self.save()
 
     def save(self):

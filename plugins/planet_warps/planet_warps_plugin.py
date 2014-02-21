@@ -71,8 +71,8 @@ class PlanetWarps(SimpleCommandPlugin):
             for warp in self.planet_warps:
                 if warps != "":
                     warps.append(warp[1])
-            warpnames = "^shadow,green;, ^shadow,yellow;".join(warps)
-            self.protocol.send_chat_message("List of PoI's: ^shadow,yellow;"+warpnames)
+            warpnames = "^green;, ^yellow;".join(warps)
+            self.protocol.send_chat_message("List of PoI's: ^yellow;"+warpnames)
             return
 
         on_ship = self.protocol.player.on_ship
@@ -96,8 +96,8 @@ class PlanetWarps(SimpleCommandPlugin):
 #                warp_packet = build_packet(Packets.WARP_COMMAND,
 #                                           warp_command_write(t="WARP_DOWN"))
 #                self.protocol.client_protocol.transport.write(warp_packet)
-#                self.protocol.send_chat_message("Beamed down to ^shadow,yellow;%s^shadow,green; and your ship will arrive soon." % name)
-                self.protocol.send_chat_message("Warp drive engaged! Warping to ^shadow,yellow;%s^shadow,green;." % name)
+#                self.protocol.send_chat_message("Beamed down to ^yellow;%s^green; and your ship will arrive soon." % name)
+                self.protocol.send_chat_message("Warp drive engaged! Warping to ^yellow;%s^green;." % name)
                 return
         self.protocol.send_chat_message("There is no PoI with that name!")
 

@@ -40,19 +40,19 @@ class Bookmarks(SimpleCommandPlugin):
             for warp in self.bookmarks:
                 if warps != "":
                     warps.append(warp[1])
-            warpnames = "^shadow,green;,^shadow,yellow; ".join(warps)
-            self.protocol.send_chat_message("Please, provide a valid bookmark name!\nBookmarks: ^shadow,yellow;" + warpnames )
+            warpnames = "^green;,^yellow; ".join(warps)
+            self.protocol.send_chat_message("Please, provide a valid bookmark name!\nBookmarks: ^yellow;" + warpnames )
             return
 
         for warp in self.bookmarks:
             if warp[0] == planet:
-                self.protocol.send_chat_message("The planet you're on is already bookmarked: ^shadow,yellow;" + warp[1] )
+                self.protocol.send_chat_message("The planet you're on is already bookmarked: ^yellow;" + warp[1] )
                 return
             if warp[1] == name:
                 self.protocol.send_chat_message("Bookmark with that name already exists!")
                 return
         self.bookmarks.append([planet, name])
-        self.protocol.send_chat_message("Bookmark ^shadow,yellow;%s^shadow,green; added." % name )
+        self.protocol.send_chat_message("Bookmark ^yellow;%s^green; added." % name )
         self.save()
 
     @permissions(UserLevels.GUEST)
@@ -70,18 +70,17 @@ class Bookmarks(SimpleCommandPlugin):
             for warp in self.bookmarks:
                 if warps != "":
                     warps.append(warp[1])
-            warpnames = "^shadow,green;,^shadow,yellow; ".join(warps)
-            self.protocol.send_chat_message("Please, provide a valid bookmark name!\nBookmarks: ^shadow,yellow;" + warpnames )
+            warpnames = "^green;,^yellow; ".join(warps)
+            self.protocol.send_chat_message("Please, provide a valid bookmark name!\nBookmarks: ^yellow;" + warpnames )
             return
 
         for warp in self.bookmarks:
             if warp[1] == name:
                 self.bookmarks.remove(warp)
-                self.protocol.send_chat_message("Bookmark ^shadow,yellow;%s^shadow,green; removed." % name )
+                self.protocol.send_chat_message("Bookmark ^yellow;%s^green; removed." % name )
                 self.save()
                 return
-        self.protocol.send_chat_message("There is no bookmark named: ^shadow,yellow;%s" % name )
-        """TODO"""
+        self.protocol.send_chat_message("There is no bookmark named: ^yellow;%s" % name )
 
     @permissions(UserLevels.GUEST)
     def goto(self, name):
@@ -98,8 +97,8 @@ class Bookmarks(SimpleCommandPlugin):
             for warp in self.bookmarks:
                 if warps != "":
                     warps.append(warp[1])
-            warpnames = "^shadow,green;,^shadow,yellow; ".join(warps)
-            self.protocol.send_chat_message("Bookmarks: ^shadow,yellow;" + warpnames )
+            warpnames = "^green;,^yellow; ".join(warps)
+            self.protocol.send_chat_message("Bookmarks: ^yellow;" + warpnames )
             return
 
         on_ship = self.protocol.player.on_ship
@@ -120,9 +119,9 @@ class Bookmarks(SimpleCommandPlugin):
                                                               planet=planet,
                                                               satellite=satellite))
                 self.protocol.client_protocol.transport.write(warp_packet)
-                self.protocol.send_chat_message("Warp drive engaged! Warping to ^shadow,yellow;%s^shadow,green;." % name)
+                self.protocol.send_chat_message("Warp drive engaged! Warping to ^yellow;%s^green;." % name)
                 return
-        self.protocol.send_chat_message("There is no bookmark named: ^shadow,yellow;%s" % name )
+        self.protocol.send_chat_message("There is no bookmark named: ^yellow;%s" % name )
 
     def save(self):
         filename = "./plugins/bookmarks/" + self.protocol.player.uuid + ".json"

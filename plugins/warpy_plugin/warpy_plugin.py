@@ -78,20 +78,20 @@ class Warpy(SimpleCommandPlugin):
                                                warp_command_write(t='WARP_UP'))
                 from_protocol.client_protocol.transport.write(warp_packet)
                 if from_string != to_string:
-                    self.protocol.send_chat_message("Warped ^shadow,yellow;%s^shadow,green; to ^shadow,yellow;%s^shadow,green;." % (from_string, to_string))
+                    self.protocol.send_chat_message("Warped ^yellow;%s^green; to ^yellow;%s^green;." % (from_string, to_string))
                 else:
-                    self.protocol.send_chat_message("Warped to ^shadow,yellow;%s^shadow,green;." % to_string)
+                    self.protocol.send_chat_message("Warped to ^yellow;%s^green;." % to_string)
             else:
-                self.protocol.send_chat_message("No player by the name ^shadow,yellow;%s^shadow,green; found." % to_string)
+                self.protocol.send_chat_message("No player by the name ^yellow;%s^green; found." % to_string)
                 self.protocol.send_chat_message(self.warp.__doc__)
                 return
         else:
-            self.protocol.send_chat_message("No player by the name ^shadow,yellow;%s^shadow,green; found." % from_string)
+            self.protocol.send_chat_message("No player by the name ^yellow;%s^green; found." % from_string)
             self.protocol.send_chat_message(self.warp.__doc__)
 
     def move_player_ship(self, protocol, location):
         if len(location) < 5:
-            self.logger.warning("Couldn't derive a warp location in move_player_ship. Coordinates given: ^shadow,cyan;%s",
+            self.logger.warning("Couldn't derive a warp location in move_player_ship. Coordinates given: ^cyan;%s",
                                 ":".join(location))
             self.protocol.send_chat_message("Sorry, an error occurred.")
             return
@@ -109,26 +109,26 @@ class Warpy(SimpleCommandPlugin):
     def move_own_ship_to_player(self, player_name):
         t = self.player_manager.get_logged_in_by_name(player_name)
         if t is None:
-            self.protocol.send_chat_message("No player by the name ^shadow,yellow;%s^shadow,green; found." % player_name)
+            self.protocol.send_chat_message("No player by the name ^yellow;%s^green; found." % player_name)
             self.protocol.send_chat_message(self.warp.__doc__)
             return
         if t.planet == u"":
             self.protocol.send_chat_message(
-                "Sorry, we don't have a tracked planet location for ^shadow,yellow;%s^shadow,green;. Perhaps they haven't warped down to a planet since logging in?" % t.name)
+                "Sorry, we don't have a tracked planet location for ^yellow;%s^green;. Perhaps they haven't warped down to a planet since logging in?" % t.name)
             return
         self.move_player_ship(self.protocol, t.planet.split(":"))
-        self.protocol.send_chat_message("Warp drive engaged. Warping to ^shadow,yellow;%s^shadow,green;." % player_name)
+        self.protocol.send_chat_message("Warp drive engaged. Warping to ^yellow;%s^green;." % player_name)
 
 
     def move_player_ship_to_other(self, from_player, to_player):
         f = self.player_manager.get_logged_in_by_name(from_player)
         t = self.player_manager.get_logged_in_by_name(to_player)
         if f is None:
-            self.protocol.send_chat_message("No player by the name ^shadow,yellow;%s^shadow,green; found." % from_player)
+            self.protocol.send_chat_message("No player by the name ^yellow;%s^green; found." % from_player)
             self.protocol.send_chat_message(self.warp.__doc__)
             return
         if t is None:
-            self.protocol.send_chat_message("No player by the name ^shadow,yellow;%s^shadow,green; found." % to_player)
+            self.protocol.send_chat_message("No player by the name ^yellow;%s^green; found." % to_player)
             self.protocol.send_chat_message(self.warp.__doc__)
             return
         if t.planet == u"":
@@ -136,5 +136,5 @@ class Warpy(SimpleCommandPlugin):
                 "Sorry, we don't have a tracked planet location for %s. Perhaps they haven't warped to a planet since logging in?" % to_player)
             return
         self.move_player_ship(self.factory.protocols[f.protocol], t.planet.split(":"))
-        self.protocol.send_chat_message("Warp drive engaged. Warping ^shadow,yellow;%s^shadow,green; to ^shadow,yellow;%s^shadow,green;." % (from_player, to_player))
+        self.protocol.send_chat_message("Warp drive engaged. Warping ^yellow;%s^green; to ^yellow;%s^green;." % (from_player, to_player))
 
