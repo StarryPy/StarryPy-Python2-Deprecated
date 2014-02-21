@@ -684,7 +684,7 @@ if __name__ == '__main__':
         logger.debug("Port check enabled. Performing port check to %s:%d", config.upstream_hostname,
                      config.upstream_port)
 
-        if port_check(config.upstream_hostname, config.upstream_port):
+        if not port_check(config.upstream_hostname, config.upstream_port):
             logger.critical("The starbound server is not connectable at the address %s:%d." % (
                 config.upstream_hostname, config.upstream_port))
             logger.critical(
