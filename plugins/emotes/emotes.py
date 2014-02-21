@@ -19,7 +19,9 @@ class EmotesPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.GUEST)
     def me(self, data):
-        """Creates a player emote message. Syntax: /me <emote>\nPredefined emotes: ^yellow;beckon^green;, ^yellow;bow^green;, ^yellow;cheer^green;, ^yellow;cower^green;, ^yellow;cry^green;, ^yellow;dance^green;, ^yellow;kneel^green;, ^yellow;laugh^green;, ^yellow;lol^green;, ^yellow;no^green;, ^yellow;point^green;, ^yellow;ponder^green;, ^yellow;rofl^green;, ^yellow;salute^green;, ^yellow;shrug^green;, ^yellow;sit^green;, ^yellow;sleep^green;, ^yellow;surprised^green;, ^yellow;threaten^green;, ^yellow;wave^green;, ^yellow;yes^green; and more!"""
+        """Creates a player emote message. Syntax: /me <emote>
+Predefined emotes: ^yellow;beckon^green;, ^yellow;bow^green;, ^yellow;cheer^green;, ^yellow;cower^green;, ^yellow;cry^green;, ^yellow;dance^green;, ^yellow;hug^green;, ^yellow;hugs^green;, ^yellow;kiss^green;, ^yellow;kneel^green;, ^yellow;laugh^green;, ^yellow;lol^green;, ^yellow;no^green;, ^yellow;point^green;, ^yellow;ponder^green;, ^yellow;rofl^green;, ^yellow;salute^green;, ^yellow;shrug^green;, ^yellow;sit^green;, ^yellow;sleep^green;, ^yellow;surprised^green;, ^yellow;threaten^green;, ^yellow;wave^green;, ^yellow;yes^green;
+Utility emotes: ^yellow;flip^green;, ^yellow;roll^green;"""
         now = datetime.now()
         if len(data) == 0:
             self.protocol.send_chat_message(self.me.__doc__)
@@ -81,7 +83,7 @@ class EmotesPlugin(SimpleCommandPlugin):
         elif emote == "surprised":
             emote = "is surprised beyond belief"
         elif emote == "threaten":
-            emote = "is threatening you with a butter knife"
+            emote = "is threatening you with a butter knife!"
         elif emote == "wave":
             emote = "waves... Helloooo there!"
         elif emote == "yes":
