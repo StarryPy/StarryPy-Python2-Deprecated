@@ -29,11 +29,11 @@ def port_check(upstream_hostname, upstream_port):
         sock.settimeout(1)
         result = sock.connect_ex((upstream_hostname, upstream_port))
 
-        if result == 0:
+        if result != 0:
             sock.close()
             return False
         else:
-            #sock.shutdown(SHUT_RDWR)
+            sock.shutdown(SHUT_RDWR)
             sock.close()
 
         return True
@@ -615,7 +615,10 @@ class StarboundClientFactory(ClientFactory):
         protocol.server_protocol = self.server_protocol
         return protocol
 def init_localization():
-    locale.setlocale(locale.LC_ALL, '')
+    try:
+        locale.setlocale(locale.LC_ALL, '')
+    except:
+        locale.setlocale(locale.LC_ALL, 'en_US.utf8')
     loc = locale.getlocale()
     filename = "res/messages_%s.mo" % locale.getlocale()[0][0:2]
     try:
@@ -644,7 +647,7 @@ if __name__ == '__main__':
     sh.setFormatter(console_formatter)
 
     if config.port_check:
-        if port_check(config.upstream_hostname, config.upstream_port):
+        if not port_check(config.upstream_hostname, config.upstream_port):
             logger.critical("The starbound server is not connectable at the address %s:%d." % (
                 config.upstream_hostname, config.upstream_port))
             logger.critical(

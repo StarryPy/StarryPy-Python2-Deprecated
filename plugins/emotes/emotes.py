@@ -1,6 +1,7 @@
 from base_plugin import SimpleCommandPlugin
 from plugins.core.player_manager import permissions, UserLevels
 from datetime import datetime
+from random import randrange, choice
 
 
 class EmotesPlugin(SimpleCommandPlugin):
@@ -18,7 +19,7 @@ class EmotesPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.GUEST)
     def me(self, data):
-        """Creates a player emote message. Syntax: /me <emote>\nPredefined emotes: ^shadow,yellow;beckon^shadow,green;, ^shadow,yellow;bow^shadow,green;, ^shadow,yellow;cheer^shadow,green;, ^shadow,yellow;cower^shadow,green;, ^shadow,yellow;cry^shadow,green;, ^shadow,yellow;dance^shadow,green;, ^shadow,yellow;kneel^shadow,green;, ^shadow,yellow;laugh^shadow,green;, ^shadow,yellow;lol^shadow,green;, ^shadow,yellow;no^shadow,green;, ^shadow,yellow;point^shadow,green;, ^shadow,yellow;ponder^shadow,green;, ^shadow,yellow;rofl^shadow,green;, ^shadow,yellow;salute^shadow,green;, ^shadow,yellow;shrug^shadow,green;, ^shadow,yellow;sit^shadow,green;, ^shadow,yellow;sleep^shadow,green;, ^shadow,yellow;surprised^shadow,green;, ^shadow,yellow;threaten^shadow,green;, ^shadow,yellow;wave^shadow,green;, ^shadow,yellow;yes^shadow,green;"""
+        """Creates a player emote message. Syntax: /me <emote>\nPredefined emotes: ^yellow;beckon^green;, ^yellow;bow^green;, ^yellow;cheer^green;, ^yellow;cower^green;, ^yellow;cry^green;, ^yellow;dance^green;, ^yellow;kneel^green;, ^yellow;laugh^green;, ^yellow;lol^green;, ^yellow;no^green;, ^yellow;point^green;, ^yellow;ponder^green;, ^yellow;rofl^green;, ^yellow;salute^green;, ^yellow;shrug^green;, ^yellow;sit^green;, ^yellow;sleep^green;, ^yellow;surprised^green;, ^yellow;threaten^green;, ^yellow;wave^green;, ^yellow;yes^green; and more!"""
         now = datetime.now()
         if len(data) == 0:
             self.protocol.send_chat_message(self.me.__doc__)
@@ -28,51 +29,68 @@ class EmotesPlugin(SimpleCommandPlugin):
                 "You are currently muted and cannot emote. You are limited to commands and admin chat (prefix your lines with %s for admin chat." % (self.config.chat_prefix*2))
             return False
         emote = " ".join(data)
+        spec_prefix = "" #we'll use this for random rolls, to prevent faking
         if emote == "beckon":
-            emote = "beckons"
+            emote = "beckons you to come over"
         elif emote == "bow":
-            emote = "bows"
+            emote = "bows before you"
         elif emote == "cheer":
-            emote = "cheers"
+            emote = "cheers at you! Yay!"
         elif emote == "cower":
-            emote = "cowers"
+            emote = "cowers at the sight of your weapons!"
         elif emote == "cry":
-            emote = "is crying"
+            emote = "bursts out in tears... sob sob"
         elif emote == "dance":
             emote = "is busting out some moves, some sweet dance moves"
+        elif emote == "flip":
+            flipdata = ["HEADS!", "TAILS!"]
+            spec_prefix = "^cyan;!"  #add cyan color ! infront of name or player can /me rolled ^cyan;100
+            emote = "flips a coin and its... ^cyan;%s" % choice(flipdata)
+        elif emote == "hug":
+            emote = "needs a hug!"
+        elif emote == "hugs":
+            emote = "needs a hug! Many MANY hugs!"
+        elif emote == "kiss":
+            emote = "blows you a kiss <3"
         elif emote == "kneel":
-            emote = "kneels"
+            emote = "kneels down before you"
         elif emote == "laugh":
-            emote = "laughs"
+            emote = "suddenly laughs and just as suddenly stops"
         elif emote == "lol":
-            emote = "laughs"
+            emote = "laughs out loud -LOL-"
         elif emote == "no":
             emote = "disagrees"
         elif emote == "point":
-            emote = "points"
+            emote = "points somewhere in the distance"
         elif emote == "ponder":
-            emote = "ponders"
+            emote = "ponders if this is worth it"
         elif emote == "rofl":
             emote = "rolls on the floor laughing"
+        elif emote == "roll":
+            rollx=str(randrange(1,101))
+            spec_prefix = "^cyan;!"  #add cyan color ! infront of name or player can /me rolled ^cyan;100
+            emote = "rolled ^cyan;%s" % rollx
         elif emote == "salute":
-            emote = "salutes"
+            emote = "salutes you"
         elif emote == "shrug":
-            emote = "shrugs"
+            emote = "shrugs at you"
         elif emote == "sit":
             emote = "sits down. Oh, boy..."
         elif emote == "sleep":
             emote = "falls asleep. Zzz"
         elif emote == "surprised":
-            emote = "is surprised"
+            emote = "is surprised beyond belief"
         elif emote == "threaten":
-            emote = "is threatening"
+            emote = "is threatening you with a butter knife"
         elif emote == "wave":
-            emote = "waves"
+            emote = "waves... Helloooo there!"
         elif emote == "yes":
             emote = "agrees"
 
+        now = datetime.now()
         if self.config.chattimestamps:
-          self.factory.broadcast_planet("^shadow,orange;<" + now.strftime("%H:%M") + "> " + "%s %s" % (self.protocol.player.name, emote), planet=self.protocol.player.planet)
+          timestamp = "^orange;<" + now.strftime("%H:%M") + "> "
         else:
-          self.factory.broadcast_planet("^shadow,orange;%s %s" % (self.protocol.player.name, emote), planet=self.protocol.player.planet)
+          timestamp = ""
+        self.factory.broadcast_planet(timestamp + spec_prefix + "^orange;%s %s" % (self.protocol.player.name, emote), planet=self.protocol.player.planet)
         return False
