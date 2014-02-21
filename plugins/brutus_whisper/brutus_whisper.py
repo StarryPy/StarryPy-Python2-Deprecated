@@ -70,7 +70,7 @@ class BRWhisperPlugin(SimpleCommandPlugin):
     def sendWhisper(self, target, message):
         now = datetime.now()
         if self.config.chattimestamps:
-          timestamp = "<" + now.strftime("%H:%M") + ">"
+          timestamp = "<" + now.strftime("%H:%M") + "> "
         else:
           timestamp = ""
         targetPlayer = self.player_manager.get_logged_in_by_name(target)
@@ -79,13 +79,13 @@ class BRWhisperPlugin(SimpleCommandPlugin):
             return
         else:
             #show yourself the message
-            strMsgTo = "^violet;" + timestamp + "^violet;<%s^violet;> %s" % (targetPlayer.colored_name(self.config.colors), message)
+            strMsgTo = "^violet;" + timestamp + "<%s^violet;> %s" % (targetPlayer.colored_name(self.config.colors), message)
             strTo = "%s" % targetPlayer.colored_name(self.config.colors)
             self.protocol.send_chat_message(strMsgTo)
 
             #show target the message            
             protocol = self.factory.protocols[targetPlayer.protocol]
-            strMsgFrom = "^violet;" + timestamp + "^violet;<%s^violet;> %s" % (self.protocol.player.colored_name(self.config.colors), message)
+            strMsgFrom = "^violet;" + timestamp + "<%s^violet;> %s" % (self.protocol.player.colored_name(self.config.colors), message)
             strFrom = "%s" % self.protocol.player.colored_name(self.config.colors)
             protocol.send_chat_message(strMsgFrom)            
 
@@ -99,7 +99,7 @@ class BRWhisperPlugin(SimpleCommandPlugin):
                 if sspy_player is not None:
                     if sspy_player.access_level >= UserLevels.ADMIN and value == True:
                         protocol = self.factory.protocols[sspy_player.protocol]
-                        protocol.send_chat_message("^red;" + timestamp + "%s SS: ^cyan;<%s ^green;-> %s^cyan;> ^green;%s" % (self.config.colors["admin"], strFrom, strTo, message))           
+                        protocol.send_chat_message("^red;" + timestamp + "%sSS: ^cyan;<%s ^green;-> %s^cyan;> ^green;%s" % (self.config.colors["admin"], strFrom, strTo, message))           
 
     @permissions(UserLevels.ADMIN)
     def ss(self, data):
