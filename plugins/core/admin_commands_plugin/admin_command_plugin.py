@@ -103,7 +103,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
             self.logger.trace("Received blank promotion command. Sending help message.")
             self.protocol.send_chat_message(self.promote.__doc__)
 
-    @permissions(UserLevels.OWNER)
+    @permissions(UserLevels.MODERATOR)
     def make_guest(self, player):
         self.logger.trace("Setting %s to GUEST", player.name)
         player.access_level = UserLevels.GUEST
