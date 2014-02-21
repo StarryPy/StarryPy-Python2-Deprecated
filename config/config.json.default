@@ -165,7 +165,7 @@
         }
     },
     "plugin_path": "plugins",
-    "port_check": true,
+    "port_check": false,
     "reap_time": 10,
     "server_connect_timeout": 5,
     "starbound_path": "/opt/starbound/",
