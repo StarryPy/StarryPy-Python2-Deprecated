@@ -38,6 +38,9 @@ class UserCommandPlugin(SimpleCommandPlugin):
     @permissions(UserLevels.ADMIN)
     def whois(self, data):
         """Returns client data about the specified user. Syntax: /whois [user name]"""
+        if len(data) == 0:
+            self.protocol.send_chat_message(self.whois.__doc__)
+            return
         name = " ".join(data)
         info = self.player_manager.whois(name)
         if info:
@@ -114,6 +117,9 @@ class UserCommandPlugin(SimpleCommandPlugin):
     @permissions(UserLevels.MODERATOR)
     def kick(self, data):
         """Kicks a user from the server. Usage: /kick [username] [reason]"""
+        if len(data) == 0:
+            self.protocol.send_chat_message(self.kick.__doc__)
+            return
         name, reason = extract_name(data)
         if not reason:
             reason = [ "no reason given" ]
