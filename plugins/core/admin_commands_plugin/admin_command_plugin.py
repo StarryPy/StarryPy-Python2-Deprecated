@@ -91,7 +91,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
         else:
             self.protocol.send_chat_message(self.promote.__doc__)
 
-    @permissions(UserLevels.OWNER)
+    @permissions(UserLevels.MODERATOR)
     def make_guest(self, player):
         player.access_level = UserLevels.GUEST
 
