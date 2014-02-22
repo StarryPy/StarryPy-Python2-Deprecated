@@ -30,7 +30,7 @@ class StarterItems(SimpleCommandPlugin):
             self.logger.info("Gave starter items to %s.", self.protocol.player.name)
             self.protocol.player.storage = my_storage
         else:
-            self.protocol.send_chat_message("^#F7434C;You have already received a starter pack :O")
+            self.protocol.send_chat_message("^red;You have already received a starter pack :O")
 
     def give_items(self):
         for item in self.config.plugin_config["items"]:
