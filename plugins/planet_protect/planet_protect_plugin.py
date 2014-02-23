@@ -64,6 +64,7 @@ only admins can build. Planets are unprotected by default.
         except:
             planet = self.protocol.player.planet # reset planet back to current planet
 
+        planet = self.protocol.player.planet # reset planet back to current planet
         if on_ship and not ("force" in " ".join(data).lower()):
             self.protocol.send_chat_message("Can't protect ships (at the moment)")
             return
