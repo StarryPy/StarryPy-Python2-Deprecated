@@ -56,12 +56,13 @@ only admins can build. Planets are unprotected by default.
 
         first_name = str(addplayer)
 
-        for planet in self.player_planets:
-            if first_name in self.player_planets[self.protocol.player.planet]:
-                self.protocol.send_chat_message("Cannot add ^yellow;%s^green; to planet list (already in list)" % first_name )
-                return 
-
-        planet = self.protocol.player.planet # reset planet back to current planet
+        try:
+            for planet in self.player_planets:
+                if first_name in self.player_planets[self.protocol.player.planet]:
+                    self.protocol.send_chat_message("Cannot add ^yellow;%s^green; to planet list (already in list)" % first_name )
+                    return
+        except:
+            planet = self.protocol.player.planet # reset planet back to current planet
 
         if on_ship and not ("force" in " ".join(data).lower()):
             self.protocol.send_chat_message("Can't protect ships (at the moment)")
