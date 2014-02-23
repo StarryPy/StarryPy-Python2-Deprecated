@@ -61,10 +61,12 @@ class BRWhisperPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.GUEST)
     def w(self, data):
+        """Sends a message to target player. Syntax: /whisper [player name] [msg]"""
         self.whisper(data)
 
     @permissions(UserLevels.GUEST)
     def r(self, data):
+        """Replies to last player who whispered you. Syntax: /r [msg]"""
         self.reply(data)
 
     def sendWhisper(self, target, message):
