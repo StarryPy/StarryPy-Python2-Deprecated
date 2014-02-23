@@ -235,6 +235,8 @@ class PlayerManager(object):
                 raise AlreadyLoggedIn
             if self.check_bans(ip):
                 raise Banned
+            if self.check_bans(name):
+                raise Banned
             while self.whois(name):
                 logger.info("Got a duplicate player, affixing _ to name")
                 name += "_"

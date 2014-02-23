@@ -158,9 +158,16 @@ class UserCommandPlugin(SimpleCommandPlugin):
     def bans(self, data):
         """Lists the currently banned IPs. Syntax: /bans"""
         res = self.player_manager.list_bans()
-        self.protocol.send_chat_message("Banned IP list:")
-        for banned in res:
-            self.protocol.send_chat_message("IP: ^red;%s ^green;Reason: ^yellow;%s^green;" % (banned.ip, banned.reason))
+        if res:
+            self.protocol.send_chat_message("Banned list (IPs and Names):")
+            for banned in res:
+                try:
+                    socket.inet_aton(banned.ip)
+                    self.protocol.send_chat_message("IP: ^red;%s ^green;Reason: ^yellow;%s^green;" % (banned.ip, banned.reason))
+                except:
+                    self.protocol.send_chat_message("Player: ^red;%s ^green;Reason: ^yellow;%s^green;" % (banned.ip, banned.reason))
+        else:
+            self.protocol.send_chat_message("No bans found.")
 
     @permissions(UserLevels.ADMIN)
     def unban(self, data):
@@ -180,10 +187,26 @@ class UserCommandPlugin(SimpleCommandPlugin):
         return False
 
     def ban_by_name(self, data):
-        raise NotImplementedError
+        name, reason = extract_name(data)
+        info = self.player_manager.get_by_name(name)
+        if info:
+            self.player_manager.ban(info.name)
+            self.protocol.send_chat_message("Banned: %s" % info.colored_name(self.config.colors))
+            self.logger.warning("%s banned player: %s", self.protocol.player.name, info.name)
+        else:
+            self.protocol.send_chat_message("Couldn't find a user by the name ^yellow;%s^green;." % name)
+        return False
 
     def unban_by_name(self, data):
-        raise NotImplementedError
+        name, reason = extract_name(data)
+        info = self.player_manager.get_by_name(name)
+        if info:
+            self.player_manager.unban(info.name)
+            self.protocol.send_chat_message("Unbanned: %s" % info.colored_name(self.config.colors))
+            self.logger.warning("%s unbanned: %s", self.protocol.player.name, info.name)
+        else:
+            self.protocol.send_chat_message("Couldn't find a user by the name ^yellow;%s^green;." % name)
+        return False
 
     @permissions(UserLevels.ADMIN)
     def item(self, data):
