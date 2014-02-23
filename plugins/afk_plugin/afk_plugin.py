@@ -78,7 +78,7 @@ class AFKCommand(SimpleCommandPlugin):
         self.afk_list.pop(self.protocol.player.name, None)
 
     #if player does any of these, unmark him from afk!
-    def on_chat_received(self, data):
+    def on_chat_sent(self, data):
         self.unset_afk_status(self.protocol.player.name)
 
     def on_entity_create(self, data):
