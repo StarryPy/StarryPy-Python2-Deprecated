@@ -74,4 +74,3 @@ class StarryPyIrcBotFactory(protocol.ClientFactory):
 
     def clientConnectionFailed(self, connector, reason):
         self.logger.error("connection failed: %s" % reason)
-        reactor.stop()
