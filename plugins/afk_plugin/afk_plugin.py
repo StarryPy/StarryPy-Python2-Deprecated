@@ -52,7 +52,7 @@ class AFKCommand(SimpleCommandPlugin):
           timestamp = ""
         if name in self.afk_list:
             if self.afk_list[name] == False:
-                self.factory.broadcast(timestamp + "%s %s" % (self.player_manager.get_by_name(name).colored_name(self.config.colors), self.afk_message))
+                self.factory.broadcast(timestamp + "%s ^gray;%s" % (self.player_manager.get_by_name(name).colored_name(self.config.colors), self.afk_message))
                 self.afk_list[name] = True
         else:
             self.afk_list[name] = True
@@ -66,7 +66,7 @@ class AFKCommand(SimpleCommandPlugin):
           timestamp = ""
         if name in self.afk_list:
             if self.afk_list[name] == True:
-                self.factory.broadcast(timestamp + "%s %s" % (self.player_manager.get_by_name(name).colored_name(self.config.colors), self.afkreturn_message))
+                self.factory.broadcast(timestamp + "%s ^gray;%s" % (self.player_manager.get_by_name(name).colored_name(self.config.colors), self.afkreturn_message))
                 self.afk_list[name] = False
         else:
             self.afk_list[name] = False
