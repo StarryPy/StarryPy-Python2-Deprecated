@@ -19,11 +19,10 @@ class Announcer(BasePlugin):
                 self.factory.broadcast(
                     self.protocol.player.colored_name(self.config.colors) + " joined.", 0, "", "Announcer")
         except AttributeError:
-            self.logger.debug("Attribute error in after_connect_response.")
             return
         except:
-            self.logger.exception("Unknown error in after_connect_response.", exc_info=True)
-            raise
+            self.logger.exception("Unknown error in after_connect_response.")
+            return
 
     def on_client_disconnect(self, data):
         if self.protocol.player is not None:

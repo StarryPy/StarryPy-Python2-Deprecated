@@ -16,17 +16,16 @@ class PluginManagerPlugin(SimpleCommandPlugin):
     @permissions(UserLevels.ADMIN)
     def list_plugins(self, data):
         """Lists all currently loaded plugins. Syntax: /list_plugins"""
-        self.protocol.send_chat_message("Currently loaded plugins: %s" % " ".join(
+        self.protocol.send_chat_message("Currently loaded plugins: ^yellow;%s" % "^green;, ^yellow;".join(
             [plugin.name for plugin in self.plugin_manager.plugins.itervalues() if plugin.active]))
         inactive = [plugin.name for plugin in self.plugin_manager.plugins.itervalues() if not plugin.active]
         if len(inactive) > 0:
-            self.protocol.send_chat_message("Inactive plugins: %s" % " ".join(
+            self.protocol.send_chat_message("Inactive plugins: ^red;%s" % "^green;, ^red;".join(
                 [plugin.name for plugin in self.plugin_manager.plugins.itervalues() if not plugin.active]))
 
     @permissions(UserLevels.ADMIN)
     def disable_plugin(self, data):
         """Disables a currently activated plugin. Syntax: /disable_plugin [plugin name]"""
-        self.logger.debug("disable_plugin called: %s" " ".join(data))
         if len(data) == 0:
             self.protocol.send_chat_message("You have to specify a plugin.")
             return
@@ -48,7 +47,6 @@ class PluginManagerPlugin(SimpleCommandPlugin):
     @permissions(UserLevels.ADMIN)
     def enable_plugin(self, data):
         """Enables a currently deactivated plugin. Syntax: /enable_plugin [plugin name]"""
-        self.logger.debug("enable_plugin called: %s", " ".join(data))
         if len(data) == 0:
             self.protocol.send_chat_message("You have to specify a plugin.")
             return
@@ -79,5 +77,5 @@ class PluginManagerPlugin(SimpleCommandPlugin):
                     available.append(name)
             available.sort(key=str.lower)
             self.protocol.send_chat_message(
-                "Available commands: %s\nAlso try /help command" % ", ".join(available))
+                "Available commands: ^yellow;%s\n^green;Get more help on commands with ^yellow;/help <command>" % "^green;, ^yellow;".join(available))
             return True
