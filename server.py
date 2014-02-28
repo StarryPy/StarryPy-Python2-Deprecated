@@ -641,7 +641,7 @@ class StarboundClientFactory(ClientFactory):
 def init_localization():
     locale.setlocale(locale.LC_ALL, '')
     loc = locale.getlocale()
-    filename = "res/messages_%s.mo" % locale.getlocale()[0][0:2]
+    filename = "res/messages.mo" if loc == (None, None) else "res/messages_%s.mo" % locale.getlocale()[0][0:2]
     try:
         print "Opening message file %s for locale %s." % (filename, loc[0])
         trans = gettext.GNUTranslations(open(filename, "rb" ))
