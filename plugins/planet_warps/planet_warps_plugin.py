@@ -2,7 +2,7 @@ import json
 from base_plugin import SimpleCommandPlugin
 from plugins.core.player_manager import permissions, UserLevels
 from packets import warp_command_write, Packets
-from utility_functions import build_packet, move_ship_to_coords
+from utility_functions import build_packet
 
 
 class PlanetWarps(SimpleCommandPlugin):
@@ -11,7 +11,7 @@ class PlanetWarps(SimpleCommandPlugin):
     """
     name = "planet_warps_plugin"
     depends = ['command_dispatcher', 'player_manager']
-    commands = ["set_poi", "del_poi", "poi"]
+    commands = ["poi_set", "poi_del", "poi"]
     auto_activate = True
 
     def activate(self):
@@ -24,8 +24,8 @@ class PlanetWarps(SimpleCommandPlugin):
             self.planet_warps = []
 
     @permissions(UserLevels.ADMIN)
-    def set_poi(self, name):
-        """Sets current planet as Planet of Interest (PoI). Syntax: /set_poi <PoI name>"""
+    def poi_set(self, name):
+        """Sets current planet as Planet of Interest (PoI). Syntax: /poi_set (name)"""
         name = " ".join(name).strip().strip("\t")
         if len(name) == 0:
             self.protocol.send_chat_message("PoI name cannot be empty!")
@@ -47,8 +47,8 @@ class PlanetWarps(SimpleCommandPlugin):
         self.save()
 
     @permissions(UserLevels.ADMIN)
-    def del_poi(self, name):
-        """Removes current planet as Planet of Interest (PoI). Syntax: /del_poi <PoI name>"""
+    def poi_del(self, name):
+        """Removes current planet as Planet of Interest (PoI). Syntax: /poi_del (name)"""
         name = " ".join(name).strip().strip("\t")
         if len(name) == 0:
             self.protocol.send_chat_message("PoI name cannot be empty!")
@@ -64,7 +64,7 @@ class PlanetWarps(SimpleCommandPlugin):
 
     @permissions(UserLevels.GUEST)
     def poi(self, name):
-        """Moves you and your ship to a Planet of Interest (PoI). Syntax: /poi <PoI name> or /poi for list of PoI's"""
+        """Moves you and your ship to a Planet of Interest (PoI). Syntax: /poi [name] *omit [name] for list of PoI's"""
         name = " ".join(name).strip().strip("\t")
         if len(name) == 0:
             warps = []

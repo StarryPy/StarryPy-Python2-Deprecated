@@ -19,7 +19,7 @@ class EmotesPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.GUEST)
     def me(self, data):
-        """Creates a player emote message. Syntax: /me <emote>
+        """Creates a player emote message. Syntax: /me (emote)
 Predefined emotes: ^yellow;beckon^green;, ^yellow;bow^green;, ^yellow;cheer^green;, ^yellow;cower^green;, ^yellow;cry^green;, ^yellow;dance^green;, ^yellow;hug^green;, ^yellow;hugs^green;, ^yellow;kiss^green;, ^yellow;kneel^green;, ^yellow;laugh^green;, ^yellow;lol^green;, ^yellow;no^green;, ^yellow;point^green;, ^yellow;ponder^green;, ^yellow;rofl^green;, ^yellow;salute^green;, ^yellow;shrug^green;, ^yellow;sit^green;, ^yellow;sleep^green;, ^yellow;surprised^green;, ^yellow;threaten^green;, ^yellow;wave^green;, ^yellow;yes^green;
 Utility emotes: ^yellow;flip^green;, ^yellow;roll^green;"""
         now = datetime.now()
