@@ -44,7 +44,7 @@ only admins can build. Planets are unprotected by default.
 
     @permissions(UserLevels.ADMIN)
     def protect(self, data):
-        """Protects the current planet. Only administrators can build on protected planets. Syntax: /protect"""
+        """Protects the current planet. Only administrators and allowed players can build on protected planets. Syntax: /protect [player]"""
         planet = self.protocol.player.planet
         on_ship = self.protocol.player.on_ship
         if len(data) == 0:
@@ -104,7 +104,7 @@ only admins can build. Planets are unprotected by default.
 
     @permissions(UserLevels.ADMIN)
     def unprotect(self, data):
-        """Removes the protection from the current planet, or removes a registered player. Syntax: /unprotect <user>"""
+        """Removes the protection from the current planet, or removes a registered player. Syntax: /unprotect [player]"""
         planet = self.protocol.player.planet
         on_ship = self.protocol.player.on_ship
         if len(data) == 0:

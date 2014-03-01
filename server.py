@@ -22,7 +22,7 @@ import packets
 from plugin_manager import PluginManager, route, FatalPluginError
 from utility_functions import build_packet
 
-VERSION = "1.3.0"
+VERSION = "1.3.1"
 
 def port_check(upstream_hostname, upstream_port):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -627,9 +627,9 @@ def init_localization():
         locale.setlocale(locale.LC_ALL, '')
     except:
         locale.setlocale(locale.LC_ALL, 'en_US.utf8')
-    loc = locale.getlocale()
-    filename = "res/messages_%s.mo" % locale.getlocale()[0][0:2]
     try:
+        loc = locale.getlocale()
+        filename = "res/messages_%s.mo" % locale.getlocale()[0][0:2]
         print "Opening message file %s for locale %s." % (filename, loc[0])
         trans = gettext.GNUTranslations(open(filename, "rb" ))
     except IOError:

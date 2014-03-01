@@ -24,7 +24,7 @@ class BRWhisperPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.GUEST)
     def whisper(self, data):
-        """Sends a message to target player. Syntax: /whisper [player name] [msg]"""
+        """Sends a message to target player. Syntax: /whisper (player) (msg)"""
         now = datetime.now()
         if self.config.chattimestamps:
           timestamp = "^orange;<" + now.strftime("%H:%M") + "> "
@@ -47,7 +47,7 @@ class BRWhisperPlugin(SimpleCommandPlugin):
             self.protocol.send_chat_message(self.whisper.__doc__)
 
     def reply(self, data):
-        """Replies to last player who whispered you. Syntax: /r [msg]"""
+        """Replies to last player who whispered you. Syntax: /r (msg)"""
         if len(data) == 0:
             self.protocol.send_chat_message(self.reply.__doc__)
             return
@@ -61,12 +61,12 @@ class BRWhisperPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.GUEST)
     def w(self, data):
-        """Sends a message to target player. Syntax: /whisper [player name] [msg]"""
+        """Sends a message to target player. Syntax: /whisper (player) (msg)"""
         self.whisper(data)
 
     @permissions(UserLevels.GUEST)
     def r(self, data):
-        """Replies to last player who whispered you. Syntax: /r [msg]"""
+        """Replies to last player who whispered you. Syntax: /r (msg)"""
         self.reply(data)
 
     def sendWhisper(self, target, message):

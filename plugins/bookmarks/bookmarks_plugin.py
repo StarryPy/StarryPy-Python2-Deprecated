@@ -20,7 +20,7 @@ class Bookmarks(SimpleCommandPlugin):
 
     @permissions(UserLevels.GUEST)
     def bookmark(self, name):
-        """Bookmarks a planet for fast warp routes. Syntax: /bookmark <name>"""
+        """Bookmarks a planet for fast warp routes. Syntax: /bookmark (name)"""
         filename = "./plugins/bookmarks/" + self.protocol.player.uuid + ".json"
         try:
             with open(filename) as f:
@@ -57,7 +57,7 @@ class Bookmarks(SimpleCommandPlugin):
 
     @permissions(UserLevels.GUEST)
     def remove(self, name):
-        """Removes current planet from bookmarks. Syntax: /remove <name>"""
+        """Removes current planet from bookmarks. Syntax: /remove (name)"""
         filename = "./plugins/bookmarks/" + self.protocol.player.uuid + ".json"
         try:
             with open(filename) as f:
@@ -84,7 +84,7 @@ class Bookmarks(SimpleCommandPlugin):
 
     @permissions(UserLevels.GUEST)
     def goto(self, name):
-        """Warps your ship to previously bookmarked planet. Syntax: /goto <name> or /goto for list of planets"""
+        """Warps your ship to previously bookmarked planet. Syntax: /goto [name] *omit [name] for a list of bookmarks"""
         filename = "./plugins/bookmarks/" + self.protocol.player.uuid + ".json"
         try:
             with open(filename) as f:

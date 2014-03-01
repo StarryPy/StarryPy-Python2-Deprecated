@@ -25,7 +25,7 @@ class PluginManagerPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.ADMIN)
     def disable_plugin(self, data):
-        """Disables a currently activated plugin. Syntax: /disable_plugin [plugin name]"""
+        """Disables a currently activated plugin. Syntax: /disable_plugin (plugin name)"""
         if len(data) == 0:
             self.protocol.send_chat_message("You have to specify a plugin.")
             return
@@ -46,7 +46,7 @@ class PluginManagerPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.ADMIN)
     def enable_plugin(self, data):
-        """Enables a currently deactivated plugin. Syntax: /enable_plugin [plugin name]"""
+        """Enables a currently deactivated plugin. Syntax: /enable_plugin (plugin name)"""
         if len(data) == 0:
             self.protocol.send_chat_message("You have to specify a plugin.")
             return

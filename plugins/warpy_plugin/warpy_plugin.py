@@ -10,7 +10,7 @@ class Warpy(SimpleCommandPlugin):
     """
     name = "warpy_plugin"
     depends = ['command_dispatcher', 'player_manager']
-    commands = ["warp", "move_ship"]
+    commands = ["warp", "warp_ship"]
     auto_activate = True
 
     def activate(self):
@@ -19,7 +19,7 @@ class Warpy(SimpleCommandPlugin):
 
     @permissions(UserLevels.ADMIN)
     def warp(self, name):
-        """Warps you to a player's ship (or player to player).\nSyntax: /warp <to player> OR /warp <player 1> <to player 2>"""
+        """Warps you to a player's ship (or player to player).\nSyntax: /warp [player] (to player)"""
         if len(name) == 0:
             self.protocol.send_chat_message(self.warp.__doc__)
             return
@@ -39,10 +39,10 @@ class Warpy(SimpleCommandPlugin):
             self.warp_player_to_player(first_name, second_name)
 
     @permissions(UserLevels.ADMIN)
-    def move_ship(self, location):
-        """Move a player ship to another player.\nSyntax: /move_ship <to player> OR /move_ship <from player> <to player>"""
+    def warp_ship(self, location):
+        """Warps a player ship to another players ship.\nSyntax: /warp_ship [player] (to player)"""
         if len(location) == 0:
-            self.protocol.send_chat_message(self.move_ship.__doc__)
+            self.protocol.send_chat_message(self.warp_ship.__doc__)
             return
         try:
             first_name, rest = extract_name(location)

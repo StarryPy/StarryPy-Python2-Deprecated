@@ -37,7 +37,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.ADMIN)
     def whois(self, data):
-        """Returns client data about the specified user. Syntax: /whois [user name]"""
+        """Returns client data about the specified user. Syntax: /whois (player)"""
         if len(data) == 0:
             self.protocol.send_chat_message(self.whois.__doc__)
             return
@@ -54,7 +54,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.MODERATOR)
     def promote(self, data):
-        """Promotes/demotes a user to a specific rank. Syntax: /promote [username] [rank] (where rank is either: registered, moderator, admin, or guest))"""
+        """Promotes/demotes a user to a specific rank. Syntax: /promote (player) (rank) (where rank is either: guest, registered, moderator, admin, or owner))"""
         if len(data) > 0:
             name = " ".join(data[:-1])
             rank = data[-1].lower()
@@ -116,7 +116,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.MODERATOR)
     def kick(self, data):
-        """Kicks a user from the server. Usage: /kick [username] [reason]"""
+        """Kicks a user from the server. Usage: /kick (player) [reason]"""
         if len(data) == 0:
             self.protocol.send_chat_message(self.kick.__doc__)
             return
@@ -139,7 +139,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.ADMIN)
     def ban(self, data):
-        """Bans an IP. Syntax: /ban <ip_address>\nTip: Use /whois <PlayerName> to get IP"""
+        """Bans an IP or a Player (by name). Syntax: /ban (IP | player)\nTip: Use /whois (player) to get IP"""
         if len(data) == 0:
             self.protocol.send_chat_message(self.ban.__doc__)
             return
@@ -171,7 +171,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.ADMIN)
     def unban(self, data):
-        """Unbans an IP. Syntax: /unban <ip_address>"""
+        """Unbans an IP or a Player (by name). Syntax: /unban (IP | player)"""
         if len(data) == 0:
             self.protocol.send_chat_message(self.unban.__doc__)
             return
@@ -210,7 +210,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.ADMIN)
     def item(self, data):
-        """Gives an item to a player. Syntax: /item [target player] [item name] [optional: item count]"""
+        """Gives an item to a player. Syntax: /item (player) (item) [count]"""
         if len(data) >= 2:
             try:
                 name, item = extract_name(data)
@@ -249,7 +249,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.MODERATOR)
     def mute(self, data):
-        """Mute a player. Syntax: /mute [player name]"""
+        """Mute a player. Syntax: /mute (player)"""
         name = " ".join(data)
         player = self.player_manager.get_logged_in_by_name(name)
         if player is None:
@@ -262,7 +262,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.MODERATOR)
     def unmute(self, data):
-        """Unmute a currently muted player. Syntax: /unmute [player name]"""
+        """Unmute a currently muted player. Syntax: /unmute (player)"""
         name = " ".join(data)
         player = self.player_manager.get_logged_in_by_name(name)
         if player is None:
@@ -280,7 +280,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.OWNER)
     def shutdown(self, data):
-        """Shutdown the server in n seconds. Syntax: /shutdown [number of seconds] (>0)"""
+        """Shutdown the server in n seconds. Syntax: /shutdown (seconds) (>0)"""
         try:
             x = float(data[0])
         except ValueError:
