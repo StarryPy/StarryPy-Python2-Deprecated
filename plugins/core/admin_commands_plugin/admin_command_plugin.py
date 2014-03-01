@@ -54,7 +54,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.MODERATOR)
     def promote(self, data):
-        """Promotes/demotes a user to a specific rank. Syntax: /promote (username) (rank) (where rank is either: guest, registered, moderator, admin, or owner))"""
+        """Promotes/demotes a user to a specific rank. Syntax: /promote (player) (rank) (where rank is either: guest, registered, moderator, admin, or owner))"""
         if len(data) > 0:
             name = " ".join(data[:-1])
             rank = data[-1].lower()
@@ -116,7 +116,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.MODERATOR)
     def kick(self, data):
-        """Kicks a user from the server. Usage: /kick (username) [reason]"""
+        """Kicks a user from the server. Usage: /kick (player) [reason]"""
         if len(data) == 0:
             self.protocol.send_chat_message(self.kick.__doc__)
             return
@@ -210,7 +210,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.ADMIN)
     def item(self, data):
-        """Gives an item to a player. Syntax: /item (player) (item name) [count]"""
+        """Gives an item to a player. Syntax: /item (player) (item) [count]"""
         if len(data) >= 2:
             try:
                 name, item = extract_name(data)

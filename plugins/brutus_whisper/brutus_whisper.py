@@ -24,7 +24,7 @@ class BRWhisperPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.GUEST)
     def whisper(self, data):
-        """Sends a message to target player. Syntax: /whisper (player name) (msg)"""
+        """Sends a message to target player. Syntax: /whisper (player) (msg)"""
         now = datetime.now()
         if self.config.chattimestamps:
           timestamp = "^orange;<" + now.strftime("%H:%M") + "> "
