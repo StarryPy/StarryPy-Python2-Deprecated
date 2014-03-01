@@ -632,7 +632,7 @@ def init_localization():
         filename = "res/messages_%s.mo" % locale.getlocale()[0][0:2]
         print "Opening message file %s for locale %s." % (filename, loc[0])
         trans = gettext.GNUTranslations(open(filename, "rb" ))
-    except IOError:
+    except (IOError, TypeError, IndexError):
         print "Locale not found. Using default messages."
         trans = gettext.NullTranslations()
     trans.install()
