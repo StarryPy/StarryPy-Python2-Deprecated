@@ -27,7 +27,7 @@ only admins can build. Planets are unprotected by default.
         self.block_all = False
 
     def planet_check(self):
-        if self.protect_everything or (self.protocol.player.planet in self.protected_planets and self.protocol.player.access_level < UserLevels.ADMIN):
+        if self.protocol.player.planet in self.protected_planets and self.protocol.player.access_level < UserLevels.ADMIN:
             on_ship = self.protocol.player.on_ship
             if on_ship:
                 return True
@@ -39,6 +39,8 @@ only admins can build. Planets are unprotected by default.
                         return True
                     else:
                         return False
+        elif self.protect_everything and self.protocol.player.access_level < UserLevels.REGISTERED:
+            return False
         else:
             return True
 
