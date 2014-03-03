@@ -35,8 +35,8 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
         client_data = client_connect().parse(data.data)
         try:
             original_name = client_data.name
-                        for regex in self.regexes:
-                            client_data.name = re.sub(regex, "", client_data.name)
+            for regex in self.regexes:
+                client_data.name = re.sub(regex, "", client_data.name)
             if len(client_data.name.strip()) == 0:  # If the username is nothing but spaces.
                 raise NameError("Your name must not be empty!")
             if client_data.name != original_name:
