@@ -81,7 +81,7 @@ class BRWhisperPlugin(SimpleCommandPlugin):
             return
         else:
             #show yourself the message
-            strMsgTo = "^violet;" + timestamp + "<%s^violet;> %s" % (targetPlayer.colored_name(self.config.colors), message)
+            strMsgTo = "^violet;" + timestamp + "<%s^violet;> %s" % (self.protocol.player.colored_name(self.config.colors), message)
             strTo = "%s" % targetPlayer.colored_name(self.config.colors)
             self.protocol.send_chat_message(strMsgTo)
 
