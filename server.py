@@ -22,7 +22,7 @@ import packets
 from plugin_manager import PluginManager, route, FatalPluginError
 from utility_functions import build_packet
 
-VERSION = "1.3.1"
+VERSION = "1.3.2"
 
 def port_check(upstream_hostname, upstream_port):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
