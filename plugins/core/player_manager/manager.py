@@ -147,6 +147,7 @@ class Player(Base):
 
     uuid = Column(String, primary_key=True)
     name = Column(String)
+    org_name = Column(String)
     last_seen = Column(DateTime)
     access_level = Column(Integer)
     logged_in = Column(Boolean)
@@ -229,29 +230,36 @@ class PlayerManager(object):
 
         return to_return
 
-    def fetch_or_create(self, uuid, name, ip, protocol=None):
+    def fetch_or_create(self, uuid, name, org_name, ip, protocol=None):
         with _autoclosing_session(self.sessionmaker) as session:
             if session.query(Player).filter_by(uuid=uuid, logged_in=True).first():
                 raise AlreadyLoggedIn
             if self.check_bans(ip):
                 raise Banned
-            if self.check_bans(name):
+            if self.check_bans(org_name):
                 raise Banned
-            while self.whois(name):
-                logger.info("Got a duplicate player, affixing _ to name")
-                name += "_"
+#            while self.whois(name):
+#                logger.info("Got a duplicate nickname, affixing _ to name")
+#                name += "_"
             player = session.query(Player).filter_by(uuid=uuid).first()
             if player:
                 if player.name != name:
                     logger.info("Detected username change.")
-                    player.name = name
+                    player.name = player.name
+                    name = str(player.name)
+                    #csp = data_parser.ChatSent.build(dict(message="/nick %s" % name,
+                    #                                      channel=0))
+                    #asyncio.Task(protocol.client_raw_write(pparser.build_packet
+                    #                                            'chat_sent'], csp)))
+                    #player.protocol.transport.write(build_packet(Packets.CHAT_RECEIVED, chat_received().build(p)))
                 if ip not in player.ips:
                     player.ips.append(IPAddress(ip=ip))
                     player.ip = ip
                 player.protocol = protocol
+                player.last_seen = datetime.datetime.now()
             else:
                 logger.info("Adding new player with name: %s" % name)
-                player = Player(uuid=uuid, name=name,
+                player = Player(uuid=uuid, name=name, org_name=org_name,
                                 last_seen=datetime.datetime.now(),
                                 access_level=int(UserLevels.GUEST),
                                 logged_in=False,
@@ -300,8 +308,7 @@ class PlayerManager(object):
 
     def whois(self, name):
         with _autoclosing_session(self.sessionmaker) as session:
-            return session.query(Player).filter(Player.logged_in == True,
-                                                 func.lower(Player.name) == func.lower(name)).first()
+            return session.query(Player).filter(func.lower(Player.name) == func.lower(name)).first()
 
     def list_bans(self):
         with _autoclosing_session(self.sessionmaker) as session:
@@ -342,6 +349,20 @@ class PlayerManager(object):
             return self._cache_and_return_from_session(
                 session,
                 session.query(Player).filter(func.lower(Player.name) == func.lower(name)).first(),
+                )
+
+    def get_by_org_name(self, org_name):
+        with _autoclosing_session(self.sessionmaker) as session:
+            return self._cache_and_return_from_session(
+                session,
+                session.query(Player).filter(func.lower(Player.org_name) == func.lower(org_name)).first(),
+                )
+
+    def get_by_uuid(self, uuid):
+        with _autoclosing_session(self.sessionmaker) as session:
+            return self._cache_and_return_from_session(
+                session,
+                session.query(Player).filter(func.lower(Player.uuid) == func.lower(uuid)).first(),
                 )
 
     def get_logged_in_by_name(self, name):

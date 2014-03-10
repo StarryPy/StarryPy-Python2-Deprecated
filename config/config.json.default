@@ -1,6 +1,6 @@
 {
-    "bind_port": 21025,
     "bind_address": "",
+    "bind_port": 21025,
     "chat_prefix": "#",
     "chattimestamps": true,
     "colors": {
@@ -36,6 +36,9 @@
         "bookmarks_plugin": {
             "auto_activate": true
         },
+        "brutus_whisper": {
+            "auto_activate": true
+        },
         "chat_logger": {
             "auto_activate": true
         },
@@ -46,6 +49,9 @@
             "auto_activate": true
         },
         "emotes_plugin": {
+            "auto_activate": true
+        },
+        "fuelgiver_plugin": {
             "auto_activate": true
         },
         "irc": {
@@ -192,17 +198,11 @@
         "planet_visitor_announcer_plugin": {
             "auto_activate": true
         },
-        "planet_warps_plugin": {
-            "auto_activate": true
-        },
         "players_plugin": {
             "auto_activate": true
         },
         "plugin_manager": {
             "auto_activate": true
-        },
-        "pushover_plugin": {
-            "auto_activate": false
         },
         "starbound_config_manager": {
             "auto_activate": true
@@ -215,6 +215,15 @@
         },
         "warpy_plugin": {
             "auto_activate": true
+        },
+        "web_gui": {
+            "auto_activate": false,
+            "cookie_token": "",
+            "ownerpassword": "!!PUT A PASSWORD HERE",
+            "port": 8083,
+            "remember_cookie_token": true,
+            "restart_script": "",
+            "serverurl": "localhost"
         }
     },
     "plugin_path": "plugins",
@@ -222,6 +231,7 @@
     "reap_time": 10,
     "server_connect_timeout": 5,
     "starbound_path": "/opt/starbound/",
+    "server_name": "--ADD NAME--",
     "upstream_hostname": "localhost",
     "upstream_port": 21024
 }

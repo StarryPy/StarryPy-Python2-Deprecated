@@ -1,6 +1,8 @@
+import re
 from base_plugin import SimpleCommandPlugin
 from plugins.core.player_manager import UserLevels, permissions
 from packets import entity_create, EntityType, star_string
+from utility_functions import extract_name
 
 
 class PlanetProtectPlugin(SimpleCommandPlugin):
@@ -10,7 +12,7 @@ only admins can build. Planets are unprotected by default.
 """
     name = "planet_protect"
     description = "Protects planets."
-    commands = ["protect", "unprotect", "protect_list"]
+    commands = ["protect", "unprotect", "protect_list", "protect_all"]
     depends = ["player_manager", "command_dispatcher"]
 
     def activate(self):
@@ -22,8 +24,9 @@ only admins can build. Planets are unprotected by default.
         self.protected_planets = self.config.plugin_config.get("protected_planets", [])
         self.player_planets = self.config.plugin_config.get("player_planets", {})
         self.blacklist = self.config.plugin_config.get("blacklist", [])
-        self.player_manager = self.plugins.get("player_manager", [])
+        self.player_manager = self.plugins["player_manager"].player_manager
         self.protect_everything = self.config.plugin_config.get("protect_everything", [])
+        self.regexes = self.plugins['player_manager'].regexes
         self.block_all = False
 
     def planet_check(self):
@@ -32,7 +35,9 @@ only admins can build. Planets are unprotected by default.
             if on_ship:
                 return True
             else:
-                name = self.protocol.player.name
+                name = self.protocol.player.org_name
+                for regex in self.regexes:  # Replace problematic chars in client name
+                    name = re.sub(regex, "", name)
                 planet = self.protocol.player.planet
                 for planet in self.player_planets:
                     if name in self.player_planets[self.protocol.player.planet]:
@@ -46,27 +51,38 @@ only admins can build. Planets are unprotected by default.
 
     @permissions(UserLevels.ADMIN)
     def protect(self, data):
-        """Protects the current planet. Only administrators and allowed players can build on protected planets. Syntax: /protect [player]"""
+        """Protects the current planet. Only administrators and allowed players can build on protected planets.\nSyntax: /protect [player]"""
         planet = self.protocol.player.planet
         on_ship = self.protocol.player.on_ship
         if len(data) == 0:
-            addplayer = self.protocol.player.name
+            addplayer = self.protocol.player.org_name
+            for regex in self.regexes:  # Replace problematic chars in client name
+                addplayer = re.sub(regex, "", addplayer)
             first_name_color = self.protocol.player.colored_name(self.config.colors)
         else:
             addplayer = data[0]
-            first_name_color = str(data[0])
+            try:
+                addplayer, rest = extract_name(data)
+                addplayer = self.player_manager.get_by_name(addplayer).org_name
+                first_name_color = self.player_manager.get_by_org_name(addplayer).colored_name(self.config.colors)
+                for regex in self.regexes:  # Replace problematic chars in client name
+                    addplayer = re.sub(regex, "", addplayer)
+            except:
+                self.protocol.send_chat_message("There's no player named: ^yellow;%s" % str(addplayer))
+                return
 
         first_name = str(addplayer)
 
         try:
             for planet in self.player_planets:
                 if first_name in self.player_planets[self.protocol.player.planet]:
-                    self.protocol.send_chat_message("Cannot add ^yellow;%s^green; to planet list (already in list)" % first_name )
+                    self.protocol.send_chat_message(
+                        "Player ^yellow;%s^green; is already in planet protect list." % first_name_color)
                     return
         except:
-            planet = self.protocol.player.planet # reset planet back to current planet
+            planet = self.protocol.player.planet  # reset planet back to current planet
 
-        planet = self.protocol.player.planet # reset planet back to current planet
+        planet = self.protocol.player.planet  # reset planet back to current planet
         if on_ship and not ("force" in " ".join(data).lower()):
             self.protocol.send_chat_message("Can't protect ships (at the moment)")
             return
@@ -91,30 +107,45 @@ only admins can build. Planets are unprotected by default.
                 self.protocol.send_chat_message("Adding ^yellow;%s^green; to planet list" % first_name_color)
         self.save()
 
+    @permissions(UserLevels.OWNER)
+    def protect_all(self, data):
+        """Toggles planetary protection (from guests).\nSyntax: /protect_all"""
+        if self.protect_everything:
+            self.protect_everything = False
+            self.factory.broadcast("Planetary protection is now ^yellow;DISABLED")
+        else:
+            self.protect_everything = True
+            self.factory.broadcast("Planetary protection is now ^red;ENABLED")
+        self.save()
+
+
     @permissions(UserLevels.ADMIN)
     def protect_list(self, data):
-        """Lists Users registered to the protected planet. Syntax: /protect_list"""
+        """Displays players registered to the protected planet.\nSyntax: /protect_list"""
         planet = self.protocol.player.planet
         on_ship = self.protocol.player.on_ship
         if on_ship and not ("force" in " ".join(data).lower()):
             self.protocol.send_chat_message("Can't protect ships (at the moment)")
             return
         if planet in self.player_planets:
-            self.protocol.send_chat_message("Players registered to this planet: ^yellow;" + '^green;, ^yellow;'.join(self.player_planets[planet]).replace('[', '').replace(']', '').replace("'",''))
+            self.protocol.send_chat_message("Players registered to this planet: ^yellow;" + '^green;, ^yellow;'.join(
+                self.player_planets[planet]).replace('[', '').replace(']', '').replace("'", ''))
         else:
             self.protocol.send_chat_message("Planet is not protected!")
 
     @permissions(UserLevels.ADMIN)
     def unprotect(self, data):
-        """Removes the protection from the current planet, or removes a registered player. Syntax: /unprotect [player]"""
+        """Removes the protection from the current planet, or removes a registered player.\nSyntax: /unprotect [player]"""
         planet = self.protocol.player.planet
         on_ship = self.protocol.player.on_ship
         if len(data) == 0:
-            addplayer = self.protocol.player.name
+            addplayer = self.protocol.player.org_name
+            for regex in self.regexes:  # Replace problematic chars in client name
+                addplayer = re.sub(regex, "", addplayer)
             first_name_color = self.protocol.player.colored_name(self.config.colors)
         else:
-            addplayer = data[0]
-            first_name_color = str(data[0])
+            addplayer, rest = extract_name(data)
+            first_name_color = addplayer
         first_name = str(addplayer)
         if on_ship and not ("force" in " ".join(data).lower()):
             self.protocol.send_chat_message("Can't protect ships (at the moment)")
@@ -132,14 +163,16 @@ only admins can build. Planets are unprotected by default.
                 self.player_planets[planet].remove(first_name)
                 self.protocol.send_chat_message("Removed ^yellow;" + first_name_color + "^green; from planet list")
             else:
-                self.protocol.send_chat_message("Cannot remove ^yellow;" + first_name_color + "^green; from planet list (not in list)")
+                self.protocol.send_chat_message(
+                    "Cannot remove ^yellow;" + first_name_color + "^green; from planet list (not in list)")
         self.save()
 
     def save(self):
         self.config.plugin_config['protected_planets'] = self.protected_planets
         self.config.plugin_config['player_planets'] = self.player_planets
         self.config.plugin_config['blacklist'] = self.blacklist
-        self.config.save() #we want to save permissions just in case
+        self.config.plugin_config['protect_everything'] = self.protect_everything
+        self.config.save()  #we want to save permissions just in case
 
     def on_entity_create(self, data):
         if self.protocol.player.planet in self.protected_planets and self.protocol.player.access_level <= UserLevels.MODERATOR:
@@ -149,5 +182,7 @@ only admins can build. Planets are unprotected by default.
                     if self.block_all: return False
                     p_type = star_string("").parse(entity.entity)
                     if p_type in self.blacklist:
-                        self.logger.info("Player %s attempted to use a prohibited projectile, %s, on a protected planet.", self.protocol.player.name, p_type)
+                        self.logger.info(
+                            "Player %s attempted to use a prohibited projectile, %s, on a protected planet.",
+                            self.protocol.player.org_name, p_type)
                         return False

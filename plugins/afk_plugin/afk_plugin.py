@@ -35,7 +35,7 @@ class AFKCommand(SimpleCommandPlugin):
 
     @permissions(UserLevels.GUEST)
     def afk(self, data):
-        """ Marks a user as AFK (Away From Keyboard) Syntax: /afk"""
+        """Marks a user as AFK (Away From Keyboard)\nSyntax: /afk"""
         if self.protocol.player.name in self.afk_list:
             if self.afk_list[self.protocol.player.name] == True:
                 self.unset_afk_status(self.protocol.player.name)

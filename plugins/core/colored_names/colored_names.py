@@ -22,11 +22,11 @@ class ColoredNames(BasePlugin):
             p = chat_received().parse(data.data)
             if p.name == "server":
                 return
-            sender = self.player_manager.get_logged_in_by_name(p.name)
+            sender = self.player_manager.get_by_org_name(str(p.name))
             if self.config.chattimestamps:
-                p.name =  now.strftime("%H:%M") + "> <" + sender.colored_name(self.config.colors)
+                p.name = now.strftime("%H:%M") + "> <" + sender.colored_name(self.config.colors)
             else:
-                p.name =  sender.colored_name(self.config.colors)
+                p.name = sender.colored_name(self.config.colors)
             self.protocol.transport.write(build_packet(Packets.CHAT_RECEIVED, chat_received().build(p)))
         except AttributeError as e:
             self.logger.warning("Received AttributeError in colored_name. %s", str(e))

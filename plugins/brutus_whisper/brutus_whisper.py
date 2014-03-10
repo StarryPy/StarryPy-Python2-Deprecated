@@ -24,7 +24,7 @@ class BRWhisperPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.GUEST)
     def whisper(self, data):
-        """Sends a message to target player. Syntax: /whisper (player) (msg)"""
+        """Sends a message to target player.\nSyntax: /whisper (player) (msg)"""
         now = datetime.now()
         if self.config.chattimestamps:
           timestamp = "^orange;<" + now.strftime("%H:%M") + "> "
@@ -47,7 +47,7 @@ class BRWhisperPlugin(SimpleCommandPlugin):
             self.protocol.send_chat_message(self.whisper.__doc__)
 
     def reply(self, data):
-        """Replies to last player who whispered you. Syntax: /r (msg)"""
+        """Replies to last player who whispered you.\nSyntax: /r (msg)"""
         if len(data) == 0:
             self.protocol.send_chat_message(self.reply.__doc__)
             return
@@ -61,12 +61,12 @@ class BRWhisperPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.GUEST)
     def w(self, data):
-        """Sends a message to target player. Syntax: /whisper (player) (msg)"""
+        """Sends a message to target player.\nSyntax: /whisper (player) (msg)"""
         self.whisper(data)
 
     @permissions(UserLevels.GUEST)
     def r(self, data):
-        """Replies to last player who whispered you. Syntax: /r (msg)"""
+        """Replies to last player who whispered you.\nSyntax: /r (msg)"""
         self.reply(data)
 
     def sendWhisper(self, target, message):
@@ -99,27 +99,20 @@ class BRWhisperPlugin(SimpleCommandPlugin):
             for key, value in self.sspy_enabled_dict.iteritems():
                 sspy_player = self.player_manager.get_logged_in_by_name(key)
                 if sspy_player is not None:
-                    if sspy_player.access_level >= UserLevels.ADMIN and value == True:
+                    if sspy_player.access_level >= UserLevels.OWNER and value == True:
                         protocol = self.factory.protocols[sspy_player.protocol]
                         protocol.send_chat_message("^red;" + timestamp + "%sSS: ^cyan;<%s ^green;-> %s^cyan;> ^green;%s" % (self.config.colors["admin"], strFrom, strTo, message))           
 
-    @permissions(UserLevels.ADMIN)
+    @permissions(UserLevels.OWNER)
     def ss(self, data):
-        """Toggles viewing of other players whispers. Syntax: /ss"""   #[on|off]"""
-#        if len(data) == 0:
-#            self.protocol.send_chat_message(self.socialspy.__doc__)
-        val = " ".join(data)
+        """Toggles viewing of other players whispers.\nSyntax: /ss"""
         try:
             if not self.sspy_enabled_dict[self.protocol.player.name]:
-#        if val.lower() in ["on", "true"]:
                 self.sspy_enabled_dict[self.protocol.player.name] = True
                 self.protocol.send_chat_message("SocialSpy has been ^yellow;enabled^green;!")
             else:
-#        elif val.lower() in ["off", "false"]:
                 self.sspy_enabled_dict[self.protocol.player.name] = False
                 self.protocol.send_chat_message("SocialSpy has been ^red;disabled^green;!")
-#        else:
-#            self.protocol.send_chat_message("Invalid value! Permitted values are \"on\", \"true\", \"off\", \"false\"")
         except:
             if len(data) != 0 and " ".join(data).lower() in ["on", "true"]:
                 self.sspy_enabled_dict[self.protocol.player.name] = True
