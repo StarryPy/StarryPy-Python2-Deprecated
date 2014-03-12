@@ -4,6 +4,7 @@ from functools import wraps
 import inspect
 import logging
 import json
+import sqlite3
 
 from enum import Enum
 from sqlalchemy.ext.mutable import Mutable
@@ -42,6 +43,20 @@ class JSONEncodedDict(TypeDecorator):
         if value is not None:
             value = json.loads(value)
         return value
+
+
+def migrate_db(config):
+    dbcon = sqlite3.connect(path.preauthChild(config.player_db).path)
+    dbcur = dbcon.cursor()
+
+    try:
+        dbcur.execute('SELECT org_name FROM players;')
+    except sqlite3.OperationalError, e:
+        if "column" in str(e):
+            dbcur.execute('ALTER TABLE `players` ADD COLUMN `org_name`;')
+            dbcur.execute('UPDATE `players` SET `org_name`=`name`;')
+            dbcon.commit()
+    dbcon.close()
 
 
 logger = logging.getLogger("starrypy.player_manager.manager")
@@ -206,6 +221,7 @@ class Ban(Base):
 class PlayerManager(object):
     def __init__(self, config):
         self.config = config
+        migrate_db(self.config)
         self.engine = create_engine('sqlite:///%s' % path.preauthChild(self.config.player_db).path)
         Base.metadata.create_all(self.engine)
         self.sessionmaker = sessionmaker(bind=self.engine, autoflush=True)

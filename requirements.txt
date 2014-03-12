@@ -3,3 +3,4 @@ twisted
 enum34
 construct
 nose
+sqlite3
