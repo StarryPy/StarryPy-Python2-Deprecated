@@ -215,7 +215,7 @@ that it's a plugin, you don't have to tell me.
 This plugin provides various methods for warping players and ships around.
 
 #### WebGUI
-If activated, this will you a web-GUI to administrate your StarryPy server. You can log in with your Character's name and the password you set as "ownerpassword" in the StarryPy config.
+If activated, this will give you a web-GUI to administrate your StarryPy server. You can log in with your Character's name and the password you set as "ownerpassword" in the StarryPy config.
 
 ##### Config Parameters:
   * **cookie_token**: A secure token for Cookies. Leave this blank. The plugin will fill it.
