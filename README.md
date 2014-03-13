@@ -214,6 +214,24 @@ that it's a plugin, you don't have to tell me.
 
 This plugin provides various methods for warping players and ships around.
 
+#### WebGUI
+If activated, this will you a web-GUI to administrate your StarryPy server. You can log in with your Character's name and the password you set as "ownerpassword" in the StarryPy config.
+
+##### Config Parameters:
+  * **cookie_token**: A secure token for Cookies. Leave this blank. The plugin will fill it.
+  * **ownerpassword**: Password for the web-GUI.
+  * **port**: The port the web-GUI will listen on.
+  * **remember\_cookie\_token**: If set to true, you will stay logged in until you log out (even after you restart StarryPy). If set to false, a new cookie_token will be generated on every start of StarryPy.
+  * **restart_script**: Path to a script to restart starbound and/or StarryPy.
+  * **serverurl**: URL or IP of your StarryPy server.
+
+##### Credits:
+
+  * [DevOOPS Bootstrap 3 Admin theme](https://github.com/devoopsme/devoops/)
+
+  * [jQuery-Knob](http://anthonyterrien.com/knob/), [D3](http://d3js.org/), [Select2](https://github.com/ivaynberg/select2), [Bootstrap Validator](https://github.com/nghuuphuoc/bootstrapvalidator), [TinyMCE](http://www.tinymce.com), [jQuery Timepicker](http://trentrichardson.com/examples/timepicker/), [xCharts](http://tenxer.github.io/xcharts/), [Fancybox](http://fancyapps.com/fancybox/), [Widen FineUploader](https://github.com/Widen/fine-uploader), [Datatables](http://datatables.net), jQuery-UI 1.10.4, [Twitter Bootstrap](http://getbootstrap.com), [Flot](www.flotcharts.org), [Fullcalendar](http://arshaw.com/fullcalendar), [Moment](http://momentjs.com/), [Justified Gallery](https://github.com/miromannino/Justified-Gallery), [Morris Charts](http://www.oesmith.co.uk/morris.js/)
+
+
 #### More plugins
 
 Even more plugins can be found over at
