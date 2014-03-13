@@ -7,10 +7,9 @@ from twisted.words.ewords import AlreadyLoggedIn
 
 from base_plugin import SimpleCommandPlugin
 from manager import PlayerManager, Banned, Player, permissions, UserLevels
-from packets import client_connect, connect_response
+from packets import client_connect, connect_response, warp_command
 import packets
 from utility_functions import extract_name, build_packet, Planet
-#from random import randrange
 
 
 class PlayerManagerPlugin(SimpleCommandPlugin):
@@ -117,6 +116,7 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
         if 'fuel.max' in world_start['world_properties']:
             self.logger.info("Player %s is now on a ship.", self.protocol.player.name)
             self.protocol.player.on_ship = True
+            self.protocol.player.planet = "On ship"
         else:
             coords = world_start.planet['celestialParameters']['coordinate']
             parent_system = coords

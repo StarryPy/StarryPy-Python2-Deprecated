@@ -15,6 +15,13 @@ With the built-in plugins (which are removable):
 * Join/quit announcements.
 * And more.
 
+
+## Upgrading from older versions of StarryPy
+
+In version 1.4.x a new requirement "sqlite3" has been added to requirements.txt.
+It is required to perform DB upgrade. Install manually with: pip install sqlite3
+
+
 ## Installation
 
 StarryPy runs on Python 2.7. It has been tested with Python 2.7.6, 2.7.5, 2.7.2,

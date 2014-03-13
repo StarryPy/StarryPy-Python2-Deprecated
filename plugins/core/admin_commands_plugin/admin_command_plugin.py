@@ -60,8 +60,10 @@ class UserCommandPlugin(SimpleCommandPlugin):
                     info.colored_name(self.config.colors), info.org_name, UserLevels(info.access_level),
                     info.last_seen.strftime("%c"), info.uuid, info.ip, info.planet))
         elif info:
-            self.protocol.send_chat_message("Name: %s ^green;: ^gray;%s\nUserlevel: ^yellow;%s^green;\nLast seen: ^gray;%s" % (
-                info.colored_name(self.config.colors), info.org_name, UserLevels(info.access_level), info.last_seen.strftime("%c")))
+            self.protocol.send_chat_message(
+                "Name: %s ^green;: ^gray;%s\nUserlevel: ^yellow;%s^green;\nLast seen: ^gray;%s" % (
+                    info.colored_name(self.config.colors), info.org_name, UserLevels(info.access_level),
+                    info.last_seen.strftime("%c")))
         else:
             self.protocol.send_chat_message("Player not found!")
         return False
@@ -262,7 +264,8 @@ class UserCommandPlugin(SimpleCommandPlugin):
                     target_protocol.send_chat_message(
                         "%s^green; has given you: ^yellow;%s^green; (count: ^cyan;%s^green;)" % (
                             self.protocol.player.colored_name(self.config.colors), item_name, item_count))
-                    self.protocol.send_chat_message("Sent the item(s).")
+                    self.protocol.send_chat_message("Sent ^yellow;%s^green; (count: ^cyan;%s^green;) to %s" % (
+                        item_name, item_count, target_player.colored_name(self.config.colors)))
                     self.logger.info("%s gave %s %s (count: %s)", self.protocol.player.name, name, item_name,
                                      item_count)
                 else:

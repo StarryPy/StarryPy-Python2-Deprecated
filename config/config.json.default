@@ -217,8 +217,10 @@
             "auto_activate": true
         },
         "web_gui": {
-            "auto_activate": false,
+            "auto_activate": true,
             "cookie_token": "",
+            "log_path": "webgui.log",
+            "log_path_access": "webgui_access.log",
             "ownerpassword": "!!PUT A PASSWORD HERE",
             "port": 8083,
             "remember_cookie_token": true,
@@ -230,8 +232,8 @@
     "port_check": true,
     "reap_time": 10,
     "server_connect_timeout": 5,
-    "starbound_path": "/opt/starbound/",
     "server_name": "--ADD NAME--",
+    "starbound_path": "/opt/starbound/",
     "upstream_hostname": "localhost",
     "upstream_port": 21024
 }
