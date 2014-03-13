@@ -77,7 +77,6 @@
         "new_player_greeter_plugin": {
             "auto_activate": true,
             "items": [
-               
             ],
             "message": "Welcome new Starbounder ;)"
         },
@@ -91,8 +90,6 @@
             [ "stonepickaxe", 1 ],
             [ "solariumore", 30 ],
             [ "money", 1000 ]
-
-               
             ],
             "message": "You were given a set of starter items ;)"
         },
