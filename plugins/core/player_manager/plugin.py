@@ -181,8 +181,16 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
         player2 = self.player_manager.get_by_name(str(second_name))
         org_player = self.player_manager.get_by_org_name(str(first_name))
         org_player2 = self.player_manager.get_by_org_name(str(second_name))
+        if player:
+            first_uuid = player.uuid
+        elif org_player:
+            first_uuid = org_player.uuid
+        if player2:
+            second_uuid = player2.uuid
+        elif org_player2:
+            second_uuid = org_player2.uuid
         if player or org_player:
-            if player2 or org_player2:
+            if (player2 or org_player2) and first_uuid != second_uuid:
                 self.protocol.send_chat_message("There's already a player by that name.")
             else:
                 old_name = player.colored_name(self.config.colors)
