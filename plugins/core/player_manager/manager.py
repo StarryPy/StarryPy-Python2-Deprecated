@@ -255,6 +255,9 @@ class PlayerManager(object):
                 raise Banned
             if self.check_bans(org_name):
                 raise Banned
+            if (self.get_by_name(name) and not self.get_by_org_name(org_name)) or (self.get_by_name(name).uuid != self.get_by_org_name(org_name).uuid):
+                logger.info("Got a duplicate nickname, affixing _ to name")
+                name += "_"
             #while self.whois(name):
             #    logger.info("Got a duplicate nickname, affixing _ to name")
             #	 name += "_"
@@ -262,8 +265,9 @@ class PlayerManager(object):
             if player:
                 if player.name != name:
                     logger.info("Detected username change.")
-                    player.name = player.name
-                    name = str(player.name)
+                    player.name = name
+                    self.protocol.player.name = name
+                    #name = str(player.name)
                     #csp = data_parser.ChatSent.build(dict(message="/nick %s" % name,
                     #                                      channel=0))
                     #asyncio.Task(protocol.client_raw_write(pparser.build_packet

@@ -74,7 +74,7 @@ class WebGuiPlugin(BasePlugin, PlayerManager):
             else:
                 msgtxt = "Player {p} has joined the server.".format(p=connect_player.name)
         except AttributeError:
-            msgtxt = "New player {p} has joined the server.".format(p=connect_player.name)
+            msgtxt = "New player has joined the server."
         message = json.dumps({"msgdate": msgdate, "author": "SERVER", "message": msgtxt})
         self.messages.append(message)
         self.messages_log.append(message)
