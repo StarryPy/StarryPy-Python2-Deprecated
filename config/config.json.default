@@ -99,6 +99,7 @@
             "bad_packets": [
                 "CONNECT_WIRE",
                 "DISCONNECT_ALL_WIRES",
+                "ENTITY_INTERACT",
                 "OPEN_CONTAINER",
                 "CLOSE_CONTAINER",
                 "SWAP_IN_CONTAINER",
