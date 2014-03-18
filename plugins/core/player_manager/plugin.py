@@ -34,23 +34,23 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
     def on_client_connect(self, data):
         client_data = client_connect().parse(data.data)
         try:
-            original_name = client_data.name
+            changed_name = client_data.name
             for regex in self.regexes:  # Replace problematic chars in client name
-                client_data.name = re.sub(regex, "", client_data.name)
+                changed_name = re.sub(regex, "", changed_name)
 
             if len(client_data.name.strip()) == 0:  # If the username is nothing but spaces.
                 raise NameError("Your name must not be empty!")
 
-            if client_data.name != original_name:  # Logging changed username
+            if client_data.name != changed_name:  # Logging changed username
                 self.logger.info("Player tried to log in with name %s, replaced with %s.",
-                                 original_name, client_data.name)
+                                 client_data.name, changed_name)
 
-            #changed_player = self.player_manager.get_by_uuid(client_data.uuid)
-            #if changed_player is not None and changed_player.org_name != original_name:
-            #    self.logger.info("Got player with changed org_name. Fetching randomized name!")
-            #    original_name = changed_player.org_name
+            changed_player = self.player_manager.get_by_uuid(client_data.uuid)
+            if changed_player is not None and changed_player.name != changed_name:
+                self.logger.info("Got player with changed nickname. Fetching nickname!")
+                changed_name = changed_player.name
 
-            duplicate_player = self.player_manager.get_by_org_name(original_name)
+            duplicate_player = self.player_manager.get_by_org_name(client_data.name)
             if duplicate_player is not None and duplicate_player.uuid != client_data.uuid:
                 raise NameError(
                     "The name of this character is already taken on the server!\nPlease, create a new character with a different name or use Starcheat and change the name.")
@@ -59,6 +59,8 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
                 #original_name += rnd_append
                 #client_data.name += rnd_append
 
+            original_name = client_data.name
+            client_data.name = changed_name
             self.protocol.player = self.player_manager.fetch_or_create(
                 name=client_data.name,
                 org_name=original_name,
@@ -143,8 +145,6 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
         org_name = self.protocol.player.org_name
         for regex in self.regexes:  # Replace problematic chars in client name
             name = re.sub(regex, "", name)
-        for regex in self.regexes:  # Replace problematic chars in client original name
-            org_name = re.sub(regex, "", org_name)
         if self.player_manager.get_by_name(name) or (self.player_manager.get_by_org_name(name) and org_name != name):
             self.protocol.send_chat_message("There's already a player by that name.")
         else:

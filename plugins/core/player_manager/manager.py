@@ -255,12 +255,12 @@ class PlayerManager(object):
                 raise Banned
             if self.check_bans(org_name):
                 raise Banned
-            if (self.get_by_name(name) and not self.get_by_org_name(org_name)) or (self.get_by_name(name).uuid != self.get_by_org_name(org_name).uuid):
+            while (self.get_by_name(name) and not self.get_by_org_name(org_name)) or (
+                            self.get_by_name(name) and self.get_by_org_name(org_name) and self.get_by_name(
+                            name).uuid != self.get_by_org_name(org_name).uuid):
                 logger.info("Got a duplicate nickname, affixing _ to name")
                 name += "_"
-            #while self.whois(name):
-            #    logger.info("Got a duplicate nickname, affixing _ to name")
-            #	 name += "_"
+
             player = session.query(Player).filter_by(uuid=uuid).first()
             if player:
                 if player.name != name:

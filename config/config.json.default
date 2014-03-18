@@ -42,6 +42,10 @@
         "chat_logger": {
             "auto_activate": true
         },
+        "claims": {
+            "auto_activate": true,
+            "max_claims": 5
+        },
         "colored_names_plugin": {
             "auto_activate": true
         },
@@ -106,6 +110,13 @@
                 "DAMAGE_TILE",
                 "DAMAGE_TILE_GROUP",
                 "REQUEST_DROP",
+                "MODIFY_TILE_LIST"
+            ],
+            "bad_packets_mild": [
+                "CONNECT_WIRE",
+                "DISCONNECT_ALL_WIRES",
+                "DAMAGE_TILE",
+                "DAMAGE_TILE_GROUP",
                 "MODIFY_TILE_LIST"
             ],
             "blacklist": [

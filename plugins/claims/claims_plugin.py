@@ -54,8 +54,6 @@ only admins can build. Planets are unprotected by default.
             on_ship = self.protocol.player.on_ship
             if len(data) == 0:
                 addplayer = self.protocol.player.org_name
-                for regex in self.regexes:  # Replace problematic chars in client name
-                    addplayer = re.sub(regex, "", addplayer)
                 first_name_color = self.protocol.player.colored_name(self.config.colors)
             else:
                 addplayer = data[0]
@@ -63,16 +61,12 @@ only admins can build. Planets are unprotected by default.
                     addplayer, rest = extract_name(data)
                     addplayer = self.player_manager.get_by_name(addplayer).org_name
                     first_name_color = self.player_manager.get_by_org_name(addplayer).colored_name(self.config.colors)
-                    for regex in self.regexes:  # Replace problematic chars in client name
-                        addplayer = re.sub(regex, "", addplayer)
                 except:
                     self.protocol.send_chat_message("There's no player named: ^yellow;%s" % str(addplayer))
                     return
 
             first_name = str(addplayer)
             orgplayer = self.protocol.player.org_name
-            for regex in self.regexes:  # Replace problematic chars in client name
-                orgplayer = re.sub(regex, "", orgplayer)
 
             try:
                 count = 1
@@ -144,8 +138,10 @@ only admins can build. Planets are unprotected by default.
             self.protocol.send_chat_message("Claimed ^cyan;%s^green; of max ^red;%s^green; claimed planets." % (
                 str(my_storage['claims']), str(self.max_claims)))
             self.protocol.send_chat_message("Players registered to this planet: ^yellow;" + '^green;, ^yellow;'.join(
-                self.player_planets[planet]).replace('[', '').replace(']', '').replace("'", ''))
+                self.player_planets[planet]).replace('[', '').replace(']', ''))  # .replace("'", '')
         else:
+            self.protocol.send_chat_message("Claimed ^cyan;%s^green; of max ^red;%s^green; claimed planets." % (
+                str(my_storage['claims']), str(self.max_claims)))
             self.protocol.send_chat_message("Planet has not been claimed!")
 
     @permissions(UserLevels.GUEST)
@@ -166,8 +162,6 @@ only admins can build. Planets are unprotected by default.
             #player_name = self.protocol.player.name
             if len(data) == 0:
                 addplayer = self.protocol.player.org_name
-                for regex in self.regexes:  # Replace problematic chars in client name
-                    addplayer = re.sub(regex, "", addplayer)
                 first_name_color = self.protocol.player.colored_name(self.config.colors)
             else:
                 addplayer, rest = extract_name(data)
@@ -175,8 +169,6 @@ only admins can build. Planets are unprotected by default.
 
             first_name = str(addplayer)
             orgplayer = self.protocol.player.org_name
-            for regex in self.regexes:  # Replace problematic chars in client name
-                orgplayer = re.sub(regex, "", orgplayer)
 
             if on_ship:
                 self.protocol.send_chat_message("Can't claim ships (at the moment)")
