@@ -29,7 +29,6 @@ class WebGuiPlugin(BasePlugin, PlayerManager):
             self.cookie_token = self.config.plugin_config['cookie_token'] = self.generate_cookie_token()
         else:
             self.cookie_token = self.config.plugin_config['cookie_token']
-        self.serverurl = self.config.plugin_config['serverurl']
         self.messages = []
         self.messages_log = []
 
@@ -39,9 +38,8 @@ class WebGuiPlugin(BasePlugin, PlayerManager):
         web_gui.WebGuiApp.config = self.config.plugin_config
         self.web_gui_app = web_gui.WebGuiApp(port=self.port, ownerpassword=self.ownerpassword,
                                              playermanager=self.player_manager, factory=self.factory,
-                                             cookie_secret=self.cookie_token, serverurl=self.serverurl,
-                                             messages=self.messages, messages_log=self.messages_log,
-                                             restart_script=self.restart_script)
+                                             cookie_secret=self.cookie_token, messages=self.messages,
+                                             messages_log=self.messages_log, restart_script=self.restart_script)
         self.logger.info("WebGUI listening on port {p}".format(p=self.port))
         self.gui_instance = tornado.ioloop.IOLoop.instance()
 

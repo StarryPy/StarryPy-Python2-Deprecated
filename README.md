@@ -223,7 +223,6 @@ If activated, this will give you a web-GUI to administrate your StarryPy server.
   * **port**: The port the web-GUI will listen on.
   * **remember\_cookie\_token**: If set to true, you will stay logged in until you log out (even after you restart StarryPy). If set to false, a new cookie_token will be generated on every start of StarryPy.
   * **restart_script**: Path to a script to restart starbound and/or StarryPy.
-  * **serverurl**: URL or IP of your StarryPy server.
 
 ##### Credits:
 
