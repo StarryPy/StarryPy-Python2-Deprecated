@@ -7,10 +7,8 @@ import tornado.websocket
 import subprocess
 from datetime import datetime
 from twisted.internet import reactor
-from plugins.core.player_manager import PlayerManager, UserLevels
-from plugins.core.player_manager.manager import Player
+from plugins.core.player_manager import UserLevels
 from tornado.ioloop import PeriodicCallback
-from base_plugin import BasePlugin
 
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -28,16 +26,16 @@ class LoginHandler(BaseHandler):
         self.render("login.html")
 
     def post(self):
-        self.login_user = self.player_manager.get_by_name(self.get_argument("name"))
+        self.login_user = self.player_manager.get_by_name(self.get_argument("name", strip=False))
         if self.login_user is None:
-            self.login_user = self.player_manager.get_by_org_name(self.get_argument("name"))
+            self.login_user = self.player_manager.get_by_org_name(self.get_argument("name", strip=False))
 
         if self.login_user is None or self.get_argument("password") != self.ownerpassword:
             self.failed_login = True
             self.render("login.html")
         else:
-            self.set_secure_cookie("player", self.get_argument("name"))
-            self.factory.broadcast("An admin has joined the server through Web-GUI.", 0, "", self.get_argument("name"))
+            self.set_secure_cookie("player", self.get_argument("name", strip=False))
+            self.factory.broadcast("An admin has joined the server through Web-GUI.", 0, "", self.get_argument("name", strip=False))
             self.failed_login = False
             self.redirect(self.get_argument("next", "/"))
 
@@ -125,7 +123,7 @@ class PlayerEditHandler(BaseHandler):
     @tornado.web.authenticated
     @tornado.web.asynchronous
     def get(self):
-        self.edit_player = self.player_manager.get_by_name(self.get_argument("playername"))
+        self.edit_player = self.player_manager.get_by_name(self.get_argument("playername", strip=False))
         try:
             self.error_message = self.get_argument("error_message")
         except tornado.web.MissingArgumentError:
@@ -135,25 +133,25 @@ class PlayerEditHandler(BaseHandler):
     @tornado.web.authenticated
     @tornado.web.asynchronous
     def post(self):
-        self.edit_player = self.player_manager.get_by_name(self.get_argument("old_playername"))
+        self.edit_player = self.player_manager.get_by_name(self.get_argument("old_playername", strip=False))
         if self.web_gui_user.access_level > self.edit_player.access_level:
             if self.edit_player.access_level != self.get_argument("access_level"):
                 self.edit_player.access_level = self.get_argument("access_level")
-            if self.get_argument("playername") != "" and self.edit_player.name != self.get_argument("playername"):
+            if self.get_argument("playername", strip=False) != "" and self.edit_player.name != self.get_argument("playername", strip=False):
                 if self.edit_player.org_name is None:
                     self.edit_player.org_name = self.edit_player.name
-                self.edit_player.name = self.get_argument("playername")
+                self.edit_player.name = self.get_argument("playername", strip=False)
         else:
             error_message = "You are not allowed to change this users' data!"
             self.redirect("ajax/playeredit.html?playername={n}&error_message={e}".format(
-                n=self.get_argument("playername"), e=error_message))
+                n=self.get_argument("playername", strip=False), e=error_message))
         self.render("ajax/playeredit.html")
 
 
 class PlayerQuickMenuHandler(BaseHandler):
 
     def initialize(self):
-        self.edit_player = self.player_manager.get_by_name(self.get_argument("playername"))
+        self.edit_player = self.player_manager.get_by_name(self.get_argument("playername", strip=False))
 
     @tornado.web.authenticated
     @tornado.web.asynchronous
@@ -165,7 +163,7 @@ class PlayerActionHandler(BaseHandler):
 
     def initialize(self):
         self.web_gui_user = self.player_manager.get_by_name(self.get_current_user())
-        self.edit_player = self.player_manager.get_by_name(self.get_argument("info"))
+        self.edit_player = self.player_manager.get_by_name(self.get_argument("info", strip=False))
 
     @tornado.web.authenticated
     @tornado.web.asynchronous
@@ -268,7 +266,7 @@ class WebChatJsHandler(BaseHandler):
 
 
 class WebGuiApp(tornado.web.Application):
-    def __init__(self, port, ownerpassword, playermanager, factory, cookie_secret, serverurl, messages, messages_log,
+    def __init__(self, port, ownerpassword, playermanager, factory, cookie_secret, messages, messages_log,
                  restart_script):
         logging.getLogger('tornado.general').addHandler(logging.FileHandler(self.config["log_path"]))
         logging.getLogger('tornado.application').addHandler(logging.FileHandler(self.config["log_path"]))
@@ -282,7 +280,6 @@ class WebGuiApp(tornado.web.Application):
         BaseHandler.ownerpassword = ownerpassword
         BaseHandler.levels = UserLevels.ranks
         WebChatJsHandler.wsport = port
-        WebChatJsHandler.serverurl = serverurl
         WebSocketChatHandler.factory = factory
         WebSocketChatHandler.player_manager = playermanager
         WebSocketChatHandler.messages = messages

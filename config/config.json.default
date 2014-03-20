@@ -233,8 +233,7 @@
             "ownerpassword": "!!PUT A PASSWORD HERE",
             "port": 8083,
             "remember_cookie_token": true,
-            "restart_script": "",
-            "serverurl": "localhost"
+            "restart_script": ""
         }
     },
     "plugin_path": "plugins",

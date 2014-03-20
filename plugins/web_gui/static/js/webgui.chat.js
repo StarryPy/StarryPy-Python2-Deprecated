@@ -24,7 +24,7 @@ function createChatEntry(msgdate, username, message) {
 }
 
 function openWS(messageContainer) {
-    ws = new WebSocket("ws://{{ handler.serverurl }}:{{ handler.wsport }}/chat");
+    ws = new WebSocket("ws://" + window.location.host + "/chat");
     ws.onmessage = function (e) {
         var data = JSON.parse(e.data);
         messageContainer.appendChild(createChatEntry(data.msgdate, data.author, data.message));
