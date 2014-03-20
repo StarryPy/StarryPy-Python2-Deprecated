@@ -11,7 +11,7 @@ only admins can build. Planets are unprotected by default.
 """
     name = "claims"
     description = "Claims planets."
-    commands = ["claim", "unclaim", "claim_list"]
+    commands = ["claim", "unclaim", "claim_list", "unclaimable"]
     depends = ["player_manager", "command_dispatcher", "planet_protect"]
 
     def __init__(self):
@@ -24,16 +24,38 @@ only admins can build. Planets are unprotected by default.
         #self.player_planets = self.config.plugin_config.get("player_planets", {})
         try:
             self.max_claims = self.config.plugin_config['max_claims']
-        except(KeyError):
+        except KeyError:
             self.max_claims = 5
+        self.unclaimable_planets = self.config.plugin_config.get("unclaimable_planets", [])
         self.protected_planets = self.config.config['plugin_config']['planet_protect']['protected_planets']
         self.player_planets = self.config.config['plugin_config']['planet_protect']['player_planets']
         self.player_manager = self.plugins["player_manager"].player_manager
         self.regexes = self.plugins['player_manager'].regexes
 
+    @permissions(UserLevels.ADMIN)
+    def unclaimable(self, data):
+        """Set the current planet as unclaimable.\nSyntax: /unclaimable"""
+        planet = self.protocol.player.planet
+        on_ship = self.protocol.player.on_ship
+        if on_ship:
+            self.protocol.send_chat_message("Can't claim ships (at the moment)")
+            return
+        if planet not in self.unclaimable_planets:
+            self.unclaimable_planets.append(planet)
+            self.protocol.send_chat_message("Planet successfully set as unclaimable.")
+            self.logger.info("Planet %s set as unclaimable", planet)
+        else:
+            self.unclaimable_planets.remove(planet)
+            self.protocol.send_chat_message("Planet successfully removed from unclaimable list.")
+            self.logger.info("Planet %s removed as unclaimable", planet)
+        self.save()
+
     @permissions(UserLevels.GUEST)
     def claim(self, data):
         """Claims the current planet. Only administrators and allowed players can build on claimed planets.\nSyntax: /claim [player]"""
+        if self.protocol.player.planet in self.unclaimable_planets:
+            self.protocol.send_chat_message("This planet ^red;cannot^green; be claimed!")
+            return
         try:
             my_storage = self.protocol.player.storage
         except AttributeError:
@@ -139,6 +161,10 @@ only admins can build. Planets are unprotected by default.
                 str(my_storage['claims']), str(self.max_claims)))
             self.protocol.send_chat_message("Players registered to this planet: ^yellow;" + '^green;, ^yellow;'.join(
                 self.player_planets[planet]).replace('[', '').replace(']', ''))  # .replace("'", '')
+        elif planet in self.unclaimable_planets:
+            self.protocol.send_chat_message("Claimed ^cyan;%s^green; of max ^red;%s^green; claimed planets." % (
+                str(my_storage['claims']), str(self.max_claims)))
+            self.protocol.send_chat_message("This planet ^red;cannot^green; be claimed!")
         else:
             self.protocol.send_chat_message("Claimed ^cyan;%s^green; of max ^red;%s^green; claimed planets." % (
                 str(my_storage['claims']), str(self.max_claims)))
@@ -209,4 +235,5 @@ only admins can build. Planets are unprotected by default.
         self.config.config['plugin_config']['planet_protect']['protected_planets'] = self.protected_planets
         self.config.config['plugin_config']['planet_protect']['player_planets'] = self.player_planets
         self.config.plugin_config['max_claims'] = self.max_claims
-        self.config.save()  #we want to save permissions just in case
+        self.config.plugin_config['unclaimable_planets'] = self.unclaimable_planets
+        self.config.save()  # save config file
