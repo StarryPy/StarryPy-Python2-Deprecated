@@ -23,7 +23,7 @@
 			<tbody>
 			{% for player in handler.playerlistonline %}
 				<tr>
-					<td data-value="{{ player.name }}"><a href="#" onclick="LoadAjaxContent('ajax/playeredit.html?playername={{ player.name }}');">{{ player.name }}</a></td>
+					<td data-value="{{ player.name }}"><a href="#" onclick='LoadAjaxContent("ajax/playeredit.html?playername=" + encodeURIComponent("{{ player.name }}"));'>{{ player.name }}</a></td>
 					<td>{{ player.planet }}</td>
 					<td>{{ player.access_level }}</td>
 					<td>{{ str(player.last_seen).rpartition('.')[0] }}</td>

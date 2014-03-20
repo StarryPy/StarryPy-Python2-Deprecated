@@ -24,7 +24,7 @@
 			{% for player in handler.playerlist %}
 				<tr>
 					{% set iconcolour = "#54ae86" if player.logged_in else "#D15E5E" %}
-					<td data-value="{{ player.name }}"><a href="#" onclick='LoadAjaxContent("ajax/playeredit.html?playername={{ player.name }}");'>{{ player.name }}</a> <i class="fa fa-user" style="color: {{ iconcolour }}"></i>{% if handler.player_manager.check_bans(player.ip) %} <i class="fa fa-lock" style="color: #d9ce00" title="User is banned"></i>{% end %}</td>
+					<td data-value="{{ player.name }}"><a href="#" onclick='LoadAjaxContent("ajax/playeredit.html?playername=" + encodeURIComponent("{{ player.name }}"));'>{{ player.name }}</a> <i class="fa fa-user" style="color: {{ iconcolour }}"></i>{% if handler.player_manager.check_bans(player.ip) %} <i class="fa fa-lock" style="color: #d9ce00" title="User is banned"></i>{% end %}</td>
 					<td>{{ player.planet }}</td>
 					<td>{{ player.access_level }}</td>
 					<td>{{ str(player.last_seen).rpartition('.')[0] }}</td>
