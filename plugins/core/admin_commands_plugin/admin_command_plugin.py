@@ -1,4 +1,4 @@
-import pprint
+#import pprint
 import socket
 from twisted.internet import reactor
 from base_plugin import SimpleCommandPlugin, BasePlugin
@@ -13,8 +13,9 @@ class UserCommandPlugin(SimpleCommandPlugin):
     """
     name = "user_management_commands"
     depends = ['command_dispatcher', 'player_manager']
-    commands = ["who", "whois", "promote", "kick", "ban", "bans", "unban", "item", "planet", "mute", "unmute",
-                "passthrough", "shutdown", "chattimestamps"]
+    commands = ["who", "whoami", "whois", "promote", "kick", "ban", "ban_list", "unban", "item", "planet", "mute",
+                "unmute",
+                "passthrough", "shutdown", "timestamps"]
     auto_activate = True
 
     def activate(self):
@@ -23,44 +24,68 @@ class UserCommandPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.GUEST)
     def who(self, data):
-        """Returns all current users on the server. Syntax: /who"""
+        """Displays all current players on the server.\nSyntax: /who"""
         who = [w.colored_name(self.config.colors) for w in self.player_manager.who()]
         self.protocol.send_chat_message("^cyan;%d^green; players online: %s" % (len(who), ", ".join(who)))
         return False
 
     @permissions(UserLevels.GUEST)
     def planet(self, data):
-        """Displays who is on your current planet. Syntax: /planet"""
+        """Displays who is on your current planet.\nSyntax: /planet"""
         who = [w.colored_name(self.config.colors) for w in self.player_manager.who() if
                w.planet == self.protocol.player.planet and not w.on_ship]
         self.protocol.send_chat_message("^cyan;%d^green; players on planet: %s" % (len(who), ", ".join(who)))
 
-    @permissions(UserLevels.ADMIN)
+    @permissions(UserLevels.GUEST)
+    def whoami(self, data):
+        """Displays client data about yourself.\nSyntax: /whoami"""
+        info = self.protocol.player
+        self.protocol.send_chat_message(
+            "Name: %s ^green;: ^gray;%s\nUserlevel: ^yellow;%s^green; (^gray;%s^green;)\nUUID: ^yellow;%s^green;\nIP address: ^cyan;%s^green;\nCurrent planet: ^yellow;%s^green;" % (
+                info.colored_name(self.config.colors), info.org_name, UserLevels(info.access_level),
+                info.last_seen.strftime("%c"), info.uuid, info.ip, info.planet))
+        return False
+
+    @permissions(UserLevels.REGISTERED)
     def whois(self, data):
-        """Returns client data about the specified user. Syntax: /whois (player)"""
+        """Displays client data about the specified user.\nSyntax: /whois (player)"""
         if len(data) == 0:
             self.protocol.send_chat_message(self.whois.__doc__)
             return
         name = " ".join(data)
         info = self.player_manager.whois(name)
-        if info:
+        if info and self.protocol.player.access_level >= UserLevels.ADMIN:
             self.protocol.send_chat_message(
-                "Name: %s\nUserlevel: ^yellow;%s^green;\nUUID: ^yellow;%s^green;\nIP address: ^cyan;%s^green;\nCurrent planet: ^yellow;%s^green;""" % (
-                    info.colored_name(self.config.colors), UserLevels(info.access_level), info.uuid, info.ip,
-                    info.planet))
+                "Name: %s ^green;: ^gray;%s\nUserlevel: ^yellow;%s^green; (^gray;%s^green;)\nUUID: ^yellow;%s^green;\nIP address: ^cyan;%s^green;\nCurrent planet: ^yellow;%s^green;" % (
+                    info.colored_name(self.config.colors), info.org_name, UserLevels(info.access_level),
+                    info.last_seen.strftime("%c"), info.uuid, info.ip, info.planet))
+        elif info:
+            self.protocol.send_chat_message(
+                "Name: %s ^green;: ^gray;%s\nUserlevel: ^yellow;%s^green;\nLast seen: ^gray;%s" % (
+                    info.colored_name(self.config.colors), info.org_name, UserLevels(info.access_level),
+                    info.last_seen.strftime("%c")))
         else:
             self.protocol.send_chat_message("Player not found!")
         return False
 
     @permissions(UserLevels.MODERATOR)
     def promote(self, data):
-        """Promotes/demotes a user to a specific rank. Syntax: /promote (player) (rank) (where rank is either: guest, registered, moderator, admin, or owner))"""
+        """Promotes/demotes a player to a specific rank.\nSyntax: /promote (player) (rank) (where rank is either: guest, registered, moderator, admin, or owner)"""
         if len(data) > 0:
             name = " ".join(data[:-1])
             rank = data[-1].lower()
             player = self.player_manager.get_by_name(name)
             if player is not None:
                 old_rank = player.access_level
+                players = self.player_manager.all()
+                if old_rank == 1000:
+                    owner_count = 0
+                    for aclvl in players:
+                        if aclvl.access_level == old_rank:
+                            owner_count += 1
+                    if owner_count <= 1:
+                        self.protocol.send_chat_message("You are the only (or last) owner. Promote denied!")
+                        return
                 if old_rank >= self.protocol.player.access_level and not self.protocol.player.access_level != UserLevels.ADMIN:
                     self.protocol.send_chat_message(
                         "You cannot change that user's access level as they are at least at an equal level as you.")
@@ -76,20 +101,20 @@ class UserCommandPlugin(SimpleCommandPlugin):
                 elif rank == "guest":
                     self.make_guest(player)
                 else:
-                    self.protocol.send_chat_message(_("No such rank!\n") + self.promote.__doc__)
+                    self.protocol.send_chat_message("No such rank!\n" + self.promote.__doc__)
                     return
 
-                self.protocol.send_chat_message(_("%s: %s -> %s") % (
+                self.protocol.send_chat_message("%s: %s -> %s" % (
                     player.colored_name(self.config.colors), UserLevels(old_rank),
                     rank.upper()))
                 try:
                     self.factory.protocols[player.protocol].send_chat_message(
-                        _("%s has promoted you to %s") % (
+                        "%s has promoted you to %s" % (
                             self.protocol.player.colored_name(self.config.colors), rank.upper()))
                 except KeyError:
                     self.logger.info("Promoted player is not logged in.")
             else:
-                self.protocol.send_chat_message(_("Player not found!\n") + self.promote.__doc__)
+                self.protocol.send_chat_message("Player not found!\n" + self.promote.__doc__)
                 return
         else:
             self.protocol.send_chat_message(self.promote.__doc__)
@@ -116,13 +141,13 @@ class UserCommandPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.MODERATOR)
     def kick(self, data):
-        """Kicks a user from the server. Usage: /kick (player) [reason]"""
+        """Kicks a user from the server.\nSyntax: /kick (player) [reason]"""
         if len(data) == 0:
             self.protocol.send_chat_message(self.kick.__doc__)
             return
         name, reason = extract_name(data)
         if not reason:
-            reason = [ "no reason given" ]
+            reason = ["no reason given"]
         info = self.player_manager.whois(name)
         if info and info.logged_in:
             self.factory.broadcast("%s^green; kicked %s ^green;(reason: ^yellow;%s^green;)" %
@@ -139,7 +164,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.ADMIN)
     def ban(self, data):
-        """Bans an IP or a Player (by name). Syntax: /ban (IP | player)\nTip: Use /whois (player) to get IP"""
+        """Bans an IP or a Player (by name).\nSyntax: /ban (IP | player)\nTip: Use /whois (player) to get IP"""
         if len(data) == 0:
             self.protocol.send_chat_message(self.ban.__doc__)
             return
@@ -155,23 +180,26 @@ class UserCommandPlugin(SimpleCommandPlugin):
         return False
 
     @permissions(UserLevels.ADMIN)
-    def bans(self, data):
-        """Lists the currently banned IPs. Syntax: /bans"""
+    def ban_list(self, data):
+        """Displays the currently banned IPs.\nSyntax: /ban_list"""
         res = self.player_manager.list_bans()
         if res:
             self.protocol.send_chat_message("Banned list (IPs and Names):")
             for banned in res:
                 try:
                     socket.inet_aton(banned.ip)
-                    self.protocol.send_chat_message("IP: ^red;%s ^green;Reason: ^yellow;%s^green;" % (banned.ip, banned.reason))
+                    self.protocol.send_chat_message(
+                        "IP: ^red;%s ^green;Reason: ^yellow;%s^green;" % (banned.ip, banned.reason))
                 except:
-                    self.protocol.send_chat_message("Player: ^red;%s ^green;Reason: ^yellow;%s^green;" % (banned.ip, banned.reason))
+                    self.protocol.send_chat_message(
+                        "Player: ^red;%s ^green;Reason: ^yellow;%s^green;" % (
+                            self.player_manager.get_by_org_name(banned.ip).name, banned.reason))
         else:
             self.protocol.send_chat_message("No bans found.")
 
     @permissions(UserLevels.ADMIN)
     def unban(self, data):
-        """Unbans an IP or a Player (by name). Syntax: /unban (IP | player)"""
+        """Unbans an IP or a Player (by name).\nSyntax: /unban (IP | player)"""
         if len(data) == 0:
             self.protocol.send_chat_message(self.unban.__doc__)
             return
@@ -190,9 +218,9 @@ class UserCommandPlugin(SimpleCommandPlugin):
         name, reason = extract_name(data)
         info = self.player_manager.get_by_name(name)
         if info:
-            self.player_manager.ban(info.name)
+            self.player_manager.ban(info.org_name)
             self.protocol.send_chat_message("Banned: %s" % info.colored_name(self.config.colors))
-            self.logger.warning("%s banned player: %s", self.protocol.player.name, info.name)
+            self.logger.warning("%s banned player: %s", self.protocol.player.org_name, info.org_name)
         else:
             self.protocol.send_chat_message("Couldn't find a user by the name ^yellow;%s^green;." % name)
         return False
@@ -201,16 +229,16 @@ class UserCommandPlugin(SimpleCommandPlugin):
         name, reason = extract_name(data)
         info = self.player_manager.get_by_name(name)
         if info:
-            self.player_manager.unban(info.name)
+            self.player_manager.unban(info.org_name)
             self.protocol.send_chat_message("Unbanned: %s" % info.colored_name(self.config.colors))
-            self.logger.warning("%s unbanned: %s", self.protocol.player.name, info.name)
+            self.logger.warning("%s unbanned: %s", self.protocol.player.org_name, info.org_name)
         else:
             self.protocol.send_chat_message("Couldn't find a user by the name ^yellow;%s^green;." % name)
         return False
 
     @permissions(UserLevels.ADMIN)
     def item(self, data):
-        """Gives an item to a player. Syntax: /item (player) (item) [count]"""
+        """Gives an item to a player.\nSyntax: /item (player) (item) [count]"""
         if len(data) >= 2:
             try:
                 name, item = extract_name(data)
@@ -236,7 +264,8 @@ class UserCommandPlugin(SimpleCommandPlugin):
                     target_protocol.send_chat_message(
                         "%s^green; has given you: ^yellow;%s^green; (count: ^cyan;%s^green;)" % (
                             self.protocol.player.colored_name(self.config.colors), item_name, item_count))
-                    self.protocol.send_chat_message("Sent the item(s).")
+                    self.protocol.send_chat_message("Sent ^yellow;%s^green; (count: ^cyan;%s^green;) to %s" % (
+                        item_name, item_count, target_player.colored_name(self.config.colors)))
                     self.logger.info("%s gave %s %s (count: %s)", self.protocol.player.name, name, item_name,
                                      item_count)
                 else:
@@ -249,7 +278,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.MODERATOR)
     def mute(self, data):
-        """Mute a player. Syntax: /mute (player)"""
+        """Mute a player.\nSyntax: /mute (player)"""
         name = " ".join(data)
         player = self.player_manager.get_logged_in_by_name(name)
         if player is None:
@@ -258,11 +287,12 @@ class UserCommandPlugin(SimpleCommandPlugin):
         target_protocol = self.factory.protocols[player.protocol]
         player.muted = True
         target_protocol.send_chat_message("You have been ^red;muted^green;.")
-        self.protocol.send_chat_message("%s^green; has been ^red;muted^green;." % target_protocol.player.colored_name(self.config.colors))
+        self.protocol.send_chat_message(
+            "%s^green; has been ^red;muted^green;." % target_protocol.player.colored_name(self.config.colors))
 
     @permissions(UserLevels.MODERATOR)
     def unmute(self, data):
-        """Unmute a currently muted player. Syntax: /unmute (player)"""
+        """Unmute a currently muted player.\nSyntax: /unmute (player)"""
         name = " ".join(data)
         player = self.player_manager.get_logged_in_by_name(name)
         if player is None:
@@ -271,27 +301,30 @@ class UserCommandPlugin(SimpleCommandPlugin):
         target_protocol = self.factory.protocols[player.protocol]
         player.muted = False
         target_protocol.send_chat_message("You have been ^yellow;unmuted^green;.")
-        self.protocol.send_chat_message("%s^green; has been ^yellow;unmuted^green;." % target_protocol.player.colored_name(self.config.colors))
+        self.protocol.send_chat_message(
+            "%s^green; has been ^yellow;unmuted^green;." % target_protocol.player.colored_name(self.config.colors))
 
     @permissions(UserLevels.OWNER)
     def passthrough(self, data):
-        """Sets the server to passthrough mode. *This is irreversible without restart.* Syntax: /passthrough"""
+        """Sets the server to passthrough mode.\nSyntax: /passthrough\n^red;This is irreversible without stopping the wrapper, changing config.json and restarting!"""
         self.config.passthrough = True
 
     @permissions(UserLevels.OWNER)
     def shutdown(self, data):
-        """Shutdown the server in n seconds. Syntax: /shutdown (seconds) (>0)"""
+        """Shutdown the server in n seconds.\nSyntax: /shutdown (seconds) (>0)"""
         try:
             x = float(data[0])
         except ValueError:
-            self.protocol.send_chat_message("^yellow;%s^green; is not a number. Please enter a value in seconds." % data[0])
+            self.protocol.send_chat_message(
+                "^yellow;%s^green; is not a number. Please enter a value in seconds." % data[0])
             return
-        self.factory.broadcast("SERVER ANNOUNCEMENT: ^red;Server is shutting down in ^yellow;%s^red; seconds!^green;" % data[0])
+        self.factory.broadcast(
+            "SERVER ANNOUNCEMENT: ^red;Server is shutting down in ^yellow;%s^red; seconds!^green;" % data[0])
         reactor.callLater(x, reactor.stop)
 
     @permissions(UserLevels.OWNER)
-    def chattimestamps(self, data):
-        """Toggles chat time stamps. Syntax: /chattimestamps"""
+    def timestamps(self, data):
+        """Toggles chat time stamps.\nSyntax: /timestamps"""
         if self.config.chattimestamps:
             self.config.chattimestamps = False
             self.factory.broadcast("Chat timestamps are now ^red;HIDDEN")
@@ -300,15 +333,17 @@ class UserCommandPlugin(SimpleCommandPlugin):
             self.config.chattimestamps = True
             self.factory.broadcast("Chat timestamps are now ^yellow;SHOWN")
 
+
 class MuteManager(BasePlugin):
     name = "mute_manager"
 
     def on_chat_sent(self, data):
         data = chat_sent().parse(data.data)
         if self.protocol.player.muted and data.message[0] != self.config.command_prefix and data.message[
-                                                                                            :2] != self.config.chat_prefix*2:
+                                                                                            :2] != self.config.chat_prefix * 2:
             self.protocol.send_chat_message(
-                "You are currently ^red;muted^green; and cannot speak. You are limited to commands and admin chat (prefix your lines with ^yellow;%s^green; for admin chat." % (self.config.chat_prefix*2))
+                "You are currently ^red;muted^green; and cannot speak. You are limited to commands and admin chat (prefix your lines with ^yellow;%s^green; for admin chat." % (
+                    self.config.chat_prefix * 2))
             return False
         return True
 

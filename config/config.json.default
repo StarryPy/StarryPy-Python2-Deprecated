@@ -1,6 +1,6 @@
 {
-    "bind_port": 21025,
     "bind_address": "",
+    "bind_port": 21025,
     "chat_prefix": "#",
     "chattimestamps": true,
     "colors": {
@@ -36,8 +36,15 @@
         "bookmarks_plugin": {
             "auto_activate": true
         },
+        "brutus_whisper": {
+            "auto_activate": true
+        },
         "chat_logger": {
             "auto_activate": true
+        },
+        "claims": {
+            "auto_activate": true,
+            "max_claims": 5
         },
         "colored_names_plugin": {
             "auto_activate": true
@@ -46,6 +53,9 @@
             "auto_activate": true
         },
         "emotes_plugin": {
+            "auto_activate": true
+        },
+        "fuelgiver_plugin": {
             "auto_activate": true
         },
         "irc": {
@@ -71,7 +81,6 @@
         "new_player_greeter_plugin": {
             "auto_activate": true,
             "items": [
-               
             ],
             "message": "Welcome new Starbounder ;)"
         },
@@ -85,8 +94,6 @@
             [ "stonepickaxe", 1 ],
             [ "solariumore", 30 ],
             [ "money", 1000 ]
-
-               
             ],
             "message": "You were given a set of starter items ;)"
         },
@@ -96,12 +103,20 @@
             "bad_packets": [
                 "CONNECT_WIRE",
                 "DISCONNECT_ALL_WIRES",
+                "ENTITY_INTERACT",
                 "OPEN_CONTAINER",
                 "CLOSE_CONTAINER",
                 "SWAP_IN_CONTAINER",
                 "DAMAGE_TILE",
                 "DAMAGE_TILE_GROUP",
                 "REQUEST_DROP",
+                "MODIFY_TILE_LIST"
+            ],
+            "bad_packets_mild": [
+                "CONNECT_WIRE",
+                "DISCONNECT_ALL_WIRES",
+                "DAMAGE_TILE",
+                "DAMAGE_TILE_GROUP",
                 "MODIFY_TILE_LIST"
             ],
             "blacklist": [
@@ -192,17 +207,11 @@
         "planet_visitor_announcer_plugin": {
             "auto_activate": true
         },
-        "planet_warps_plugin": {
-            "auto_activate": true
-        },
         "players_plugin": {
             "auto_activate": true
         },
         "plugin_manager": {
             "auto_activate": true
-        },
-        "pushover_plugin": {
-            "auto_activate": false
         },
         "starbound_config_manager": {
             "auto_activate": true
@@ -215,12 +224,23 @@
         },
         "warpy_plugin": {
             "auto_activate": true
+        },
+        "web_gui": {
+            "auto_activate": true,
+            "cookie_token": "",
+            "log_path": "webgui.log",
+            "log_path_access": "webgui_access.log",
+            "ownerpassword": "!!PUT A PASSWORD HERE",
+            "port": 8083,
+            "remember_cookie_token": true,
+            "restart_script": ""
         }
     },
     "plugin_path": "plugins",
     "port_check": true,
     "reap_time": 10,
     "server_connect_timeout": 5,
+    "server_name": "--ADD NAME--",
     "starbound_path": "/opt/starbound/",
     "upstream_hostname": "localhost",
     "upstream_port": 21024

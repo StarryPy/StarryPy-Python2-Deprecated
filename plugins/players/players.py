@@ -17,5 +17,5 @@ class PlayersPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.GUEST)
     def players(self, data):
-        """Returns all current users on the server. Syntax: /players"""
+        """Displays all current players on the server.\nSyntax: /players"""
         self.user_commands.who(data)

@@ -20,7 +20,7 @@ class FuelGiver(SimpleCommandPlugin):
 
     @permissions(UserLevels.GUEST)
     def fuel(self, data):
-        """Gives you some fuel items (only once). Syntax: /fuel"""
+        """Gives you enough fuel to fill your ship's tank (once a day).\nSyntax: /fuel"""
         try:
             my_storage = self.protocol.player.storage
         except AttributeError:

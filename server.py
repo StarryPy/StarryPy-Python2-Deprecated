@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 from _socket import SHUT_RDWR
-import gettext
+#import gettext
 import locale
 import logging
 from uuid import uuid4
@@ -22,21 +22,22 @@ import packets
 from plugin_manager import PluginManager, route, FatalPluginError
 from utility_functions import build_packet
 
-VERSION = "1.3.2"
+VERSION = "1.4.3"
+
 
 def port_check(upstream_hostname, upstream_port):
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.settimeout(1)
-        result = sock.connect_ex((upstream_hostname, upstream_port))
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.settimeout(1)
+    result = sock.connect_ex((upstream_hostname, upstream_port))
 
-        if result != 0:
-            sock.close()
-            return False
-        else:
-            sock.shutdown(SHUT_RDWR)
-            sock.close()
+    if result != 0:
+        sock.close()
+        return False
+    else:
+        sock.shutdown(SHUT_RDWR)
+        sock.close()
 
-        return True
+    return True
 
 
 class StarryPyServerProtocol(Protocol):
@@ -440,7 +441,7 @@ class StarryPyServerProtocol(Protocol):
         try:
             if self.client_protocol is not None:
                 x = build_packet(packets.Packets.CLIENT_DISCONNECT,
-                             packets.client_disconnect().build(Container(data=0)))
+                                 packets.client_disconnect().build(Container(data=0)))
                 if self.player is not None and self.player.logged_in:
                     self.client_disconnect(x)
                 self.client_protocol.transport.write(x)
@@ -596,18 +597,19 @@ class StarryPyServerFactory(ServerFactory):
         start_time = datetime.datetime.now()
         for protocol in self.protocols.itervalues():
             if (
-                    protocol.packet_stream.last_received_timestamp - start_time).total_seconds() > self.config.reap_time:
+                        protocol.packet_stream.last_received_timestamp - start_time).total_seconds() > self.config.reap_time:
                 protocol.connectionLost()
                 count += 1
                 continue
             if protocol.client_protocol is not None and (
-                    protocol.client_protocol.packet_stream.last_received_timestamp - start_time).total_seconds() > self.config.reap_time:
+                        protocol.client_protocol.packet_stream.last_received_timestamp - start_time).total_seconds() > self.config.reap_time:
                 protocol.connectionLost()
                 count += 1
         if count == 1:
             logger.info("1 connection reaped.")
         elif count > 1:
             logger.info("%d connections reaped.")
+
 
 class StarboundClientFactory(ClientFactory):
     """
@@ -622,20 +624,23 @@ class StarboundClientFactory(ClientFactory):
         protocol = ClientFactory.buildProtocol(self, address)
         protocol.server_protocol = self.server_protocol
         return protocol
+
+
 def init_localization():
     try:
         locale.setlocale(locale.LC_ALL, '')
     except:
         locale.setlocale(locale.LC_ALL, 'en_US.utf8')
-    try:
+    """try:
         loc = locale.getlocale()
         filename = "res/messages_%s.mo" % locale.getlocale()[0][0:2]
         print "Opening message file %s for locale %s." % (filename, loc[0])
-        trans = gettext.GNUTranslations(open(filename, "rb" ))
+        trans = gettext.GNUTranslations(open(filename, "rb"))
     except (IOError, TypeError, IndexError):
         print "Locale not found. Using default messages."
         trans = gettext.NullTranslations()
-    trans.install()
+    trans.install()"""
+
 
 if __name__ == '__main__':
     init_localization()

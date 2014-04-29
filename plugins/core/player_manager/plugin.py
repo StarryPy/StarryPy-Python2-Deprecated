@@ -7,14 +7,14 @@ from twisted.words.ewords import AlreadyLoggedIn
 
 from base_plugin import SimpleCommandPlugin
 from manager import PlayerManager, Banned, Player, permissions, UserLevels
-from packets import client_connect, connect_response
+from packets import client_connect, connect_response, warp_command
 import packets
-from utility_functions import build_packet, Planet
+from utility_functions import extract_name, build_packet, Planet
 
 
 class PlayerManagerPlugin(SimpleCommandPlugin):
     name = "player_manager"
-    commands = ["list_players", "delete_player"]
+    commands = ["player_list", "player_del", "nick", "nick_set"]
 
     def activate(self):
         super(PlayerManagerPlugin, self).activate()
@@ -34,23 +34,36 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
     def on_client_connect(self, data):
         client_data = client_connect().parse(data.data)
         try:
-            original_name = client_data.name
-            for regex in self.regexes:
-                client_data.name = re.sub(regex, "", client_data.name)
+            changed_name = client_data.name
+            for regex in self.regexes:  # Replace problematic chars in client name
+                changed_name = re.sub(regex, "", changed_name)
+
             if len(client_data.name.strip()) == 0:  # If the username is nothing but spaces.
                 raise NameError("Your name must not be empty!")
-            if client_data.name != original_name:
+
+            if client_data.name != changed_name:  # Logging changed username
                 self.logger.info("Player tried to log in with name %s, replaced with %s.",
-                                 original_name, client_data.name)
+                                 client_data.name, changed_name)
 
-            for duplicate_player in self.player_manager.all():
-                if duplicate_player.name == client_data.name and duplicate_player.uuid != client_data.uuid:
-                    self.logger.info("Got a duplicate player, asking player to change name")
-                    raise NameError(
-                        "The name of this character is already taken on the server! Please, create a new character with a different name or use Starcheat and change the name.")
+            changed_player = self.player_manager.get_by_uuid(client_data.uuid)
+            if changed_player is not None and changed_player.name != changed_name:
+                self.logger.info("Got player with changed nickname. Fetching nickname!")
+                changed_name = changed_player.name
 
+            duplicate_player = self.player_manager.get_by_org_name(client_data.name)
+            if duplicate_player is not None and duplicate_player.uuid != client_data.uuid:
+                raise NameError(
+                    "The name of this character is already taken on the server!\nPlease, create a new character with a different name or use Starcheat and change the name.")
+                self.logger.info("Got a duplicate original player name, asking player to change character name!")
+                #rnd_append = str(randrange(10, 99))
+                #original_name += rnd_append
+                #client_data.name += rnd_append
+
+            original_name = client_data.name
+            client_data.name = changed_name
             self.protocol.player = self.player_manager.fetch_or_create(
                 name=client_data.name,
+                org_name=original_name,
                 uuid=str(client_data.uuid),
                 ip=self.protocol.transport.getPeer().host,
                 protocol=self.protocol.id,
@@ -105,6 +118,7 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
         if 'fuel.max' in world_start['world_properties']:
             self.logger.info("Player %s is now on a ship.", self.protocol.player.name)
             self.protocol.player.on_ship = True
+            self.protocol.player.planet = "On ship"
         else:
             coords = world_start.planet['celestialParameters']['coordinate']
             parent_system = coords
@@ -121,8 +135,75 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
             self.protocol.player.logged_in = False
         return True
 
+    @permissions(UserLevels.REGISTERED)
+    def nick(self, data):
+        """Changes your nickname.\nSyntax: /nick (new name)"""
+        if len(data) == 0:
+            self.protocol.send_chat_message(self.nick.__doc__)
+            return
+        name = " ".join(data)
+        org_name = self.protocol.player.org_name
+        for regex in self.regexes:  # Replace problematic chars in client name
+            name = re.sub(regex, "", name)
+        if self.player_manager.get_by_name(name) or (self.player_manager.get_by_org_name(name) and org_name != name):
+            self.protocol.send_chat_message("There's already a player by that name.")
+        else:
+            old_name = self.protocol.player.colored_name(self.config.colors)
+            self.protocol.player.name = name
+            self.factory.broadcast("%s^green;'s name has been changed to %s" % (
+                old_name, self.protocol.player.colored_name(self.config.colors)))
+
     @permissions(UserLevels.ADMIN)
-    def delete_player(self, data):
+    def nick_set(self, data):
+        """Changes player nickname.\nSyntax: /nick_set (name) (new name)"""
+        if len(data) <= 1:
+            self.protocol.send_chat_message(self.nick_set.__doc__)
+            return
+        try:
+            first_name, rest = extract_name(data)
+            for regex in self.regexes:  # Replace problematic chars in client name
+                first_name = re.sub(regex, "", first_name)
+        except ValueError:
+            self.protocol.send_chat_message("Name not recognized. If it has spaces, please surround it by quotes!")
+            return
+        if rest is None or len(rest) == 0:
+            self.protocol.send_chat_message(self.nick_set.__doc__)
+        else:
+            try:
+                second_name = extract_name(rest)[0]
+                for regex in self.regexes:  # Replace problematic chars in client name
+                    second_name = re.sub(regex, "", second_name)
+            except ValueError:
+                self.protocol.send_chat_message(
+                    "New name not recognized. If it has spaces, please surround it by quotes!")
+                return
+        player = self.player_manager.get_by_name(str(first_name))
+        player2 = self.player_manager.get_by_name(str(second_name))
+        org_player = self.player_manager.get_by_org_name(str(first_name))
+        org_player2 = self.player_manager.get_by_org_name(str(second_name))
+        if player:
+            first_uuid = player.uuid
+        elif org_player:
+            first_uuid = org_player.uuid
+        if player2:
+            second_uuid = player2.uuid
+        elif org_player2:
+            second_uuid = org_player2.uuid
+        if player or org_player:
+            if (player2 or org_player2) and first_uuid != second_uuid:
+                self.protocol.send_chat_message("There's already a player by that name.")
+            else:
+                old_name = player.colored_name(self.config.colors)
+                player.name = second_name
+                self.factory.broadcast("%s^green;'s name has been changed to %s" % (
+                    old_name, player.colored_name(self.config.colors)))
+
+    @permissions(UserLevels.ADMIN)
+    def player_del(self, data):
+        """Delete a player from database.\nSyntax: /player_del (player)"""
+        if len(data) == 0:
+            self.protocol.send_chat_message(self.player_del.__doc__)
+            return
         name = " ".join(data)
         if self.player_manager.get_logged_in_by_name(name) is not None:
             self.protocol.send_chat_message(
@@ -138,7 +219,8 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
             self.protocol.send_chat_message("Deleted player with name %s." % name)
 
     @permissions(UserLevels.ADMIN)
-    def list_players(self, data):
+    def player_list(self, data):
+        """List registered players on the server.\nSyntax: /player_list [search term]"""
         if len(data) == 0:
             self.format_player_response(self.player_manager.all())
         else:
@@ -149,12 +231,14 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
         if len(players) <= 25:
             self.protocol.send_chat_message(
                 "Results:\n%s" % "\n".join(
-                    ["^cyan;%s: ^yellow;%s" % (player.uuid, player.colored_name(self.config.colors)) for player in
+                    ["^cyan;%s: ^yellow;%s ^green;: ^gray;%s" % (
+                        player.uuid, player.colored_name(self.config.colors), player.org_name) for player in
                      players]))
         else:
             self.protocol.send_chat_message(
                 "Results:\n%s" % "\n".join(
-                    ["^cyan;%s: ^yellow;%s" % (player.uuid, player.colored_name(self.config.colors)) for player in
+                    ["^cyan;%s: ^yellow;%s ^green;: ^gray;%s" % (
+                        player.uuid, player.colored_name(self.config.colors), player.org_name) for player in
                      players[:25]]))
             self.protocol.send_chat_message(
                 "And %d more. Narrow it down with SQL like syntax. Feel free to use a *, it will be replaced appropriately." % (

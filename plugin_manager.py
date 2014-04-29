@@ -203,7 +203,7 @@ def route(func):
         res = self.plugin_manager.do(self, on, data)
         if res:
             res = func(self, data)
-            d = deferLater(reactor, .01, self.plugin_manager.do, self, after, data)
+            d = deferLater(reactor, 1, self.plugin_manager.do, self, after, data)
             d.addErrback(print_this_defered_failure)
         return res
 

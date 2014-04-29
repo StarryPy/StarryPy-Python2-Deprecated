@@ -1,0 +1,36 @@
+<link href="css/bootstrap-sortable.css" rel="stylesheet">
+<script src="js/bootstrap-sortable.js"></script>
+<div class="row">
+	<div id="breadcrumb" class="col-xs-12">
+		<ol class="breadcrumb">
+			<li><a href="#">Dashboard</a></li>
+			<li><a href="#">Players</a></li>
+			<li><a href="#">Online Players</a></li>
+		</ol>
+	</div>
+</div>
+<div class="row">
+	<div class="col-xs-12 col-sm-12">
+		<table class="table table-bordered sortable">
+			<thead>
+				<tr>
+					<th data-defaultsort='asc'>Name</th>
+					<th>Planet</th>
+					<th>Access Level</th>
+					<th>Last Seen</th>
+				</tr>
+			</thead>
+			<tbody>
+			{% for player in handler.playerlistonline %}
+				<tr>
+					<td data-value="{{ player.name }}"><a href="#" onclick='LoadAjaxContent("ajax/playeredit.html?playername=" + encodeURIComponent("{{ player.name }}"));'>{{ player.name }}</a></td>
+					<td>{{ player.planet }}</td>
+					<td>{{ player.access_level }}</td>
+					<td>{{ str(player.last_seen).rpartition('.')[0] }}</td>
+				</tr>
+                {% end %}
+			</tbody>
+		</table>
+	</div>
+</div>
+

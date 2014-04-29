@@ -55,8 +55,8 @@ class PacketStream(object):
                 self.header_length = 1 + len(packets.SignedVLQ("").build(packet_header.payload_size))
                 self.packet_size = self.payload_size + self.header_length
                 return True
-        except:
-            self.logger.exception("Unknown error in start_packet.")
+        except RuntimeError:
+            self.logger.error("Unknown error in start_packet.")
             return False
 
     def check_packet(self):
@@ -82,8 +82,9 @@ class PacketStream(object):
                 self.reset()
                 if self.start_packet():
                     self.check_packet()
-        except:
-            self.logger.exception("Unknown error in check_packet")
+        except RuntimeError:
+            self.logger.error("Unknown error in check_packet")
+            #return False
 
     def reset(self):
         self.id = None

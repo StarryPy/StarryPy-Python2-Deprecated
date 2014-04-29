@@ -18,7 +18,7 @@ class StarterItems(SimpleCommandPlugin):
 
     @permissions(UserLevels.GUEST)
     def starteritems(self, data):
-        """Gives you some starter items (only once). Syntax: /starteritems"""
+        """Gives you some starter items (only once).\nSyntax: /starteritems"""
         try:
             my_storage = self.protocol.player.storage
         except AttributeError:
