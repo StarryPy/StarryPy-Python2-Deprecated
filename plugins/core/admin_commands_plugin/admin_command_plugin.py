@@ -52,7 +52,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
         if len(data) == 0:
             self.protocol.send_chat_message(self.whois.__doc__)
             return
-        name = " ".join(data)
+        name, garbage = extract_name(data)
         info = self.player_manager.whois(name)
         if info and self.protocol.player.access_level >= UserLevels.ADMIN:
             self.protocol.send_chat_message(

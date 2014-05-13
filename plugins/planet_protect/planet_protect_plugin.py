@@ -51,9 +51,11 @@ only admins can build. Planets are unprotected by default.
             addplayer = self.protocol.player.org_name
             first_name_color = self.protocol.player.colored_name(self.config.colors)
         else:
+            self.logger.info("stream: %s" % data)
             addplayer = data[0]
             try:
                 addplayer, rest = extract_name(data)
+                self.logger.info("name: %s" % str(addplayer))
                 addplayer = self.player_manager.get_by_name(addplayer).org_name
                 first_name_color = self.player_manager.get_by_org_name(addplayer).colored_name(self.config.colors)
             except:

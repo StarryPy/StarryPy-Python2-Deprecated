@@ -22,6 +22,8 @@ import packets
 from plugin_manager import PluginManager, route, FatalPluginError
 from utility_functions import build_packet
 
+import timeit
+
 VERSION = "1.4.3"
 
 
