@@ -22,9 +22,7 @@ import packets
 from plugin_manager import PluginManager, route, FatalPluginError
 from utility_functions import build_packet
 
-import timeit
-
-VERSION = "1.4.3"
+VERSION = "1.4.3_r2"
 
 
 def port_check(upstream_hostname, upstream_port):
