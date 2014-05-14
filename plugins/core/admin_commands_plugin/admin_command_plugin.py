@@ -13,9 +13,8 @@ class UserCommandPlugin(SimpleCommandPlugin):
     """
     name = "user_management_commands"
     depends = ['command_dispatcher', 'player_manager']
-    commands = ["who", "whoami", "whois", "promote", "kick", "ban", "ban_list", "unban", "item", "planet", "mute",
-                "unmute",
-                "passthrough", "shutdown", "timestamps"]
+    commands = ["who", "whoami", "whois", "promote", "kick", "ban", "ban_list", "unban", "item",
+                "planet", "mute", "unmute", "passthrough", "shutdown", "timestamps"]
     auto_activate = True
 
     def activate(self):
@@ -72,8 +71,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
     def promote(self, data):
         """Promotes/demotes a player to a specific rank.\nSyntax: /promote (player) (rank) (where rank is either: guest, registered, moderator, admin, or owner)"""
         if len(data) > 0:
-            name = " ".join(data[:-1])
-            rank = data[-1].lower()
+            name, rank = extract_name(data)
             player = self.player_manager.get_by_name(name)
             if player is not None:
                 old_rank = player.access_level
@@ -279,7 +277,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
     @permissions(UserLevels.MODERATOR)
     def mute(self, data):
         """Mute a player.\nSyntax: /mute (player)"""
-        name = " ".join(data)
+        name, garbage = extract_name(data)
         player = self.player_manager.get_logged_in_by_name(name)
         if player is None:
             self.protocol.send_chat_message("Couldn't find a user by the name ^yellow;%s^green;" % name)
@@ -293,7 +291,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
     @permissions(UserLevels.MODERATOR)
     def unmute(self, data):
         """Unmute a currently muted player.\nSyntax: /unmute (player)"""
-        name = " ".join(data)
+        name, garbage = extract_name(data)
         player = self.player_manager.get_logged_in_by_name(name)
         if player is None:
             self.protocol.send_chat_message("Couldn't find a user by the name ^yellow;%s^green;" % name)

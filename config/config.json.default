@@ -103,14 +103,15 @@
             "bad_packets": [
                 "CONNECT_WIRE",
                 "DISCONNECT_ALL_WIRES",
-                "ENTITY_INTERACT",
-                "OPEN_CONTAINER",
-                "CLOSE_CONTAINER",
                 "SWAP_IN_CONTAINER",
                 "DAMAGE_TILE",
                 "DAMAGE_TILE_GROUP",
-                "REQUEST_DROP",
                 "MODIFY_TILE_LIST"
+            ],
+            "bad_packets_ship": [
+                "ENTITY_INTERACT",
+                "OPEN_CONTAINER",
+                "CLOSE_CONTAINER"
             ],
             "bad_packets_mild": [
                 "CONNECT_WIRE",

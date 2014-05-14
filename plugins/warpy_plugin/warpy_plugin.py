@@ -60,7 +60,7 @@ class Warpy(SimpleCommandPlugin):
             self.move_player_ship_to_other(first_name, second_name)
 
     def warp_self_to_player(self, name):
-        name = " ".join(name)
+        name, rest = extract_name(data)
         self.warp_player_to_player(self.protocol.player.name, name)
 
     def warp_player_to_player(self, from_string, to_string):
