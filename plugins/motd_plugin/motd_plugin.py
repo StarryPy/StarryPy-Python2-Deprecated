@@ -28,7 +28,7 @@ class MOTDPlugin(SimpleCommandPlugin):
         #self.protocol.send_chat_message("^yellow;%s" % self._motd)
         if not self.config.server_name:
             self.config.server_name = "MY"
-        self.protocol.send_chat_message("^#00FFFF;WELCOME TO ^#FF0000;%s^#00FFFF; STARBOUND SERVER\n^yellow;------------------------------------------------------------------\n^green;Type: ^yellow;/help ^green;for list of available commands\n^green;Type: ^yellow;/starteritems ^green;for some starter items ^cyan;(once)\n^green;Type: ^yellow;/fuel ^green;to get your daily fuel supply ^cyan;(once a day)\n^green;Legend: ^#F7434C;Owner^yellow;, ^#C443F7;Admin^yellow;, ^#4385F7;Moderator^yellow;, ^#A0F743;Registered user^yellow;, Guest\n^yellow;------------------------------------------------------------------\n^cyan;%s" % (self.config.server_name, self._motd))
+        self.protocol.send_chat_message("%s" % (self._motd))
 
     @permissions(UserLevels.GUEST)
     def motd(self, data):
