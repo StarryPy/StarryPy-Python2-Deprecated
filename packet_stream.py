@@ -77,7 +77,6 @@ class PacketStream(object):
                 packet = Packet(packet_id=p_parsed.id, payload_size=p_parsed.payload_size, data=p_parsed.data,
                                 original_data=p, direction=self.direction)
 
-                self.compressed = False
                 self.protocol.string_received(packet)
                 self.reset()
                 if self.start_packet():

@@ -222,6 +222,13 @@ entity_create = Struct("entity_create",
                                   Byte("entity_type"),
                                   VLQ("entity_size"),
                                   String("entity", lambda ctx: ctx.entity_size),
-                                  SignedVLQ("entity_id")
-                       )))
+                                  SignedVLQ("entity_id"))))
+
+client_context_update = lambda name="client_context": Struct(name,
+                                                             VLQ("length"),
+                                                             Byte("arguments"),
+                                                             Array(lambda ctx: ctx.arguments,
+                                                                   Struct("key",
+                                                                   Variant("value"))))
+
 projectile = DictVariant("projectile")

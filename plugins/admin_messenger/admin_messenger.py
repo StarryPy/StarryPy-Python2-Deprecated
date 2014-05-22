@@ -5,7 +5,7 @@ from datetime import datetime
 
 
 class AdminMessenger(BasePlugin):
-    """Adds support to message moderators/admins/owner with a ## prefixed message."""
+    """Adds support to message moderators/admins/owner with a @@ prefixed message."""
     name = "admin_messenger"
     depends = ['player_manager']
     auto_activate = True
