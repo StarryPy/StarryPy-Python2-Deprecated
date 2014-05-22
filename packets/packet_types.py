@@ -127,7 +127,7 @@ chat_received = lambda name="chat_received": Struct(name,
 
 chat_sent = lambda name="chat_sent": Struct(name,
                                             star_string("message"),
-                                            Padding(1))
+                                            Byte("chat_channel"))
 
 client_connect = lambda name="client_connect": Struct(name,
                                                       VLQ("asset_digest_length"),

@@ -33,8 +33,8 @@ class AdminMessenger(BasePlugin):
         for protocol in self.factory.protocols.itervalues():
             if protocol.player.access_level >= UserLevels.MODERATOR:
                 protocol.send_chat_message(timestamp +
-                    "%sADMIN: ^yellow;<%s^yellow;> %s%s" % (self.config.colors["admin"], self.protocol.player.colored_name(self.config.colors),
-                                                                self.config.colors["admin"],message.message[2:].decode("utf-8")))
+                    "%sADMIN: ^yellow;<%s^yellow;> %s%s" % (self.config.colors["moderator"], self.protocol.player.colored_name(self.config.colors),
+                                                                self.config.colors["moderator"],message.message[2:].decode("utf-8")))
                 self.logger.info("Received an admin message from %s. Message: %s", self.protocol.player.name,
                                  message.message[2:].decode("utf-8"))
 

@@ -21,7 +21,7 @@ class ModChatter(SimpleCommandPlugin):
         """Allows mod-only chatting.\nSyntax: /modchat (msg)"""
         now = datetime.now()
         if self.config.chattimestamps:
-          timestamp = "^cyan;<" + now.strftime("%H:%M") + "> ^yellow;"
+          timestamp = "^red;<" + now.strftime("%H:%M") + "> ^yellow;"
         else:
           timestamp = ""
         if len(data) == 0:
