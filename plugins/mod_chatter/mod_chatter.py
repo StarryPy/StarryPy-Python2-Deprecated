@@ -4,15 +4,15 @@ import packets
 from datetime import datetime
 
 
-class AdminChatter(SimpleCommandPlugin):
+class ModChatter(SimpleCommandPlugin):
     """Adds support for moderators/admins/owner group chatter."""
-    name = "admin_chatter"
+    name = "mod_chatter"
     depends = ['command_dispatcher', 'player_manager']
     commands = ["modchat", "mc"]
     auto_activate = True
 
     def activate(self):
-        super(AdminChatter, self).activate()
+        super(ModChatter, self).activate()
         self.prefix = self.config.chat_prefix
         self.player_manager = self.plugins['player_manager'].player_manager
 

@@ -17,7 +17,7 @@ class Warpy(SimpleCommandPlugin):
         super(Warpy, self).activate()
         self.player_manager = self.plugins['player_manager'].player_manager
 
-    @permissions(UserLevels.ADMIN)
+    @permissions(UserLevels.MODERATOR)
     def warp(self, name):
         """Warps you to a player's ship (or player to player).\nSyntax: /warp [player] (to player)"""
         if len(name) == 0:
@@ -38,7 +38,7 @@ class Warpy(SimpleCommandPlugin):
                 return
             self.warp_player_to_player(first_name, second_name)
 
-    @permissions(UserLevels.ADMIN)
+    @permissions(UserLevels.MODERATOR)
     def warp_ship(self, location):
         """Warps a player ship to another players ship.\nSyntax: /warp_ship [player] (to player)"""
         if len(location) == 0:
@@ -60,7 +60,8 @@ class Warpy(SimpleCommandPlugin):
             self.move_player_ship_to_other(first_name, second_name)
 
     def warp_self_to_player(self, name):
-        name, rest = extract_name(data)
+        name = " ".join(name)
+        #name, rest = extract_name(data)
         self.warp_player_to_player(self.protocol.player.name, name)
 
     def warp_player_to_player(self, from_string, to_string):

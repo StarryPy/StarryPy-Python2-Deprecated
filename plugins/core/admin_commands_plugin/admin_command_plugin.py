@@ -234,7 +234,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
             self.protocol.send_chat_message("Couldn't find a user by the name ^yellow;%s^green;." % name)
         return False
 
-    @permissions(UserLevels.ADMIN)
+    @permissions(UserLevels.MODERATOR)
     def item(self, data):
         """Gives an item to a player.\nSyntax: /item (player) (item) [count]"""
         if len(data) >= 2:
