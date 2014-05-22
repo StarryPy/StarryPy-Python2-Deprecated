@@ -28,7 +28,7 @@ class MOTDPlugin(SimpleCommandPlugin):
         #self.protocol.send_chat_message("^yellow;%s" % self._motd)
         if not self.config.server_name:
             self.config.server_name = "MY"
-        self.protocol.send_chat_message("%s" % (self.config.server_name, self._motd))
+        self.protocol.send_chat_message("%s" % (self._motd))
 
     @permissions(UserLevels.GUEST)
     def motd(self, data):
