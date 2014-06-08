@@ -87,13 +87,12 @@
         "starteritems_plugin": {
             "auto_activate": true,
             "items": [
-            [ "bandage", 20 ],
-            [ "burger", 20 ],
+            [ "bandage", 5 ],
+            [ "burger", 2 ],
             [ "stoneaxe", 1 ],
             [ "stonehoe", 1 ],
             [ "stonepickaxe", 1 ],
-            [ "solariumore", 30 ],
-            [ "money", 1000 ]
+            [ "solariumore", 20 ]
             ],
             "message": "You were given a set of starter items ;)"
         },
