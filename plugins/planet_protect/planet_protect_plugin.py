@@ -181,14 +181,19 @@ only admins can build. Planets are unprotected by default.
                                 self.protocol.player.org_name, p_type)
                             return False
         """
-        if self.protect_everything and self.protocol.player.access_level < UserLevels.REGISTERED and not self.protocol.player.on_ship:
-            entities = entity_create.parse(data.data)
-            for entity in entities.entity:
-                if entity.entity_type == EntityType.PROJECTILE:
-                    if self.block_all: return False
-                    p_type = star_string("").parse(entity.entity)
-                    if p_type in self.blacklist:
-                        self.logger.info(
-                            "Player %s attempted to use a prohibited projectile, %s, on a protected planet.",
-                            self.protocol.player.org_name, p_type)
-                        return False
+        #if self.protect_everything and self.protocol.player.access_level < UserLevels.REGISTERED and not self.protocol.player.on_ship:
+        if self.protocol.player.planet in self.protected_planets and self.protocol.player.access_level < UserLevels.ADMIN:
+            name = self.protocol.player.org_name
+            if name in self.player_planets[self.protocol.player.planet]:
+                return True
+            else:
+                entities = entity_create.parse(data.data)
+                for entity in entities.entity:
+                    if entity.entity_type == EntityType.PROJECTILE:
+                        if self.block_all: return False
+                        p_type = star_string("").parse(entity.entity)
+                        if p_type in self.blacklist:
+                            self.logger.info(
+                                "Player %s attempted to use a prohibited projectile, %s, on a protected planet.",
+                                self.protocol.player.org_name, p_type)
+                            return False

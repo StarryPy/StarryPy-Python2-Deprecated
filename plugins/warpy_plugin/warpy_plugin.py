@@ -61,7 +61,6 @@ class Warpy(SimpleCommandPlugin):
 
     def warp_self_to_player(self, name):
         name = " ".join(name)
-        #name, rest = extract_name(data)
         self.warp_player_to_player(self.protocol.player.name, name)
 
     def warp_player_to_player(self, from_string, to_string):
@@ -73,7 +72,7 @@ class Warpy(SimpleCommandPlugin):
                 if from_player is not to_player:
                     warp_packet = build_packet(Packets.WARP_COMMAND,
                                                warp_command_write(t="WARP_OTHER_SHIP",
-                                                                  player=to_player.name.encode('utf-8')))
+                                                                  player=to_player.org_name.encode('utf-8')))
                 else:
                     warp_packet = build_packet(Packets.WARP_COMMAND,
                                                warp_command_write(t='WARP_UP'))

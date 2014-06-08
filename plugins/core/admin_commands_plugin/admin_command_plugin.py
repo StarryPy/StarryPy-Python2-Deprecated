@@ -71,7 +71,8 @@ class UserCommandPlugin(SimpleCommandPlugin):
     def promote(self, data):
         """Promotes/demotes a player to a specific rank.\nSyntax: /promote (player) (rank) (where rank is either: guest, registered, moderator, admin, or owner)"""
         if len(data) > 0:
-            name, rank = extract_name(data)
+            name = " ".join(data[:-1])
+            rank = data[-1].lower()
             player = self.player_manager.get_by_name(name)
             if player is not None:
                 old_rank = player.access_level
