@@ -1,1 +1,0 @@
-from fuelgiver_plugin import FuelGiver

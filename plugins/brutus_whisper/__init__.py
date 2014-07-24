@@ -1,1 +1,0 @@
-from brutus_whisper import BRWhisperPlugin

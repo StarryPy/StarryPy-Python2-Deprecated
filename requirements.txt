@@ -3,5 +3,3 @@ twisted
 enum34
 construct
 nose
-tornado
-sqlite3

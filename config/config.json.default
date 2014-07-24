@@ -1,7 +1,7 @@
 {
     "bind_address": "",
     "bind_port": 21025,
-    "chat_prefix": "#",
+    "chat_prefix": "@",
     "chattimestamps": true,
     "colors": {
         "admin": "^#C443F7;",
@@ -22,29 +22,11 @@
     "passthrough": false,
     "player_db": "config/player.db",
     "plugin_config": {
-        "admin_messenger": {
-            "auto_activate": true
-        },
-        "afk_plugin": {
-            "afk_msg": "is now AFK",
-            "afkreturn_msg": "has returned",
-            "auto_activate": true
-        },
         "announcer_plugin": {
-            "auto_activate": true
-        },
-        "bookmarks_plugin": {
-            "auto_activate": true
-        },
-        "brutus_whisper": {
             "auto_activate": true
         },
         "chat_logger": {
             "auto_activate": true
-        },
-        "claims": {
-            "auto_activate": true,
-            "max_claims": 5
         },
         "colored_names_plugin": {
             "auto_activate": true
@@ -52,163 +34,14 @@
         "command_dispatcher": {
             "auto_activate": true
         },
-        "emotes_plugin": {
-            "auto_activate": true
-        },
-        "fuelgiver_plugin": {
-            "auto_activate": true
-        },
-        "irc": {
-            "auto_activate": false,
-            "bot_nickname": "botname",
-            "channel": "#channel",
-            "color": "^#e39313;",
-            "echo_from_channel": true,
-            "nickserv_password": "password",
-            "port": 6667,
-            "server": "irc.freenode.net"
-        },
-        "loginwho_plugin": {
-            "auto_activate": true
-        },
-        "motd_plugin": {
-            "auto_activate": true,
-            "motd": "Welcome to the server! Play nice."
-        },
         "mute_manager": {
             "auto_activate": true
-        },
-        "new_player_greeter_plugin": {
-            "auto_activate": true,
-            "items": [
-            ],
-            "message": "Welcome new Starbounder ;)"
-        },
-        "starteritems_plugin": {
-            "auto_activate": true,
-            "items": [
-            [ "bandage", 5 ],
-            [ "burger", 2 ],
-            [ "stoneaxe", 1 ],
-            [ "stonehoe", 1 ],
-            [ "stonepickaxe", 1 ],
-            [ "solariumore", 20 ]
-            ],
-            "message": "You were given a set of starter items ;)"
-        },
-        "planet_protect": {
-            "auto_activate": true,
-            "protect_everything": false,
-            "bad_packets": [
-                "CONNECT_WIRE",
-                "DISCONNECT_ALL_WIRES",
-                "SWAP_IN_CONTAINER",
-                "DAMAGE_TILE",
-                "DAMAGE_TILE_GROUP",
-                "MODIFY_TILE_LIST"
-            ],
-            "bad_packets_ship": [
-                "ENTITY_INTERACT",
-                "OPEN_CONTAINER",
-                "CLOSE_CONTAINER"
-            ],
-            "bad_packets_mild": [
-                "CONNECT_WIRE",
-                "DISCONNECT_ALL_WIRES",
-                "DAMAGE_TILE",
-                "DAMAGE_TILE_GROUP",
-                "MODIFY_TILE_LIST"
-            ],
-            "blacklist": [
-                "bomb",
-                "bombblockexplosion",
-                "boneswoosh",
-                "bouldersmashexplosion",
-                "bouncycluster",
-                "bouncyclustergrenade",
-                "cluster",
-                "clustergoo",
-                "clustergrenade",
-                "defensiveexplosion",
-                "dungeonpodexplosion",
-                "electricexplosion",
-                "electrogrenade",
-                "explosivebullet",
-                "explosivegoo",
-                "fireexplosion",
-                "friendlyboneexplosion",
-                "gas",
-                "gas2",
-                "gasgrenade",
-                "glowbomb",
-                "glowgas",
-                "gravitybomb",
-                "grenade",
-                "grenade",
-                "grenadeexplosion",
-                "icestorm",
-                "impactgrenade",
-                "invisibleprojectile",
-                "jellybossexplode",
-                "jellybossgoo",
-                "jumpbomb",
-                "jumpgas",
-                "largemeteor",
-                "lavaballoon",
-                "lavaprojectile",
-                "magicmolotov",
-                "megabeam",
-                "meteor",
-                "meteorblockprojectile",
-                "meteorblockspawner",
-                "meteorexplosion",
-                "molotov",
-                "molotovflame",
-                "nail",
-                "nailbomb",
-                "plasmabullet",
-                "plasmaexplosion2",
-                "plasmagrenade",
-                "plasmatorpedo",
-                "poisonsmoke",
-                "poisonstatusprojectile",
-                "poopbreath",
-                "pulsecannon",
-                "pulsecannonexplosion",
-                "purpleplasma",
-                "regularexplosion",
-                "regularexplosion2",
-                "regularexplosionnospark",
-                "rocket",
-                "rocketexplosion",
-                "runbomb",
-                "rungas",
-                "shockbomb",
-                "smallmeteor",
-                "smallregularexplosion",
-                "targetexplosion",
-                "vsmallregularexplosion",
-                "vsmallregularexplosionnodamage",
-                "water",
-                "zbomb",
-                "spinningrocket",
-                "stationaryrocket"
-            ],
-            "player_planets": {},
-            "protected_planets": []
         },
         "player_manager": {
             "auto_activate": true,
             "name_removal_regexes": [
-                "\\^#[\\w]+;",
-                "[^ \\w]+"
+                "(?![a-zA-Z0-9_\\- ])."
             ]
-        },
-        "planet_visitor_announcer_plugin": {
-            "auto_activate": true
-        },
-        "players_plugin": {
-            "auto_activate": true
         },
         "plugin_manager": {
             "auto_activate": true
@@ -216,24 +49,8 @@
         "starbound_config_manager": {
             "auto_activate": true
         },
-        "uptime_plugin": {
-            "auto_activate": true
-        },
         "user_management_commands": {
             "auto_activate": true
-        },
-        "warpy_plugin": {
-            "auto_activate": true
-        },
-        "web_gui": {
-            "auto_activate": true,
-            "cookie_token": "",
-            "log_path": "webgui.log",
-            "log_path_access": "webgui_access.log",
-            "ownerpassword": "!!PUT A PASSWORD HERE",
-            "port": 8083,
-            "remember_cookie_token": true,
-            "restart_script": ""
         }
     },
     "plugin_path": "plugins",

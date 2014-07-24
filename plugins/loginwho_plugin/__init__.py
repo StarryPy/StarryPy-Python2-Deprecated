@@ -1,1 +1,0 @@
-from loginwho_plugin import LoginWhoPlugin
