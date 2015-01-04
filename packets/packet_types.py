@@ -1,6 +1,6 @@
 from construct import *
 from enum import IntEnum
-from data_types import SignedVLQ, VLQ, Variant, star_string, DictVariant,  StarByteArray
+from data_types import SignedVLQ, VLQ, Variant, star_string, DictVariant, StarByteArray
 
 
 class Direction(IntEnum):
@@ -10,54 +10,59 @@ class Direction(IntEnum):
 
 class Packets(IntEnum):
     PROTOCOL_VERSION = 0
-    CONNECT_RESPONSE = 1
-    SERVER_DISCONNECT = 2
+    SERVER_DISCONNECT = 1
+    CONNECT_RESPONSE = 2
     HANDSHAKE_CHALLENGE = 3
     CHAT_RECEIVED = 4
     UNIVERSE_TIME_UPDATE = 5
-    CELESTIALRESPONSE = 6
+    CELESTIAL_RESPONSE = 6
     CLIENT_CONNECT = 7
-    CLIENT_DISCONNECT = 8
+    CLIENT_DISCONNECT_REQUEST = 8
     HANDSHAKE_RESPONSE = 9
-    WARP_COMMAND = 10
-    CHAT_SENT = 11
-    CELESTIALREQUEST = 12
-    CLIENT_CONTEXT_UPDATE = 13
-    WORLD_START = 14
-    WORLD_STOP = 15
-    TILE_ARRAY_UPDATE = 16
-    TILE_UPDATE = 17
-    TILE_LIQUID_UPDATE = 18
-    TILE_DAMAGE_UPDATE = 19
-    TILE_MODIFICATION_FAILURE = 20
-    GIVE_ITEM = 21
-    SWAP_IN_CONTAINER_RESULT = 22
-    ENVIRONMENT_UPDATE = 23
-    ENTITY_INTERACT_RESULT = 24
-    MODIFY_TILE_LIST = 25
-    DAMAGE_TILE = 26
-    DAMAGE_TILE_GROUP = 27
-    REQUEST_DROP = 28
-    SPAWN_ENTITY = 29
-    ENTITY_INTERACT = 30
-    CONNECT_WIRE = 31
-    DISCONNECT_ALL_WIRES = 32
-    OPEN_CONTAINER = 33
-    CLOSE_CONTAINER = 34
-    SWAP_IN_CONTAINER = 35
-    ITEM_APPLY_IN_CONTAINER = 36
-    START_CRAFTING_IN_CONTAINER = 37
-    STOP_CRAFTING_IN_CONTAINER = 38
-    BURN_CONTAINER = 39
-    CLEAR_CONTAINER = 40
-    WORLD_UPDATE = 41
-    ENTITY_CREATE = 42
-    ENTITY_UPDATE = 43
-    ENTITY_DESTROY = 44
-    DAMAGE_NOTIFICATION = 45
-    STATUS_EFFECT_REQUEST = 46
-    UPDATE_WORLD_PROPERTIES = 47
-    HEARTBEAT = 48
+    PLAYER_WARP = 10
+    FLY_SHIP = 11
+    CHAT_SENT = 12
+    CELESTIAL_REQUEST = 13
+    CLIENT_CONTEXT_UPDATE = 14
+    WORLD_START = 15
+    WORLD_STOP = 16
+    CENTRAL_STRUCTURE_UPDATE = 17
+    TILE_ARRAY_UPDATE = 18
+    TILE_UPDATE = 19
+    TILE_LIQUID_UPDATE = 20
+    TILE_DAMAGE_UPDATE = 21
+    TILE_MODIFICATION_FAILURE = 22
+    GIVE_ITEM = 23
+    SWAP_IN_CONTAINER_RESULT = 24
+    ENVIRONMENT_UPDATE = 25
+    ENTITY_INTERACT_RESULT = 26
+    UPDATE_TILE_PROTECTION = 27
+    MODIFY_TILE_LIST = 28
+    DAMAGE_TILE_GROUP = 29
+    COLLECT_LIQUID = 30
+    REQUEST_DROP = 31
+    SPAWN_ENTITY = 32
+    ENTITY_INTERACT = 33
+    CONNECT_WIRE = 34
+    DISCONNECT_ALL_WIRES = 35
+    OPEN_CONTAINER = 36
+    CLOSE_CONTAINER = 37
+    SWAP_IN_CONTAINER = 38
+    ITEM_APPLY_IN_CONTAINER = 39
+    START_CRAFTING_IN_CONTAINER = 40
+    STOP_CRAFTING_IN_CONTAINER = 41
+    BURN_CONTAINER = 42
+    CLEAR_CONTAINER = 43
+    WORLD_CLIENT_STATE_UPDATE = 44
+    ENTITY_CREATE = 45
+    ENTITY_UPDATE = 46
+    ENTITY_DESTROY = 47
+    HIT_REQUEST = 48
+    DAMAGE_REQUEST = 49
+    DAMAGE_NOTIFICATION = 50
+    CALL_SCRIPTED_ENTITY = 51
+    UPDATE_WORLD_PROPERTIES = 52
+    HEARTBEAT = 53
 
 
 class EntityType(IntEnum):
@@ -70,6 +75,14 @@ class EntityType(IntEnum):
     PLANT = 5
     PLANTDROP = 6
     EFFECT = 7
+    NPC = 8
+
+
+class MessageContextMode(IntEnum):
+    CHANNEL = 1
+    BROADCAST = 2
+    WHISPER = 3
+    COMMAND_RESULT = 4
 
 
 class PacketOutOfOrder(Exception):
@@ -119,8 +132,12 @@ connect_response = lambda name="connect_response": Struct(name,
                                                           star_string("reject_reason"))
 
 chat_received = lambda name="chat_received": Struct(name,
-                                                    Byte("chat_channel"),
-                                                    star_string("world"),
+                                                    Struct("message_context",
+                                                           Byte("mode"),
+                                                           If(lambda ctx: ctx.mode is True,
+                                                              star_string("chat_channel")
+                                                           )
+                                                    ),
                                                     UBInt32("client_id"),
                                                     star_string("name"),
                                                     star_string("message"))
@@ -180,12 +197,13 @@ warp_command_write = lambda t, sector=u'', x=0, y=0, z=0, planet=0, satellite=0,
 
 
 world_start = lambda name="world_start": Struct(name,
-                                                Variant("planet"),
-                                                Variant("world_structure"),
+                                                Variant("planet"), # rename to templateData?
+                                                #Variant("world_structure"),
                                                 StarByteArray("sky_structure"),
                                                 StarByteArray("weather_data"),
-                                                BFloat32("spawn_x"),
-                                                BFloat32("spawn_y"),
+                                                #BFloat32("spawn_x"),
+                                                #BFloat32("spawn_y"),
+                                                Array(2, BFloat32("coordinate")),
                                                 Variant("world_properties"),
                                                 UBInt32("client_id"),
                                                 Flag("local_interpolation"))

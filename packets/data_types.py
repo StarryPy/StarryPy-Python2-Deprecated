@@ -75,10 +75,10 @@ class Joiner(Adapter):
         return obj
     def _decode(self, obj, context):
         return "".join(obj)
+
 star_string_struct = lambda name="star_string": Struct(name,
                                                        VLQ("length"),
-                                                       String("string", lambda ctx: ctx.length)
-)
+                                                       String("string", lambda ctx: ctx.length))
 
 class VariantVariant(Construct):
     def _parse(self, stream, context):
