@@ -2,6 +2,7 @@
     "bind_address": "",
     "bind_port": 21025,
     "chat_prefix": "@",
+    "chattimestamps": true,
     "colors": {
         "admin": "^#C443F7;",
         "default": "^#F7EB43;",
@@ -51,7 +52,7 @@
                     5
                 ]
             ],
-            "message": "Welcome to the server! Here are some starter items to get you off to a good start."
+            "message": "Welcome to the server!"
         },
         "planet_protect": {
             "auto_activate": true,
@@ -59,12 +60,21 @@
             "bad_packets": [
                 "CONNECT_WIRE",
                 "DISCONNECT_ALL_WIRES",
-                "OPEN_CONTAINER",
-                "CLOSE_CONTAINER",
                 "SWAP_IN_CONTAINER",
                 "DAMAGE_TILE",
                 "DAMAGE_TILE_GROUP",
-                "REQUEST_DROP",
+                "MODIFY_TILE_LIST"
+            ],
+            "bad_packets_ship": [
+                "ENTITY_INTERACT",
+                "OPEN_CONTAINER",
+                "CLOSE_CONTAINER"
+            ],
+            "bad_packets_mild": [
+                "CONNECT_WIRE",
+                "DISCONNECT_ALL_WIRES",
+                "DAMAGE_TILE",
+                "DAMAGE_TILE_GROUP",
                 "MODIFY_TILE_LIST"
             ],
             "blacklist": [
@@ -148,7 +158,7 @@
             "auto_activate": true,
             "name_removal_regexes": [
                 "\\^#[\\w]+;",
-                "[\\w]+"
+                "[^ \\w]+"
             ]
         },
         "plugin_manager": {
@@ -168,6 +178,7 @@
     "port_check": true,
     "reap_time": 10,
     "server_connect_timeout": 5,
+    "server_name": "--ADD NAME--",
     "starbound_path": "/opt/starbound/",
     "upstream_hostname": "localhost",
     "upstream_port": 21024

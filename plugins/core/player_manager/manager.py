@@ -6,7 +6,6 @@ import logging
 import json
 import sqlite3
 
-from enum import Enum
 from sqlalchemy.ext.mutable import Mutable
 from sqlalchemy.orm import sessionmaker, relationship, backref
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey, Boolean, func
