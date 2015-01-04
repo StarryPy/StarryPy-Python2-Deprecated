@@ -127,7 +127,7 @@ chat_received = lambda name="chat_received": Struct(name,
 
 chat_sent = lambda name="chat_sent": Struct(name,
                                             star_string("message"),
-                                            Padding(1))
+                                            Byte("chat_channel"))
 
 client_connect = lambda name="client_connect": Struct(name,
                                                       VLQ("asset_digest_length"),
@@ -222,6 +222,13 @@ entity_create = Struct("entity_create",
                                   Byte("entity_type"),
                                   VLQ("entity_size"),
                                   String("entity", lambda ctx: ctx.entity_size),
-                                  SignedVLQ("entity_id")
-                       )))
+                                  SignedVLQ("entity_id"))))
+
+client_context_update = lambda name="client_context": Struct(name,
+                                                             VLQ("length"),
+                                                             Byte("arguments"),
+                                                             Array(lambda ctx: ctx.arguments,
+                                                                   Struct("key",
+                                                                   Variant("value"))))
+
 projectile = DictVariant("projectile")

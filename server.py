@@ -22,7 +22,7 @@ import packets
 from plugin_manager import PluginManager, route, FatalPluginError
 from utility_functions import build_packet
 
-VERSION = "1.2.3"
+VERSION = "1.4.4"
 TRACE = False
 TRACE_LVL = 9
 logging.addLevelName(9, "TRACE")
@@ -30,18 +30,18 @@ logging.Logger.trace = lambda s, m, *a, **k: s._log(TRACE_LVL, m, a, **k)
 
 
 def port_check(upstream_hostname, upstream_port):
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.settimeout(1)
-        result = sock.connect_ex((upstream_hostname, upstream_port))
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.settimeout(1)
+    result = sock.connect_ex((upstream_hostname, upstream_port))
 
-        if result != 0:
-            sock.close()
-            return False
-        else:
-            sock.shutdown(SHUT_RDWR)
-            sock.close()
+    if result != 0:
+        sock.close()
+        return False
+    else:
+        sock.shutdown(SHUT_RDWR)
+        sock.close()
 
-        return True
+    return True
 
 
 class StarryPyServerProtocol(Protocol):
@@ -85,7 +85,7 @@ class StarryPyServerProtocol(Protocol):
             packets.Packets.TILE_LIQUID_UPDATE: self.tile_liquid_update,
             packets.Packets.TILE_DAMAGE_UPDATE: self.tile_damage_update,
             packets.Packets.TILE_MODIFICATION_FAILURE: self.tile_modification_failure,
-            packets.Packets.GIVE_ITEM: self.give_item,
+            packets.Packets.GIVE_ITEM: self.item,
             packets.Packets.SWAP_IN_CONTAINER_RESULT: self.swap_in_container_result,
             packets.Packets.ENVIRONMENT_UPDATE: self.environment_update,
             packets.Packets.ENTITY_INTERACT_RESULT: self.entity_interact_result,
@@ -232,7 +232,7 @@ class StarryPyServerProtocol(Protocol):
         return True
 
     @route
-    def give_item(self, data):
+    def item(self, data):
         return True
 
     @route
@@ -449,16 +449,28 @@ class StarryPyServerProtocol(Protocol):
         :param reason: The reason for the disconnection.
         :return: None
         """
-        logger.info("Losing connection from IP: %s", self.transport.getPeer().host)
-        if self.player is not None:
-            self.player.logged_in = False
-            self.client_disconnect("")
-        if self.client_protocol is not None:
-            self.client_protocol.disconnect()
         try:
-            self.factory.protocols.pop(self.id)
+            if self.client_protocol is not None:
+                x = build_packet(packets.Packets.CLIENT_DISCONNECT,
+                                 packets.client_disconnect().build(Container(data=0)))
+                if self.player is not None and self.player.logged_in:
+                    self.client_disconnect(x)
+                self.client_protocol.transport.write(x)
+                self.client_protocol.transport.abortConnection()
         except:
-            self.logger.trace("Protocol was not in factory list. This should not happen.")
+            logger.error("Couldn't disconnect protocol.")
+        finally:
+            try:
+                self.factory.protocols.pop(self.id)
+            except:
+                logger.info("Protocol was not in factory list. This should not happen.")
+                logger.info("protocol id: %s" % self.id)
+            finally:
+                logger.info("Lost connection from IP: %s", self.transport.getPeer().host)
+                self.transport.abortConnection()
+
+    def die(self):
+        self.connectionLost()
 
 
 class ClientProtocol(Protocol):
@@ -602,16 +614,14 @@ class StarryPyServerFactory(ServerFactory):
     def reap_dead_protocols(self):
         logger.debug("Reaping dead connections.")
         count = 0
-        start_time = datetime.datetime.utcnow()
+        start_time = datetime.datetime.now()
         for protocol in self.protocols.itervalues():
-            if (
-                    protocol.packet_stream.last_received_timestamp - start_time).total_seconds() > self.config.reap_time:
+            if (protocol.packet_stream.last_received_timestamp - start_time).total_seconds() > self.config.reap_time:
                 logger.trace("Reaping protocol %s. Reason: Server protocol timeout.", protocol.id)
                 protocol.connectionLost()
                 count += 1
                 continue
-            if protocol.client_protocol is not None and (
-                    protocol.client_protocol.packet_stream.last_received_timestamp - start_time).total_seconds() > self.config.reap_time:
+            if protocol.client_protocol is not None and (protocol.client_protocol.packet_stream.last_received_timestamp - start_time).total_seconds() > self.config.reap_time:
                 protocol.connectionLost()
                 logger.trace("Reaping protocol %s. Reason: Client protocol timeout.", protocol.id)
                 count += 1
@@ -639,16 +649,20 @@ class StarboundClientFactory(ClientFactory):
         protocol.server_protocol = self.server_protocol
         return protocol
 def init_localization():
-    locale.setlocale(locale.LC_ALL, '')
-    loc = locale.getlocale()
-    filename = "res/messages_%s.mo" % locale.getlocale()[0][0:2]
     try:
+        locale.setlocale(locale.LC_ALL, '')
+    except:
+        locale.setlocale(locale.LC_ALL, 'en_US.utf8')
+    """try:
+        loc = locale.getlocale()
+        filename = "res/messages_%s.mo" % locale.getlocale()[0][0:2]
         print "Opening message file %s for locale %s." % (filename, loc[0])
-        trans = gettext.GNUTranslations(open(filename, "rb" ))
-    except IOError:
+        trans = gettext.GNUTranslations(open(filename, "rb"))
+    except (IOError, TypeError, IndexError):
         print "Locale not found. Using default messages."
         trans = gettext.NullTranslations()
-    trans.install()
+    trans.install()"""
+
 
 if __name__ == '__main__':
     init_localization()
