@@ -98,12 +98,15 @@ class HexAdapter(Adapter):
         return obj.encode("hex")
 
 
+# may need to be corrected. new version only has hash, uses ByteArray
 handshake_response = lambda name="handshake_response": Struct(name,
                                                               star_string("claim_response"),
                                                               star_string("hash"))
 
+# small correction. added proper context. may need to check if this is correct (need double. used bfloat64).
 universe_time_update = lambda name="universe_time": Struct(name,
-                                                           VLQ("unknown"))
+                                                           #VLQ("unknown"))
+                                                           BFloat64("universe_time"))
 
 packet = lambda name="base_packet": Struct(name,
                                            Byte("id"),
@@ -115,22 +118,28 @@ start_packet = lambda name="interim_packet": Struct(name,
                                                     Byte("id"),
                                                     SignedVLQ("payload_size"))
 
+# should still work. nothing's changed here.
 protocol_version = lambda name="protocol_version": Struct(name,
                                                           UBInt32("server_build"))
 
 connection = lambda name="connection": Struct(name,
                                               GreedyRange(Byte("compressed_data")))
 
+# may need to be corrected. new version only has salt, uses ByteArray
 handshake_challenge = lambda name="handshake_challenge": Struct(name,
                                                                 star_string("claim_message"),
                                                                 star_string("salt"),
                                                                 SBInt32("round_count"))
 
+# Needs attention
 connect_response = lambda name="connect_response": Struct(name,
                                                           Flag("success"),
                                                           VLQ("client_id"),
-                                                          star_string("reject_reason"))
+                                                          star_string("reject_reason")
+                                                          # may need to add something here CelestialBaseInformation
+                                                          )
 
+# corrected. needs testing
 chat_received = lambda name="chat_received": Struct(name,
                                                     Struct("message_context",
                                                            Byte("mode"),
@@ -142,23 +151,35 @@ chat_received = lambda name="chat_received": Struct(name,
                                                     star_string("name"),
                                                     star_string("message"))
 
+# corrected. shouldn't need too much testing
 chat_sent = lambda name="chat_sent": Struct(name,
                                             star_string("message"),
-                                            Byte("chat_channel"))
+                                            Enum(Byte("send_mode"),
+                                                 BROADCAST=1,
+                                                 LOCAL=2,
+                                                 PARTY=3)
+                                            )
 
+# quite a bit of guesswork and hackery here with the ship_upgrades.
 client_connect = lambda name="client_connect": Struct(name,
                                                       VLQ("asset_digest_length"),
                                                       String("asset_digest",
                                                              lambda ctx: ctx.asset_digest_length),
-                                                      Variant("claim"),
+                                                      #Variant("claim"), # no longer used?
                                                       Flag("uuid_exists"),
                                                       If(lambda ctx: ctx.uuid_exists is True,
                                                          HexAdapter(Field("uuid", 16))
                                                       ),
                                                       star_string("name"),
                                                       star_string("species"),
-                                                      VLQ("shipworld_length"),
-                                                      Field("shipworld", lambda ctx: ctx.shipworld_length),
+                                                      #VLQ("shipworld_length"),
+                                                      #Field("shipworld", lambda ctx: ctx.shipworld_length),
+                                                      StarByteArray("ship_data"),
+                                                      # Replace: ShipUpgrades
+                                                      Struct("ship_upgrades",
+                                                             UBInt32("ship_level"),
+                                                             UBInt32("max_fuel"),
+                                                             VLQ("capabilities")),
                                                       star_string("account"))
 
 client_disconnect = lambda name="client_disconnect": Struct(name,
@@ -196,6 +217,7 @@ warp_command_write = lambda t, sector=u'', x=0, y=0, z=0, planet=0, satellite=0,
         player=player))
 
 
+# partially correct. Needs work on dungeon ID value
 world_start = lambda name="world_start": Struct(name,
                                                 Variant("planet"), # rename to templateData?
                                                 #Variant("world_structure"),
@@ -211,6 +233,7 @@ world_start = lambda name="world_start": Struct(name,
 world_stop = lambda name="world_stop": Struct(name,
                                               star_string("status"))
 
+# I THINK this is ok. Will test later.
 give_item = lambda name="give_item": Struct(name,
                                             star_string("name"),
                                             VLQ("count"),
@@ -222,12 +245,15 @@ give_item_write = lambda name, count: give_item().build(Container(name=name,
                                                                   variant_type=7,
                                                                   description=''))
 
+# replaced with something closer matched to SB documentation
 update_world_properties = lambda name="world_properties": Struct(name,
-                                                                 UBInt8("count"),
-                                                                 Array(lambda ctx: ctx.count,
-                                                                       Struct("properties",
-                                                                              star_string("key"),
-                                                                              Variant("value"))))
+                                                                 DictVariant("updated_properties"))
+#update_world_properties = lambda name="world_properties": Struct(name,
+#                                                                 UBInt8("count"),
+#                                                                 Array(lambda ctx: ctx.count,
+#                                                                       Struct("properties",
+#                                                                              star_string("key"),
+#                                                                              Variant("value"))))
 
 update_world_properties_write = lambda dictionary: update_world_properties().build(
     Container(
@@ -242,11 +268,14 @@ entity_create = Struct("entity_create",
                                   String("entity", lambda ctx: ctx.entity_size),
                                   SignedVLQ("entity_id"))))
 
+# replaced with something closer matched to SB documentation
 client_context_update = lambda name="client_context": Struct(name,
-                                                             VLQ("length"),
-                                                             Byte("arguments"),
-                                                             Array(lambda ctx: ctx.arguments,
-                                                                   Struct("key",
-                                                                   Variant("value"))))
+                                                             StarByteArray("update_data"))
+#client_context_update = lambda name="client_context": Struct(name,
+#                                                             VLQ("length"),
+#                                                             Byte("arguments"),
+#                                                             Array(lambda ctx: ctx.arguments,
+#                                                                   Struct("key",
+#                                                                   Variant("value"))))
 
 projectile = DictVariant("projectile")
