@@ -13,7 +13,7 @@ class StarboundConfigManager(SimpleCommandPlugin):
     def activate(self):
         super(StarboundConfigManager, self).activate()
         try:
-            configuration_file = FilePath(self.config.starbound_path).child('starbound.config')
+            configuration_file = FilePath(self.config.starbound_path).child('starbound_server.config')
             if not configuration_file.exists():
                 raise FatalPluginError(
                     "Could not open starbound configuration file. Tried path: %s" % configuration_file)
@@ -30,7 +30,8 @@ class StarboundConfigManager(SimpleCommandPlugin):
             raise FatalPluginError(
                 "The starbound gamePort option (%d) does not match the config.json upstream_port (%d)." % (
                     starbound_config['gamePort'], self.config.upstream_port))
-        self._spawn = starbound_config['defaultWorldCoordinate'].split(":")
+        #self._spawn = starbound_config['defaultWorldCoordinate'].split(":")
+        self._spawn = "junk"
 
     @permissions(UserLevels.GUEST)
     def spawn(self, data):
