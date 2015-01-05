@@ -116,17 +116,16 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
 
     def after_world_start(self, data):
         world_start = packets.world_start().parse(data.data)
-        if 'fuel.max' in world_start['world_properties']:
+        if 'ship.maxFuel' in world_start['world_properties']:
             self.logger.info("Player %s is now on a ship.", self.protocol.player.name)
             self.protocol.player.on_ship = True
             self.protocol.player.planet = "On ship"
         else:
             coords = world_start.planet['celestialParameters']['coordinate']
             parent_system = coords
-            location = parent_system['location']
-            l = location
+            l = parent_system['location']
             self.protocol.player.on_ship = False
-            planet = Planet(parent_system['sector'], l[0], l[1], l[2],
+            planet = Planet(l[0], l[1], l[2],
                             coords['planet'], coords['satellite'])
             self.protocol.player.planet = str(planet)
 

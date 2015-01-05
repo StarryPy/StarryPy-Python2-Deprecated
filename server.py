@@ -77,7 +77,7 @@ class StarryPyServerProtocol(Protocol):
             packets.Packets.PLAYER_WARP: self.warp_command,
             packets.Packets.FLY_SHIP: lambda x: True,
             packets.Packets.CHAT_SENT: self.chat_sent,
-            packets.Packets.CELESTIAL_REQUEST: lambda x: True,
+            packets.Packets.CELESTIAL_REQUEST: self.celestial_request,
             packets.Packets.CLIENT_CONTEXT_UPDATE: self.client_context_update,
             packets.Packets.WORLD_START: self.world_start,
             packets.Packets.WORLD_STOP: self.world_stop,
@@ -146,7 +146,9 @@ class StarryPyServerProtocol(Protocol):
         Processing of parsed data is handled in handle_starbound_packets()
         :rtype : None
         """
-        if 48 >= packet.id:
+        if 53 >= packet.id:
+            # DEBUG - print all packet IDs going to client
+            #logger.info("%s", packet.id)
             if self.handle_starbound_packets(packet):
                 self.client_protocol.transport.write(
                     packet.original_data)
@@ -366,6 +368,16 @@ class StarryPyServerProtocol(Protocol):
         return True
 
     @route
+    def celestial_request(self, data):
+        """
+        Called when the client requests celestial data...?
+
+        :param data: Parsed chat packet.
+        :rtype : bool
+        """
+        return True
+
+    @route
     def damage_notification(self, data):
         return True
 
@@ -402,11 +414,11 @@ class StarryPyServerProtocol(Protocol):
     def handle_starbound_packets(self, p):
         """
         This function is the meat of it all. Every time a full packet with
-        a derived ID <= 48, it is passed through here.
+        a derived ID <= 53, it is passed through here.
         """
         return self.call_mapping[p.id](p)
 
-    def send_chat_message(self, text, channel=0, world='', name=''):
+    def send_chat_message(self, text, mode=0, channel='', name=''):
         """
         Convenience function to send chat messages to the client. Note that this
         does *not* send messages to the server at large; broadcast should be
@@ -414,8 +426,7 @@ class StarryPyServerProtocol(Protocol):
         otherwise.
 
         :param text: Message text, may contain multiple lines.
-        :param channel: The chat channel/context. 0 is global, 1 is planet.
-        :param world: World
+        :param channel: The chat channel/context.
         :param name: The name to display before the message. Blank leaves no
         brackets, otherwise it will be displayed as `<name>`.
         :return: None
@@ -426,9 +437,9 @@ class StarryPyServerProtocol(Protocol):
                 self.send_chat_message(line)
             return
         if self.player is not None:
-            logger.trace("Calling send_chat_message from player %s on channel %d on world '%s' with reported username of %s with message: %s", self.player.name, channel, world, name, text)
-        chat_data = packets.chat_received().build(Container(chat_channel=channel,
-                                                            world=world,
+            logger.trace("Calling send_chat_message from player %s on channel %d with mode %d with reported username of %s with message: %s", self.player.name, channel, mode, name, text)
+        chat_data = packets.chat_received().build(Container(mode=mode,
+                                                            chat_channel=channel,
                                                             client_id=0,
                                                             name=name,
                                                             message=text.encode("utf-8")))
@@ -455,7 +466,7 @@ class StarryPyServerProtocol(Protocol):
         """
         try:
             if self.client_protocol is not None:
-                x = build_packet(packets.Packets.CLIENT_DISCONNECT,
+                x = build_packet(packets.Packets.CLIENT_DISCONNECT_REQUEST,
                                  packets.client_disconnect().build(Container(data=0)))
                 if self.player is not None and self.player.logged_in:
                     self.client_disconnect(x)
@@ -535,7 +546,7 @@ class ClientProtocol(Protocol):
             self.packet_stream += data
 
     def disconnect(self):
-        x = build_packet(packets.Packets.CLIENT_DISCONNECT, packets.client_disconnect().build(Container(data=0)))
+        x = build_packet(packets.Packets.CLIENT_DISCONNECT_REQUEST, packets.client_disconnect().build(Container(data=0)))
         self.transport.write(x)
         self.transport.abortConnection()
 
@@ -571,14 +582,13 @@ class StarryPyServerFactory(ServerFactory):
         self.config.save()
         self.plugin_manager.die()
 
-    def broadcast(self, text, channel=1, world='', name=''):
+    def broadcast(self, text, mode=1, name=''):
         """
         Convenience method to send a broadcasted message to all clients on the
         server.
 
         :param text: Message text
-        :param channel: Channel to broadcast on. 0 is global, 1 is planet.
-        :param world: World
+        :param mode: Channel to broadcast on. 0 is global, 1 is planet.
         :param name: The name to prepend before the message, format is <name>
         :return: None
         """

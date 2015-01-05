@@ -73,11 +73,11 @@ class Warpy(SimpleCommandPlugin):
             if to_player is not None:
                 from_protocol = self.factory.protocols[from_player.protocol]
                 if from_player is not to_player:
-                    warp_packet = build_packet(Packets.WARP_COMMAND,
+                    warp_packet = build_packet(Packets.PLAYER_WARP,
                                                warp_command_write(t="WARP_OTHER_SHIP",
                                                                   player=to_player.org_name.encode('utf-8')))
                 else:
-                    warp_packet = build_packet(Packets.WARP_COMMAND,
+                    warp_packet = build_packet(Packets.PLAYER_WARP,
                                                warp_command_write(t='WARP_UP'))
                 from_protocol.client_protocol.transport.write(warp_packet)
                 if from_string != to_string:
@@ -106,8 +106,7 @@ class Warpy(SimpleCommandPlugin):
         z = int(location.pop())
         y = int(location.pop())
         x = int(location.pop())
-        sector = location.pop()
-        move_ship_to_coords(protocol, sector, x, y, z, planet, satellite)
+        move_ship_to_coords(protocol, x, y, z, planet, satellite)
 
     def move_own_ship_to_player(self, player_name):
         t = self.player_manager.get_logged_in_by_name(player_name)

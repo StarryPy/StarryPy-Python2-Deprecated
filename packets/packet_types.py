@@ -79,10 +79,10 @@ class EntityType(IntEnum):
 
 
 class MessageContextMode(IntEnum):
-    CHANNEL = 1
-    BROADCAST = 2
-    WHISPER = 3
-    COMMAND_RESULT = 4
+    CHANNEL = 0
+    BROADCAST = 1
+    WHISPER = 2
+    COMMAND_RESULT = 3
 
 
 class PacketOutOfOrder(Exception):
@@ -141,12 +141,8 @@ connect_response = lambda name="connect_response": Struct(name,
 
 # corrected. needs testing
 chat_received = lambda name="chat_received": Struct(name,
-                                                    Struct("message_context",
-                                                           Byte("mode"),
-                                                           If(lambda ctx: ctx.mode is True,
-                                                              star_string("chat_channel")
-                                                           )
-                                                    ),
+                                                    Byte("mode"),
+                                                    star_string("chat_channel"),
                                                     UBInt32("client_id"),
                                                     star_string("name"),
                                                     star_string("message"))
@@ -155,9 +151,9 @@ chat_received = lambda name="chat_received": Struct(name,
 chat_sent = lambda name="chat_sent": Struct(name,
                                             star_string("message"),
                                             Enum(Byte("send_mode"),
-                                                 BROADCAST=1,
-                                                 LOCAL=2,
-                                                 PARTY=3)
+                                                 BROADCAST=0,
+                                                 LOCAL=1,
+                                                 PARTY=2)
                                             )
 
 # quite a bit of guesswork and hackery here with the ship_upgrades.
@@ -165,28 +161,28 @@ client_connect = lambda name="client_connect": Struct(name,
                                                       VLQ("asset_digest_length"),
                                                       String("asset_digest",
                                                              lambda ctx: ctx.asset_digest_length),
-                                                      #Variant("claim"), # no longer used?
                                                       Flag("uuid_exists"),
                                                       If(lambda ctx: ctx.uuid_exists is True,
                                                          HexAdapter(Field("uuid", 16))
                                                       ),
                                                       star_string("name"),
                                                       star_string("species"),
-                                                      #VLQ("shipworld_length"),
-                                                      #Field("shipworld", lambda ctx: ctx.shipworld_length),
                                                       StarByteArray("ship_data"),
-                                                      # Replace: ShipUpgrades
-                                                      Struct("ship_upgrades",
-                                                             UBInt32("ship_level"),
-                                                             UBInt32("max_fuel"),
-                                                             VLQ("capabilities")),
+                                                      UBInt32("ship_level"),
+                                                      UBInt32("max_fuel"),
+                                                      VLQ("capabilities"),
                                                       star_string("account"))
+
+server_disconnect = lambda name="server_disconnect": Struct(name,
+                                                            star_string("reason"))
 
 client_disconnect = lambda name="client_disconnect": Struct(name,
                                                             Byte("data"))
 
+celestial_request = lambda name="celestial_request": Struct(name,
+                                                            GreedyRange(star_string("requests")))
+
 world_coordinate = lambda name="world_coordinate": Struct(name,
-                                                          star_string("sector"),
                                                           SBInt32("x"),
                                                           SBInt32("y"),
                                                           SBInt32("z"),
@@ -203,11 +199,10 @@ warp_command = lambda name="warp_command": Struct(name,
                                                   world_coordinate(),
                                                   star_string("player"))
 
-warp_command_write = lambda t, sector=u'', x=0, y=0, z=0, planet=0, satellite=0, player=u'': warp_command().build(
+warp_command_write = lambda t, x=0, y=0, z=0, planet=0, satellite=0, player=u'': warp_command().build(
     Container(
         warp_type=t,
         world_coordinate=Container(
-            sector=sector,
             x=x,
             y=y,
             z=z,
@@ -220,11 +215,9 @@ warp_command_write = lambda t, sector=u'', x=0, y=0, z=0, planet=0, satellite=0,
 # partially correct. Needs work on dungeon ID value
 world_start = lambda name="world_start": Struct(name,
                                                 Variant("planet"), # rename to templateData?
-                                                #Variant("world_structure"),
-                                                StarByteArray("sky_structure"),
+                                                StarByteArray("sky_data"),
                                                 StarByteArray("weather_data"),
-                                                #BFloat32("spawn_x"),
-                                                #BFloat32("spawn_y"),
+                                                #dungeon id stuff here
                                                 Array(2, BFloat32("coordinate")),
                                                 Variant("world_properties"),
                                                 UBInt32("client_id"),
@@ -246,14 +239,14 @@ give_item_write = lambda name, count: give_item().build(Container(name=name,
                                                                   description=''))
 
 # replaced with something closer matched to SB documentation
-update_world_properties = lambda name="world_properties": Struct(name,
-                                                                 DictVariant("updated_properties"))
 #update_world_properties = lambda name="world_properties": Struct(name,
-#                                                                 UBInt8("count"),
-#                                                                 Array(lambda ctx: ctx.count,
-#                                                                       Struct("properties",
-#                                                                              star_string("key"),
-#                                                                              Variant("value"))))
+#                                                                 DictVariant("updated_properties"))
+update_world_properties = lambda name="world_properties": Struct(name,
+                                                                 UBInt8("count"),
+                                                                 Array(lambda ctx: ctx.count,
+                                                                       Struct("properties",
+                                                                              star_string("key"),
+                                                                              Variant("value"))))
 
 update_world_properties_write = lambda dictionary: update_world_properties().build(
     Container(
@@ -268,14 +261,11 @@ entity_create = Struct("entity_create",
                                   String("entity", lambda ctx: ctx.entity_size),
                                   SignedVLQ("entity_id"))))
 
-# replaced with something closer matched to SB documentation
 client_context_update = lambda name="client_context": Struct(name,
-                                                             StarByteArray("update_data"))
-#client_context_update = lambda name="client_context": Struct(name,
-#                                                             VLQ("length"),
-#                                                             Byte("arguments"),
-#                                                             Array(lambda ctx: ctx.arguments,
-#                                                                   Struct("key",
-#                                                                   Variant("value"))))
+                                                             VLQ("length"),
+                                                             Byte("arguments"),
+                                                             Array(lambda ctx: ctx.arguments,
+                                                                   Struct("key",
+                                                                   Variant("value"))))
 
 projectile = DictVariant("projectile")

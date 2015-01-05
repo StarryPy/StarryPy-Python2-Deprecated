@@ -56,6 +56,9 @@ class BasePlugin(object):
     def on_chat_received(self, data):
         return True
 
+    def on_celestial_request(self, data):
+        return True
+
     def on_universe_time_update(self, data):
         return True
 
@@ -195,6 +198,9 @@ class BasePlugin(object):
         return True
 
     def after_chat_received(self, data):
+        return True
+
+    def after_celestial_request(self, data):
         return True
 
     def after_universe_time_update(self, data):
