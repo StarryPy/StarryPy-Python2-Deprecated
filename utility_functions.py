@@ -38,7 +38,7 @@ def recursive_dictionary_update(d, u):
 def build_packet(packet_type, data):
     """
     Convenience method to build packets for sending.
-    :param packet_type: An integer 1 <= packet_type <= 48
+    :param packet_type: An integer 1 <= packet_type <= 53
     :param data: Data to send.
     :return: The build packet.
     :rtype : str
