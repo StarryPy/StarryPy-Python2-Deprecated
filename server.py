@@ -148,7 +148,7 @@ class StarryPyServerProtocol(Protocol):
         """
         if 53 >= packet.id:
             # DEBUG - print all packet IDs going to client
-            #logger.info("%s", packet.id)
+            # logger.info("From Client: %s", packet.id)
             if self.handle_starbound_packets(packet):
                 self.client_protocol.transport.write(
                     packet.original_data)
@@ -521,6 +521,8 @@ class ClientProtocol(Protocol):
         :return: None
         """
         try:
+            # DEBUG - print all packet IDs coming from client
+            # logger.info("From Server: %s", packet.id)
             if self.server_protocol.handle_starbound_packets(
                     packet):
                 self.server_protocol.write(packet.original_data)

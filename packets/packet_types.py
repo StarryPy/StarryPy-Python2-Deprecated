@@ -1,6 +1,7 @@
 from construct import *
 from enum import IntEnum
 from data_types import SignedVLQ, VLQ, Variant, star_string, DictVariant, StarByteArray
+from data_types import WarpVariant
 
 
 class Direction(IntEnum):
@@ -118,7 +119,6 @@ start_packet = lambda name="interim_packet": Struct(name,
                                                     Byte("id"),
                                                     SignedVLQ("payload_size"))
 
-# should still work. nothing's changed here.
 protocol_version = lambda name="protocol_version": Struct(name,
                                                           UBInt32("server_build"))
 
@@ -190,26 +190,18 @@ world_coordinate = lambda name="world_coordinate": Struct(name,
                                                           SBInt32("satellite"))
 
 warp_command = lambda name="warp_command": Struct(name,
-                                                  Enum(UBInt32("warp_type"),
-                                                       MOVE_SHIP=1,
-                                                       WARP_UP=2,
-                                                       WARP_OTHER_SHIP=3,
-                                                       WARP_DOWN=4,
-                                                       WARP_HOME=5),
-                                                  world_coordinate(),
-                                                  star_string("player"))
+                                                  Enum(UBInt8("warp_type"),
+                                                       WARP_TO=0,
+                                                       WARP_RETURN=1,
+                                                       WARP_TO_HOME_WORLD=2,
+                                                       WARP_TO_ORBITED_WORLD=3,
+                                                       WARP_TO_OWN_SHIP=4),
+                                                  WarpVariant("world_id"))
 
-warp_command_write = lambda t, x=0, y=0, z=0, planet=0, satellite=0, player=u'': warp_command().build(
+warp_command_write = lambda t, world_id: warp_command().build(
     Container(
         warp_type=t,
-        world_coordinate=Container(
-            x=x,
-            y=y,
-            z=z,
-            planet=planet,
-            satellite=satellite
-        ),
-        player=player))
+        world_id=world_id))
 
 
 # partially correct. Needs work on dungeon ID value
@@ -238,9 +230,6 @@ give_item_write = lambda name, count: give_item().build(Container(name=name,
                                                                   variant_type=7,
                                                                   description=''))
 
-# replaced with something closer matched to SB documentation
-#update_world_properties = lambda name="world_properties": Struct(name,
-#                                                                 DictVariant("updated_properties"))
 update_world_properties = lambda name="world_properties": Struct(name,
                                                                  UBInt8("count"),
                                                                  Array(lambda ctx: ctx.count,

@@ -41,3 +41,6 @@ nosetests.xml
 *.db-journal
 *.log
 .idea/
+
+# Vim mess cleanup
+*.swp
