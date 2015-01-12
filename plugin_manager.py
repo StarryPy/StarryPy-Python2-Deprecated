@@ -5,6 +5,8 @@ functionality in StarryPy.
 import inspect
 import logging
 import sys
+
+from compiler.ast import flatten
 from twisted.internet import reactor
 from twisted.internet.task import deferLater
 
@@ -54,15 +56,61 @@ class PluginManager(object):
         self.base_class = base_class
         self.factory = factory
         self.load_order = []
+        self.active_plugins = []
         #self.plugin_dir = os.path.realpath(self.config.plugin_path)
         self.plugin_dir = path.child(self.config.plugin_path)
         sys.path.append(self.plugin_dir.path)
-        self.load_plugins(self.plugin_dir)
+        self.load_plugins(self.config.config['initial_plugins'])
 
         self.logger.info("Loaded plugins:\n%s" % "\n".join(
             ["%s, Active: %s" % (plugin.name, plugin.active) for plugin in self.plugins.itervalues()]))
 
-    def load_plugins(self, plugin_dir):
+    def installed_plugins(self):
+        """
+        Get list of all plugins in the plugin_dir.
+
+        :param name: None
+        :return: Array of plugin names.
+        """
+        plugin_list = []
+        for f in self.plugin_dir.globChildren("*"):
+            name = self.get_plugin_name_from_file(f)
+            plugin_list.append(name)
+        return filter(None, plugin_list)
+
+    def get_plugin_name_from_file(self, f):
+        name = None
+        if f.splitext()[1] == ".py":
+            name = f.basename()[:-3]
+        elif f.isdir():
+            name = f.basename()
+        return name
+
+    def import_plugin(self, name):
+        """
+        Import plugin that has the given name.
+
+        :param name: The name of the plugin to import.
+        :return: None
+        """
+        try:
+            plugin_and_dependencies = []
+            mod = __import__(name, globals(), locals(), [], 0)
+            for _, plugin in inspect.getmembers(mod, inspect.isclass):
+                if issubclass(plugin, self.base_class) and (plugin is not self.base_class):
+                    plugin.config = self.config
+                    plugin.factory = self.factory
+                    plugin.active = False
+                    plugin.protocol = None
+                    plugin.plugins = {}
+                    plugin.logger = logging.getLogger('starrypy.plugins.%s' % plugin.name)
+                    plugin_and_dependencies.append(plugin)
+            return plugin_and_dependencies
+        except ImportError:
+            self.logger.critical("Import error for %s", name)
+
+
+    def load_plugins(self, plugins_to_load):
         """
         Loads and instantiates all classes deriving from `self.base_class`,
         though not `self.base_class` itself.
@@ -70,32 +118,13 @@ class PluginManager(object):
         :param plugin_dir: The directory to search for plugins.
         :return: None
         """
-        seen_plugins = []
-        for f in plugin_dir.globChildren("*"):
-            if f.splitext()[1] == ".py":
-                name = f.basename()[:-3]
-            elif f.isdir():
-                name = f.basename()
-            else:
-                continue
-            try:
-                mod = __import__(name, globals(), locals(), [], 0)
-                for _, plugin in inspect.getmembers(mod, inspect.isclass):
-                    if issubclass(plugin,
-                                  self.base_class) and plugin is not self.base_class and plugin not in seen_plugins:
-                        plugin.config = self.config
-                        plugin.factory = self.factory
-                        plugin.active = False
-                        plugin.protocol = None
-                        plugin.plugins = {}
-                        plugin.logger = logging.getLogger('starrypy.plugins.%s' % plugin.name)
-                        seen_plugins.append(plugin)
-
-            except ImportError:
-                self.logger.critical("Import error for %s", name)
         try:
-            dependencies = {x.name: set(x.depends) for x in seen_plugins}
-            classes = {x.name: x for x in seen_plugins}
+            imported_plugins = []
+            for p in self.installed_plugins():
+                imported_plugins.append(self.import_plugin(p))
+            imported_plugins = flatten(imported_plugins)
+            dependencies = {x.name: set(x.depends) for x in imported_plugins}
+            classes = {x.name: x for x in imported_plugins}
             while len(dependencies) > 0:
                 ready = [x for x, d in dependencies.iteritems() if len(d) == 0]
                 if len(ready) == 0:
@@ -142,7 +171,11 @@ class PluginManager(object):
 
     def deactivate_plugins(self):
         for plugin in [self.plugins[x] for x in reversed(self.load_order)]:
-            plugin.deactivate()
+            try:
+                plugin.deactivate()
+            except FatalPluginError as e:
+                self.logger.critical("A plugin reported a fatal error. Error: %s", str(e))
+                raise
 
     def do(self, protocol, command, data):
         """
@@ -187,8 +220,7 @@ class PluginManager(object):
             raise PluginNotFound("No plugin with name=%s found." % name.lower())
 
     def die(self):
-        for plugin in self.plugins.itervalues():
-            plugin.deactivate()
+        self.deactivate_plugins()
 
 
 def route(func):

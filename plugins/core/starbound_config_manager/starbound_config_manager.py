@@ -13,7 +13,7 @@ class StarboundConfigManager(SimpleCommandPlugin):
     def activate(self):
         super(StarboundConfigManager, self).activate()
         try:
-            configuration_file = FilePath(self.config.starbound_path).child('starbound_server.config')
+            configuration_file = FilePath(self.config.starbound_path).child('storage_unstable').child('starbound_server.config')
             if not configuration_file.exists():
                 raise FatalPluginError(
                     "Could not open starbound configuration file. Tried path: %s" % configuration_file)
