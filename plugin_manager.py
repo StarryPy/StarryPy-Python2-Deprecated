@@ -14,6 +14,8 @@ from base_plugin import BasePlugin
 from config import ConfigurationManager
 from utility_functions import path
 
+import pdb
+
 class DuplicatePluginError(Exception):
     """
     Raised when there is a plugin of the same name/class already instantiated.
@@ -57,13 +59,15 @@ class PluginManager(object):
         self.factory = factory
         self.load_order = []
         self.active_plugins = []
-        #self.plugin_dir = os.path.realpath(self.config.plugin_path)
         self.plugin_dir = path.child(self.config.plugin_path)
         sys.path.append(self.plugin_dir.path)
         self.load_plugins(self.config.config['initial_plugins'])
 
         self.logger.info("Loaded plugins:\n%s" % "\n".join(
             ["%s, Active: %s" % (plugin.name, plugin.active) for plugin in self.plugins.itervalues()]))
+
+    def get_plugin_path(self, name):
+        return self.plugin_dir.child(name)
 
     def installed_plugins(self):
         """
@@ -73,17 +77,18 @@ class PluginManager(object):
         :return: Array of plugin names.
         """
         plugin_list = []
-        for f in self.plugin_dir.globChildren("*"):
-            name = self.get_plugin_name_from_file(f)
-            plugin_list.append(name)
+        for f in self.get_plugin_path("*"):
+            plugin_list.append(self.get_plugin_name_from_file(f))
         return filter(None, plugin_list)
 
     def get_plugin_name_from_file(self, f):
-        name = None
         if f.splitext()[1] == ".py":
             name = f.basename()[:-3]
         elif f.isdir():
             name = f.basename()
+        else:
+            return
+
         return name
 
     def import_plugin(self, name):
@@ -94,8 +99,12 @@ class PluginManager(object):
         :return: None
         """
         try:
+            if name == None:
+                return
+
             plugin_and_dependencies = []
             mod = __import__(name, globals(), locals(), [], 0)
+
             for _, plugin in inspect.getmembers(mod, inspect.isclass):
                 if issubclass(plugin, self.base_class) and (plugin is not self.base_class):
                     plugin.config = self.config
@@ -106,6 +115,7 @@ class PluginManager(object):
                     plugin.logger = logging.getLogger('starrypy.plugins.%s' % plugin.name)
                     plugin_and_dependencies.append(plugin)
             return plugin_and_dependencies
+
         except ImportError:
             self.logger.critical("Import error for %s", name)
 
@@ -120,11 +130,18 @@ class PluginManager(object):
         """
         try:
             imported_plugins = []
-            for p in self.installed_plugins():
-                imported_plugins.append(self.import_plugin(p))
+            plugin_paths = { self.get_plugin_name_from_file( self.get_plugin_path(p) ) for p in plugins_to_load }
+
+            for plugin in plugin_paths:
+                if plugin == None:
+                    next
+                imported_plugins.append( self.import_plugin(plugin) )
+
             imported_plugins = flatten(imported_plugins)
-            dependencies = {x.name: set(x.depends) for x in imported_plugins}
-            classes = {x.name: x for x in imported_plugins}
+            pdb.set_trace()
+            dependencies = { plugin.name: set(plugin.depends) for plugin in imported_plugins }
+            classes = { plugin.name: plugin for plugin in imported_plugins }
+
             while len(dependencies) > 0:
                 ready = [x for x, d in dependencies.iteritems() if len(d) == 0]
                 if len(ready) == 0:
