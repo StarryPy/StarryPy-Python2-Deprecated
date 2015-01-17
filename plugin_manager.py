@@ -69,8 +69,8 @@ class PluginManager(object):
         sys.path.append( self.plugin_dir.child( self.config.config['core_plugin_path'] ).path )
 
         self.load_plugins( self.config.config['initial_plugins'] )
-        self.logger.info( "Loaded plugins:\n%s" % "\n".join(
-            ["%s, Active: %s" % (plugin.name, plugin.active) for plugin in self.plugins.itervalues()]) )
+        self.logger.info( "Loaded plugins:\n\n%s\n" % "\n".join(
+            ["%s" % (plugin.name) for plugin in self.plugins.itervalues()]) )
 
     def installed_plugins(self):
         """

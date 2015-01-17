@@ -7,7 +7,6 @@ class PluginManagerPlugin(SimpleCommandPlugin):
     """Provides a simple chat interface to the PluginManager"""
     name = "plugin_manager"
     commands = ["plugin_list", "plugin_enable", "plugin_disable", "help"]
-    auto_activate = True
 
     @property
     def plugin_manager(self):
@@ -16,12 +15,15 @@ class PluginManagerPlugin(SimpleCommandPlugin):
     @permissions(UserLevels.ADMIN)
     def plugin_list(self, data):
         """Displays all currently loaded plugins.\nSyntax: /plugin_list"""
+        installed_plugins = self.plugin_manager.installed_plugins()
+
         self.protocol.send_chat_message("Currently loaded plugins: ^yellow;%s" % "^green;, ^yellow;".join(
-            [plugin.name for plugin in self.plugin_manager.plugins.itervalues() if plugin.active]))
-        inactive = [plugin.name for plugin in self.plugin_manager.plugins.itervalues() if not plugin.active]
+            [ plugin for plugin in installed_plugins if in self.plugin_manager.plugins().iterkeys() ]))
+
+        inactive_plugins = [ plugin for plugin in installed_plugins if not in self.plugin_manager.plugins().iterkeys() ]
         if len(inactive) > 0:
-            self.protocol.send_chat_message("Inactive plugins: ^red;%s" % "^green;, ^red;".join(
-                [plugin.name for plugin in self.plugin_manager.plugins.itervalues() if not plugin.active]))
+            self.protocol.send_chat_message("Inactive plugins: ^red;%s" % "^green;, ^red;".join([inactive_plugins]))
+
 
     @permissions(UserLevels.OWNER)
     def plugin_disable(self, data):
@@ -30,11 +32,13 @@ class PluginManagerPlugin(SimpleCommandPlugin):
         if len(data) == 0:
             self.protocol.send_chat_message("You have to specify a plugin.")
             return
+
         try:
             plugin = self.plugin_manager.get_by_name(data[0])
         except PluginNotFound:
             self.protocol.send_chat_message("Couldn't find a plugin with the name %s" % data[0])
             return
+
         if plugin is self:
             self.protocol.send_chat_message("Sorry, this plugin can't be deactivated.")
             return
@@ -45,6 +49,7 @@ class PluginManagerPlugin(SimpleCommandPlugin):
         plugin.deactivate()
         self.protocol.send_chat_message("Successfully deactivated plugin.")
 
+
     @permissions(UserLevels.OWNER)
     def plugin_enable(self, data):
         """Enables a currently deactivated plugin.\nSyntax: /plugin_enable (plugin name)"""
@@ -52,16 +57,21 @@ class PluginManagerPlugin(SimpleCommandPlugin):
         if len(data) == 0:
             self.protocol.send_chat_message("You have to specify a plugin.")
             return
+
         try:
-            plugin = self.plugin_manager.get_by_name(data[0])
+            # plugin = self.plugin_manager.get_by_name(data[0])
+            plugin = self.plugin_manager.import_by_name(data[0])
         except PluginNotFound:
             self.protocol.send_chat_message("Couldn't find a plugin with the name %s" % data[0])
             return
+
         if plugin.active:
             self.protocol.send_chat_message("That plugin is already active.")
             return
+
         plugin.activate()
         self.protocol.send_chat_message("Successfully activated plugin.")
+
 
     @permissions(UserLevels.GUEST)
     def help(self, data):

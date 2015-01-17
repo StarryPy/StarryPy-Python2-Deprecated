@@ -14,13 +14,16 @@
     "initial_plugins": [
         "admin_messenger",
         "announcer_plugin",
+        "chat_logger",
         "core",
         "motd_plugin",
         "new_player_greeter_plugin",
         "planet_protect",
         "players",
+        "plugin_manager_plugin",
         "server_status",
-        "udp_forwarder"
+        "udp_forwarder",
+        "warpy_plugin"
     ],
     "command_prefix": "/",
     "debug_file": "debug.log",
