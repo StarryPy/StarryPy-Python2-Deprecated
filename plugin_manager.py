@@ -54,20 +54,23 @@ class PluginManager(object):
         :param base_class: The base class to use while searching for plugins.
         """
         self.plugins = {}
-        self.config = ConfigurationManager()
-        self.base_class = base_class
-        self.factory = factory
+
         self.load_order = []
         self.active_plugins = []
+
+        self.config = ConfigurationManager()
+
+        self.base_class = base_class
+        self.factory = factory
+
         self.plugin_dir = path.child(self.config.plugin_path)
-        sys.path.append(self.plugin_dir.path)
-        self.load_plugins(self.config.config['initial_plugins'])
 
-        self.logger.info("Loaded plugins:\n%s" % "\n".join(
-            ["%s, Active: %s" % (plugin.name, plugin.active) for plugin in self.plugins.itervalues()]))
+        sys.path.append( self.plugin_dir.path )
+        sys.path.append( self.plugin_dir.child( self.config.config['core_plugin_path'] ).path )
 
-    def get_plugin_path(self, name):
-        return self.plugin_dir.child(name)
+        self.load_plugins( self.config.config['initial_plugins'] )
+        self.logger.info( "Loaded plugins:\n%s" % "\n".join(
+            ["%s, Active: %s" % (plugin.name, plugin.active) for plugin in self.plugins.itervalues()]) )
 
     def installed_plugins(self):
         """
@@ -77,14 +80,12 @@ class PluginManager(object):
         :return: Array of plugin names.
         """
         plugin_list = []
-        for f in self.get_plugin_path("*"):
-            plugin_list.append(self.get_plugin_name_from_file(f))
+        for f in self.plugin_dir.globChildren("*"):
+            plugin_list.append( self.get_plugin_name_from_file(f) )
         return filter(None, plugin_list)
 
     def get_plugin_name_from_file(self, f):
-        if f.splitext()[1] == ".py":
-            name = f.basename()[:-3]
-        elif f.isdir():
+        if f.isdir():
             name = f.basename()
         else:
             return
@@ -93,31 +94,28 @@ class PluginManager(object):
 
     def import_plugin(self, name):
         """
-        Import plugin that has the given name.
+        Import plugin that has the given name, and is a subclass of base_class.
 
         :param name: The name of the plugin to import.
         :return: None
         """
         try:
-            if name == None:
-                return
-
-            plugin_and_dependencies = []
+            seen_plugins = []
             mod = __import__(name, globals(), locals(), [], 0)
-
             for _, plugin in inspect.getmembers(mod, inspect.isclass):
-                if issubclass(plugin, self.base_class) and (plugin is not self.base_class):
+                if issubclass(plugin, self.base_class) and (plugin is not self.base_class) and (plugin not in seen_plugins):
                     plugin.config = self.config
                     plugin.factory = self.factory
                     plugin.active = False
                     plugin.protocol = None
                     plugin.plugins = {}
                     plugin.logger = logging.getLogger('starrypy.plugins.%s' % plugin.name)
-                    plugin_and_dependencies.append(plugin)
-            return plugin_and_dependencies
+                    seen_plugins.append(plugin)
+            return seen_plugins
 
         except ImportError:
-            self.logger.critical("Import error for %s", name)
+            self.logger.critical("Import error for %s\n" % name)
+            self.logger.info("Installed plugins are:\n\n%s\n" % "\n".join( self.installed_plugins() ))
 
 
     def load_plugins(self, plugins_to_load):
@@ -130,15 +128,11 @@ class PluginManager(object):
         """
         try:
             imported_plugins = []
-            plugin_paths = { self.get_plugin_name_from_file( self.get_plugin_path(p) ) for p in plugins_to_load }
 
-            for plugin in plugin_paths:
-                if plugin == None:
-                    next
+            for plugin in plugins_to_load:
                 imported_plugins.append( self.import_plugin(plugin) )
-
             imported_plugins = flatten(imported_plugins)
-            pdb.set_trace()
+
             dependencies = { plugin.name: set(plugin.depends) for plugin in imported_plugins }
             classes = { plugin.name: plugin for plugin in imported_plugins }
 

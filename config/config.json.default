@@ -11,8 +11,18 @@
         "owner": "^#F7434C;",
         "registered": "^#A0F743;"
     },
+    "initial_plugins": [
+        "admin_messenger",
+        "announcer_plugin",
+        "core",
+        "motd_plugin",
+        "new_player_greeter_plugin",
+        "planet_protect",
+        "players",
+        "server_status",
+        "udp_forwarder"
+    ],
     "command_prefix": "/",
-    "core_plugin_path": "core_plugins",
     "debug_file": "debug.log",
     "logging_format_console": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     "logging_format_debugfile": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -21,27 +31,10 @@
     "passthrough": false,
     "player_db": "config/player.db",
     "plugin_config": {
-        "admin_messenger": {
-            "auto_activate": true
-        },
-        "announcer_plugin": {
-            "auto_activate": true
-        },
-        "chat_logger": {
-            "auto_activate": true
-        },
-        "command_dispatcher": {
-            "auto_activate": true
-        },
         "motd_plugin": {
-            "auto_activate": true,
             "motd": "Welcome to the server! Play nice."
         },
-        "mute_manager": {
-            "auto_activate": true
-        },
         "new_player_greeter_plugin": {
-            "auto_activate": true,
             "items": [
                 [
                     "coalore",
@@ -55,7 +48,6 @@
             "message": "Welcome to the server!"
         },
         "planet_protect": {
-            "auto_activate": true,
             "protect_everything": false,
             "bad_packets": [
                 "CONNECT_WIRE",
@@ -155,26 +147,14 @@
             "protected_planets": []
         },
         "player_manager": {
-            "auto_activate": true,
             "name_removal_regexes": [
                 "\\^#[\\w]+;",
                 "[^ \\w]+"
             ]
-        },
-        "plugin_manager": {
-            "auto_activate": true
-        },
-        "starbound_config_manager": {
-            "auto_activate": true
-        },
-        "user_management_commands": {
-            "auto_activate": true
-        },
-        "warpy_plugin": {
-            "auto_activate": true
         }
     },
     "plugin_path": "plugins",
+    "core_plugin_path": "core",
     "port_check": true,
     "reap_time": 10,
     "server_connect_timeout": 5,
