@@ -7,7 +7,6 @@ class Announcer(BasePlugin):
     Broadcasts a message whenever a player joins or leaves the server.
     """
     name = "announcer_plugin"
-    auto_activate = True
 
     def activate(self):
         super(Announcer, self).activate()

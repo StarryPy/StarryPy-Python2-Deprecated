@@ -12,7 +12,6 @@ class Warpy(SimpleCommandPlugin):
     name = "warpy_plugin"
     depends = ['command_dispatcher', 'player_manager']
     commands = ["warp", "warp_ship", "outpost"]
-    auto_activate = True
 
     def activate(self):
         super(Warpy, self).activate()

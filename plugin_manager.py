@@ -14,8 +14,6 @@ from base_plugin import BasePlugin
 from config import ConfigurationManager
 from utility_functions import path
 
-import pdb
-
 class DuplicatePluginError(Exception):
     """
     Raised when there is a plugin of the same name/class already instantiated.
@@ -115,27 +113,20 @@ class PluginManager(object):
 
         except ImportError:
             self.logger.critical("Import error for %s\n" % name)
-            self.logger.info("Installed plugins are:\n\n%s\n" % "\n".join( self.installed_plugins() ))
+            self.logger.info("Installed plugins:\n\n%s\n" % "\n".join( self.installed_plugins() ))
 
-
-    def load_plugins(self, plugins_to_load):
+    def resolve_dependencies(self, plugin_list):
         """
-        Loads and instantiates all classes deriving from `self.base_class`,
-        though not `self.base_class` itself.
+        Resolves plugin dependencies, appends plugins to self.plugins
+        to instantiate them.
 
-        :param plugin_dir: The directory to search for plugins.
+        :param plugin_list: List of plugins to resolve and isntantiate.
         :return: None
         """
+        dependencies = { plugin.name: set(plugin.depends) for plugin in plugin_list }
+        classes = { plugin.name: plugin for plugin in plugin_list }
+
         try:
-            imported_plugins = []
-
-            for plugin in plugins_to_load:
-                imported_plugins.append( self.import_plugin(plugin) )
-            imported_plugins = flatten(imported_plugins)
-
-            dependencies = { plugin.name: set(plugin.depends) for plugin in imported_plugins }
-            classes = { plugin.name: plugin for plugin in imported_plugins }
-
             while len(dependencies) > 0:
                 ready = [x for x, d in dependencies.iteritems() if len(d) == 0]
                 if len(ready) == 0:
@@ -146,7 +137,7 @@ class PluginManager(object):
                     raise UnresolvedOrCircularDependencyError(
                         "Unresolved or circular dependencies found:\n%s" % "\n".join(ex))
                 for name in ready:
-                    self.plugins[name] = classes[name]()
+                    self.plugins[name] = classes[name]()  # This is where instantiation occurs
                     self.load_order.append(name)
                     self.logger.debug("Instantiated plugin '%s'" % name)
                     del (dependencies[name])
@@ -157,15 +148,31 @@ class PluginManager(object):
                         classes[name].plugins[plugin] = self.plugins[plugin]
         except UnresolvedOrCircularDependencyError as e:
             self.logger.critical(str(e))
+
+    def load_plugins(self, plugins_to_load):
+        """
+        Loads and instantiates plugins that it is asked to.
+
+        :param plugins_to_load: List of plugin names to import.
+                                Must match a folder in plugin_dir.
+        :return: None
+        """
+        imported_plugins = []
+        for plugin in plugins_to_load:
+            imported_plugins.append( self.import_plugin(plugin) )
+        imported_plugins = flatten(imported_plugins)
+
+        self.resolve_dependencies(imported_plugins)
         self.activate_plugins()
 
     def reload_plugins(self):
         self.logger.warning("Reloading plugins.")
-        for x in self.plugins:
-            del x
-        self.plugins = []
+
         try:
-            self.load_plugins(self.plugin_dir)
+            self.deactivate_plugins()
+            self.plugins = {}
+
+            self.load_plugins( self.config.config['initial_plugins'] )
             self.activate_plugins()
         except:
             self.logger.exception("Couldn't reload plugins!")
@@ -173,17 +180,17 @@ class PluginManager(object):
 
     def activate_plugins(self):
         for plugin in [self.plugins[x] for x in self.load_order]:
-            if self.config.config['plugin_config'][plugin.name]['auto_activate']:
-                try:
-                    plugin.activate()
-                except FatalPluginError as e:
-                    self.logger.critical("A plugin reported a fatal error. Error: %s", str(e))
-                    raise
+            try:
+                plugin.activate()
+            except FatalPluginError as e:
+                self.logger.critical("A plugin reported a fatal error. Error: %s", str(e))
+                raise
 
     def deactivate_plugins(self):
         for plugin in [self.plugins[x] for x in reversed(self.load_order)]:
             try:
                 plugin.deactivate()
+                del(plugin)
             except FatalPluginError as e:
                 self.logger.critical("A plugin reported a fatal error. Error: %s", str(e))
                 raise
@@ -214,21 +221,6 @@ class PluginManager(object):
             except:
                 self.logger.exception("Error in plugin %s with function %s.", str(plugin), command)
         return all(return_values)
-
-    def get_by_name(self, name):
-        """
-        Gets a plugin by name. Used for dependency checks, though it could
-        be used for other purposes.
-
-        :param name: The name of the plugin, defined in the class as `name`
-        :return : The plugin in question or None.
-        :rtype : BasePlugin subclassed instance.
-        :raises : PluginNotFound
-        """
-        try:
-            return self.plugins[name.lower()]
-        except KeyError:
-            raise PluginNotFound("No plugin with name=%s found." % name.lower())
 
     def die(self):
         self.deactivate_plugins()
