@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 from base_plugin import SimpleCommandPlugin
 from plugins.core.player_manager import permissions, UserLevels
-from packets import warp_command_write, Packets, warp_command
+from packets import player_warp_write, Packets, player_warp
 from utility_functions import build_packet, move_ship_to_coords, extract_name
 
 
@@ -19,9 +19,9 @@ class Warpy(SimpleCommandPlugin):
         self.player_manager = self.plugins['player_manager'].player_manager
 
     ## Warp debugging
-    #def on_warp_command(self, data):
+    #def on_player_warp(self, data):
     #    self.logger.debug("Warp packet: %s", data.data.encode('hex'))
-    #    warp_data = warp_command().parse(data.data)
+    #    warp_data = player_warp().parse(data.data)
     #    self.logger.debug("Warp packet: %s", warp_data)
 
     @permissions(UserLevels.ADMIN)
@@ -97,11 +97,11 @@ class Warpy(SimpleCommandPlugin):
                 if from_player is not to_player:
                     self.logger.debug("target:  %s", to_player.uuid)
                     warp_packet = build_packet(Packets.PLAYER_WARP,
-                                               warp_command_write(t="WARP_TO",
+                                               player_warp_write(t="WARP_TO",
                                                                   world_id=to_player.uuid))
                 else:
                     warp_packet = build_packet(Packets.PLAYER_WARP,
-                                               warp_command_write(t="WARP_TO_OWN_SHIP",
+                                               player_warp_write(t="WARP_TO_OWN_SHIP",
                                                                   world_id=None))
                 from_protocol.client_protocol.transport.write(warp_packet)
                 if from_string != to_string:
@@ -170,7 +170,7 @@ class Warpy(SimpleCommandPlugin):
         if player_to_send is not None:
             player_protocol = self.factory.protocols[player_to_send.protocol]
             warp_packet = build_packet(Packets.PLAYER_WARP,
-                                       warp_command_write(t="WARP_TO",
+                                       player_warp_write(t="WARP_TO",
                                                           world_id="outpost"))
             player_protocol.client_protocol.transport.write(warp_packet)
             self.protocol.send_chat_message("Warped ^yellow;%s^green; to the outpost." % player_string)

@@ -131,13 +131,12 @@ handshake_challenge = lambda name="handshake_challenge": Struct(name,
                                                                 star_string("salt"),
                                                                 SBInt32("round_count"))
 
-# Needs attention
+# Needs to be corrected to include 'celestial information' as well as proper reject
+# sucess handling.
 connect_response = lambda name="connect_response": Struct(name,
                                                           Flag("success"),
                                                           VLQ("client_id"),
-                                                          star_string("reject_reason")
-                                                          # may need to add something here CelestialBaseInformation
-                                                          )
+                                                          star_string("reject_reason"))
 
 # corrected. needs testing
 chat_received = lambda name="chat_received": Struct(name,
@@ -176,8 +175,8 @@ client_connect = lambda name="client_connect": Struct(name,
 server_disconnect = lambda name="server_disconnect": Struct(name,
                                                             star_string("reason"))
 
-client_disconnect = lambda name="client_disconnect": Struct(name,
-                                                            Byte("data"))
+client_disconnect_request = lambda name="client_disconnect_request": Struct(name,
+                                                                            Byte("data"))
 
 celestial_request = lambda name="celestial_request": Struct(name,
                                                             GreedyRange(star_string("requests")))
@@ -189,7 +188,7 @@ world_coordinate = lambda name="world_coordinate": Struct(name,
                                                           SBInt32("planet"),
                                                           SBInt32("satellite"))
 
-warp_command = lambda name="warp_command": Struct(name,
+player_warp = lambda name="player_warp": Struct(name,
                                                   Enum(UBInt8("warp_type"),
                                                        WARP_TO=0,
                                                        WARP_RETURN=1,
@@ -198,7 +197,7 @@ warp_command = lambda name="warp_command": Struct(name,
                                                        WARP_TO_OWN_SHIP=4),
                                                   WarpVariant("world_id"))
 
-warp_command_write = lambda t, world_id: warp_command().build(
+player_warp_write = lambda t, world_id: player_warp().build(
     Container(
         warp_type=t,
         world_id=world_id))
@@ -256,5 +255,8 @@ client_context_update = lambda name="client_context": Struct(name,
                                                              Array(lambda ctx: ctx.arguments,
                                                                    Struct("key",
                                                                    Variant("value"))))
+
+central_structure_update = lambda name="central_structure_update": Struct(name,
+                                                                          Variant("structureData"))
 
 projectile = DictVariant("projectile")

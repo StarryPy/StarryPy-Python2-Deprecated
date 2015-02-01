@@ -7,7 +7,7 @@ from twisted.words.ewords import AlreadyLoggedIn
 
 from base_plugin import SimpleCommandPlugin
 from manager import PlayerManager, Banned, Player, permissions, UserLevels
-from packets import client_connect, connect_response, warp_command
+from packets import client_connect, connect_response
 import packets
 from utility_functions import extract_name, build_packet, Planet
 
@@ -53,7 +53,7 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
             duplicate_player = self.player_manager.get_by_org_name(client_data.name)
             if duplicate_player is not None and duplicate_player.uuid != client_data.uuid:
                 raise NameError(
-                    "The name of this character is already taken on the server!\nPlease, create a new character with a different name or use Starcheat and change the name.")
+                    "The name of this character is already taken on the server!\nPlease, create a new character with a different name or talk to an administrator.")
                 self.logger.info("Got a duplicate original player name, asking player to change character name!")
                 #rnd_append = str(randrange(10, 99))
                 #original_name += rnd_append
@@ -118,6 +118,7 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
         # may need to add more world types in here
         world_start = packets.world_start().parse(data.data)
         # self.logger.debug("World start: %s", world_start) # debug world packets
+        # self.logger.debug("World start raw: %s", data.data.encode('hex')) # debug world packets
         if 'ship.maxFuel' in world_start['world_properties']:
             self.logger.info("Player %s is now on a ship.", self.protocol.player.name)
             self.protocol.player.on_ship = True
@@ -134,7 +135,7 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
                             coords['planet'], coords['satellite'])
             self.protocol.player.planet = str(planet)
 
-    def on_client_disconnect(self, player):
+    def on_client_disconnect_request(self, player):
         if self.protocol.player is not None and self.protocol.player.logged_in:
             self.logger.info("Player disconnected: %s", self.protocol.player.name)
             self.protocol.player.logged_in = False

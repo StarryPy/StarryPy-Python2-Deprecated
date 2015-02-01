@@ -64,59 +64,60 @@ class StarryPyServerProtocol(Protocol):
         self.after_write_callback = None
         self.plugin_manager = None
         self.call_mapping = {
-            packets.Packets.PROTOCOL_VERSION: self.protocol_version,
-            packets.Packets.SERVER_DISCONNECT: self.server_disconnect,
-            packets.Packets.CONNECT_RESPONSE: self.connect_response,
-            packets.Packets.HANDSHAKE_CHALLENGE: self.handshake_challenge,
-            packets.Packets.CHAT_RECEIVED: self.chat_received,
-            packets.Packets.UNIVERSE_TIME_UPDATE: self.universe_time_update,
-            packets.Packets.CELESTIAL_RESPONSE: lambda x: True,
-            packets.Packets.CLIENT_CONNECT: self.client_connect,
-            packets.Packets.CLIENT_DISCONNECT_REQUEST: self.client_disconnect,
-            packets.Packets.HANDSHAKE_RESPONSE: self.handshake_response,
-            packets.Packets.PLAYER_WARP: self.warp_command,
-            packets.Packets.FLY_SHIP: lambda x: True,
-            packets.Packets.CHAT_SENT: self.chat_sent,
-            packets.Packets.CELESTIAL_REQUEST: self.celestial_request,
-            packets.Packets.CLIENT_CONTEXT_UPDATE: self.client_context_update,
-            packets.Packets.WORLD_START: self.world_start,
-            packets.Packets.WORLD_STOP: self.world_stop,
-            packets.Packets.CENTRAL_STRUCTURE_UPDATE: lambda x: True,
-            packets.Packets.TILE_ARRAY_UPDATE: self.tile_array_update,
-            packets.Packets.TILE_UPDATE: self.tile_update,
-            packets.Packets.TILE_LIQUID_UPDATE: self.tile_liquid_update,
-            packets.Packets.TILE_DAMAGE_UPDATE: self.tile_damage_update,
-            packets.Packets.TILE_MODIFICATION_FAILURE: self.tile_modification_failure,
-            packets.Packets.GIVE_ITEM: self.item,
-            packets.Packets.SWAP_IN_CONTAINER_RESULT: self.swap_in_container_result,
-            packets.Packets.ENVIRONMENT_UPDATE: self.environment_update,
-            packets.Packets.ENTITY_INTERACT_RESULT: self.entity_interact_result,
-            packets.Packets.UPDATE_TILE_PROTECTION: lambda x: True,
-            packets.Packets.MODIFY_TILE_LIST: self.modify_tile_list,
-            packets.Packets.DAMAGE_TILE_GROUP: self.damage_tile_group,
-            packets.Packets.COLLECT_LIQUID: lambda x: True,
-            packets.Packets.REQUEST_DROP: self.request_drop,
-            packets.Packets.SPAWN_ENTITY: self.spawn_entity,
-            packets.Packets.ENTITY_INTERACT: self.entity_interact,
-            packets.Packets.CONNECT_WIRE: self.connect_wire,
-            packets.Packets.DISCONNECT_ALL_WIRES: self.disconnect_all_wires,
-            packets.Packets.OPEN_CONTAINER: self.open_container,
-            packets.Packets.CLOSE_CONTAINER: self.close_container,
-            packets.Packets.SWAP_IN_CONTAINER: self.swap_in_container,
-            packets.Packets.ITEM_APPLY_IN_CONTAINER: self.item_apply_in_container,
-            packets.Packets.START_CRAFTING_IN_CONTAINER: self.start_crafting_in_container,
-            packets.Packets.STOP_CRAFTING_IN_CONTAINER: self.stop_crafting_in_container,
-            packets.Packets.BURN_CONTAINER: self.burn_container,
-            packets.Packets.CLEAR_CONTAINER: self.clear_container,
-            packets.Packets.WORLD_CLIENT_STATE_UPDATE: self.world_update,
-            packets.Packets.ENTITY_CREATE: self.entity_create,
-            packets.Packets.ENTITY_UPDATE: self.entity_update,
-            packets.Packets.ENTITY_DESTROY: self.entity_destroy,
-            packets.Packets.DAMAGE_REQUEST: lambda x: True,
-            packets.Packets.DAMAGE_NOTIFICATION: self.damage_notification,
-            packets.Packets.CALL_SCRIPTED_ENTITY: lambda x: True,
-            packets.Packets.UPDATE_WORLD_PROPERTIES: self.update_world_properties,
-            packets.Packets.HEARTBEAT: self.heartbeat,
+            packets.Packets.PROTOCOL_VERSION: self.protocol_version, # 0
+            packets.Packets.SERVER_DISCONNECT: self.server_disconnect, # 1
+            packets.Packets.CONNECT_RESPONSE: self.connect_response, # 2
+            packets.Packets.HANDSHAKE_CHALLENGE: self.handshake_challenge, #3
+            packets.Packets.CHAT_RECEIVED: self.chat_received, # 4
+            packets.Packets.UNIVERSE_TIME_UPDATE: self.universe_time_update, # 5
+            packets.Packets.CELESTIAL_RESPONSE: lambda x: True, # 6
+            packets.Packets.CLIENT_CONNECT: self.client_connect, # 7
+            packets.Packets.CLIENT_DISCONNECT_REQUEST: self.client_disconnect_request, # 8
+            packets.Packets.HANDSHAKE_RESPONSE: self.handshake_response, # 9
+            packets.Packets.PLAYER_WARP: self.player_warp, # 10
+            packets.Packets.FLY_SHIP: lambda x: True, # 11
+            packets.Packets.CHAT_SENT: self.chat_sent, # 12
+            packets.Packets.CELESTIAL_REQUEST: self.celestial_request, # 13
+            packets.Packets.CLIENT_CONTEXT_UPDATE: self.client_context_update, # 14
+            packets.Packets.WORLD_START: self.world_start, # 15
+            packets.Packets.WORLD_STOP: self.world_stop, # 16
+            packets.Packets.CENTRAL_STRUCTURE_UPDATE: self.central_structure_update, # 17
+            packets.Packets.TILE_ARRAY_UPDATE: self.tile_array_update, # 18
+            packets.Packets.TILE_UPDATE: self.tile_update, # 19
+            packets.Packets.TILE_LIQUID_UPDATE: self.tile_liquid_update, # 20
+            packets.Packets.TILE_DAMAGE_UPDATE: self.tile_damage_update, # 21
+            packets.Packets.TILE_MODIFICATION_FAILURE: self.tile_modification_failure, #22
+            packets.Packets.GIVE_ITEM: self.give_item, # 23
+            packets.Packets.SWAP_IN_CONTAINER_RESULT: self.swap_in_container_result, # 24
+            packets.Packets.ENVIRONMENT_UPDATE: self.environment_update, # 25
+            packets.Packets.ENTITY_INTERACT_RESULT: self.entity_interact_result, # 26
+            packets.Packets.UPDATE_TILE_PROTECTION: lambda x: True, # 27
+            packets.Packets.MODIFY_TILE_LIST: self.modify_tile_list, # 28
+            packets.Packets.DAMAGE_TILE_GROUP: self.damage_tile_group, # 29
+            packets.Packets.COLLECT_LIQUID: lambda x: True, # 30
+            packets.Packets.REQUEST_DROP: self.request_drop, # 31
+            packets.Packets.SPAWN_ENTITY: self.spawn_entity, # 32
+            packets.Packets.ENTITY_INTERACT: self.entity_interact, # 33
+            packets.Packets.CONNECT_WIRE: self.connect_wire, # 34
+            packets.Packets.DISCONNECT_ALL_WIRES: self.disconnect_all_wires, # 35
+            packets.Packets.OPEN_CONTAINER: self.open_container, # 36
+            packets.Packets.CLOSE_CONTAINER: self.close_container, # 37
+            packets.Packets.SWAP_IN_CONTAINER: self.swap_in_container, # 38
+            packets.Packets.ITEM_APPLY_IN_CONTAINER: self.item_apply_in_container, # 39
+            packets.Packets.START_CRAFTING_IN_CONTAINER: self.start_crafting_in_container, # 40
+            packets.Packets.STOP_CRAFTING_IN_CONTAINER: self.stop_crafting_in_container, # 41
+            packets.Packets.BURN_CONTAINER: self.burn_container, # 42
+            packets.Packets.CLEAR_CONTAINER: self.clear_container, # 43
+            packets.Packets.WORLD_CLIENT_STATE_UPDATE: self.world_client_state_update, # 44
+            packets.Packets.ENTITY_CREATE: self.entity_create, # 45
+            packets.Packets.ENTITY_UPDATE: self.entity_update, # 46
+            packets.Packets.ENTITY_DESTROY: self.entity_destroy, # 47
+            packets.Packets.HIT_REQUEST: lambda x: True, # 48
+            packets.Packets.DAMAGE_REQUEST: lambda x: True, # 49
+            packets.Packets.DAMAGE_NOTIFICATION: self.damage_notification, # 50
+            packets.Packets.CALL_SCRIPTED_ENTITY: lambda x: True, # 51
+            packets.Packets.UPDATE_WORLD_PROPERTIES: self.update_world_properties, # 52
+            packets.Packets.HEARTBEAT: self.heartbeat, # 53
         }
         self.client_protocol = None
         self.packet_stream = PacketStream(self)
@@ -218,6 +219,10 @@ class StarryPyServerProtocol(Protocol):
         return True
 
     @route
+    def central_structure_update(self, data):
+        return True
+
+    @route
     def tile_array_update(self, data):
         return True
 
@@ -238,7 +243,7 @@ class StarryPyServerProtocol(Protocol):
         return True
 
     @route
-    def item(self, data):
+    def give_item(self, data):
         return True
 
     @route
@@ -318,7 +323,7 @@ class StarryPyServerProtocol(Protocol):
         return True
 
     @route
-    def world_update(self, data):
+    def world_client_state_update(self, data):
         return True
 
     @route
@@ -392,7 +397,7 @@ class StarryPyServerProtocol(Protocol):
         return True
 
     @route
-    def client_disconnect(self, player):
+    def client_disconnect_request(self, player):
         """
         Called when the client signals that it is about to disconnect from the Starbound server.
 
@@ -402,11 +407,11 @@ class StarryPyServerProtocol(Protocol):
         return True
 
     @route
-    def warp_command(self, data):
+    def player_warp(self, data):
         """
         Called when the players issues a warp.
 
-        :param data: The warp_command data.
+        :param data: The player_warp data.
         :rtype : bool
         """
         return True
@@ -467,9 +472,9 @@ class StarryPyServerProtocol(Protocol):
         try:
             if self.client_protocol is not None:
                 x = build_packet(packets.Packets.CLIENT_DISCONNECT_REQUEST,
-                                 packets.client_disconnect().build(Container(data=0)))
+                                 packets.client_disconnect_request().build(Container(data=0)))
                 if self.player is not None and self.player.logged_in:
-                    self.client_disconnect(x)
+                    self.client_disconnect_request(x)
                 self.client_protocol.transport.write(x)
                 self.client_protocol.transport.abortConnection()
         except:
@@ -548,7 +553,7 @@ class ClientProtocol(Protocol):
             self.packet_stream += data
 
     def disconnect(self):
-        x = build_packet(packets.Packets.CLIENT_DISCONNECT_REQUEST, packets.client_disconnect().build(Container(data=0)))
+        x = build_packet(packets.Packets.CLIENT_DISCONNECT_REQUEST, packets.client_disconnect_request().build(Container(data=0)))
         self.transport.write(x)
         self.transport.abortConnection()
 
