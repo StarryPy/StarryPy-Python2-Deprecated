@@ -13,9 +13,8 @@ class UserCommandPlugin(SimpleCommandPlugin):
     """
     name = "user_management_commands"
     depends = ['command_dispatcher', 'player_manager']
-    commands = ["who", "whoami", "whois", "promote", "kick", "ban", "ban_list", "unban", "item", "planet", "mute",
-                "unmute",
-                "passthrough", "shutdown", "timestamps"]
+    commands = ["who", "whoami", "whois", "promote", "kick", "ban", "ban_list", "unban", "item",
+                "planet", "mute", "unmute", "passthrough", "shutdown", "timestamps"]
     auto_activate = True
 
     def activate(self):
@@ -52,7 +51,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
         if len(data) == 0:
             self.protocol.send_chat_message(self.whois.__doc__)
             return
-        name = " ".join(data)
+        name, garbage = extract_name(data)
         info = self.player_manager.whois(name)
         if info and self.protocol.player.access_level >= UserLevels.ADMIN:
             self.protocol.send_chat_message(
@@ -236,7 +235,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
             self.protocol.send_chat_message("Couldn't find a user by the name ^yellow;%s^green;." % name)
         return False
 
-    @permissions(UserLevels.ADMIN)
+    @permissions(UserLevels.MODERATOR)
     def item(self, data):
         """Gives an item to a player.\nSyntax: /item (player) (item) [count]"""
         if len(data) >= 2:
@@ -279,7 +278,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
     @permissions(UserLevels.MODERATOR)
     def mute(self, data):
         """Mute a player.\nSyntax: /mute (player)"""
-        name = " ".join(data)
+        name, garbage = extract_name(data)
         player = self.player_manager.get_logged_in_by_name(name)
         if player is None:
             self.protocol.send_chat_message("Couldn't find a user by the name ^yellow;%s^green;" % name)
@@ -293,7 +292,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
     @permissions(UserLevels.MODERATOR)
     def unmute(self, data):
         """Unmute a currently muted player.\nSyntax: /unmute (player)"""
-        name = " ".join(data)
+        name, garbage = extract_name(data)
         player = self.player_manager.get_logged_in_by_name(name)
         if player is None:
             self.protocol.send_chat_message("Couldn't find a user by the name ^yellow;%s^green;" % name)

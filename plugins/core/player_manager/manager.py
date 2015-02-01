@@ -223,11 +223,12 @@ class PlayerManager(object):
     def __init__(self, config):
         self.config = config
         migrate_db(self.config)
+        logger.info("Loading player database.")
         self.engine = create_engine('sqlite:///%s' % path.preauthChild(self.config.player_db).path)
         Base.metadata.create_all(self.engine)
         self.sessionmaker = sessionmaker(bind=self.engine, autoflush=True)
         with _autoclosing_session(self.sessionmaker) as session:
-            for player in session.query(Player).all():
+            for player in session.query(Player).filter_by(logged_in=True).all():
                 player.logged_in = False
                 player.protocol = None
                 session.commit()
@@ -409,7 +410,7 @@ def permissions(level=UserLevels.OWNER):
             if self.protocol.player.access_level >= level:
                 return f(self, *args, **kwargs)
             else:
-                self.protocol.send_chat_message("You are not an admin.")
+                self.protocol.send_chat_message("You are not authorized to do this.")
                 return False
 
         return wrapped_function

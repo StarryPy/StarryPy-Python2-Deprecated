@@ -69,6 +69,8 @@ class PluginManagerPlugin(SimpleCommandPlugin):
             func = self.plugins['command_dispatcher'].commands.get(command, None)
             if func is None:
                 self.protocol.send_chat_message("Couldn't find a command with the name ^yellow;%s" % command)
+            elif func.level > self.protocol.player.access_level:
+                self.protocol.send_chat_message("You do not have access to this command.")
             else:
                 #self.protocol.send_chat_message("%s%s: %s" % (self.config.command_prefix, command, func.__doc__))
                 self.protocol.send_chat_message("%s" % func.__doc__)
