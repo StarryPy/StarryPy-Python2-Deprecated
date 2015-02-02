@@ -11,7 +11,7 @@ class Warpy(SimpleCommandPlugin):
     """
     name = "warpy_plugin"
     depends = ['command_dispatcher', 'player_manager']
-    commands = ["warp", "warp_ship", "outpost"]
+    commands = ["warp", "warp_ship", "outpost", "spawn"]
     auto_activate = True
 
     def activate(self):
@@ -178,3 +178,12 @@ class Warpy(SimpleCommandPlugin):
             self.protocol.send_chat_message("No player by the name ^yellow;%s^green; found." % player_string)
             self.protocol.send_chat_message(self.warp.__doc__)
 
+    @permissions(UserLevels.GUEST)
+    def spawn(self, data):
+        """Warps your ship to spawn.\nSyntax: /spawn"""
+        on_ship = self.protocol.player.on_ship
+        if not on_ship:
+            self.protocol.send_chat_message("You need to be on a ship!")
+            return
+        self.plugins['warpy_plugin'].move_player_ship(self.protocol, [x for x in self._spawn])
+        self.protocol.send_chat_message("Moving your ship to spawn.")
