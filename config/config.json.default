@@ -7,6 +7,7 @@
         "admin": "^#C443F7;",
         "default": "^#F7EB43;",
         "guest": "^#F7EB43;",
+        "irc": "^#e39313;",
         "moderator": "^#4385F7;",
         "owner": "^#F7434C;",
         "registered": "^#A0F743;"
@@ -27,11 +28,27 @@
         "announcer_plugin": {
             "auto_activate": true
         },
+        "bookmarks_plugin": {
+            "auto_activate": true
+        },
         "chat_logger": {
+            "auto_activate": true
+        },
+        "colored_names_plugin": {
             "auto_activate": true
         },
         "command_dispatcher": {
             "auto_activate": true
+        },
+        "irc": {
+            "auto_activate": true,
+            "bot_nickname": "StarryPyBot",
+            "channel": "##test",
+            "color": "^#e39313;",
+            "echo_from_channel": true,
+            "nickserv_password": "password",
+            "port": 6667,
+            "server": "irc.freenode.net"
         },
         "motd_plugin": {
             "auto_activate": true,
@@ -46,10 +63,6 @@
                 [
                     "coalore",
                     200
-                ],
-                [
-                    "alienburger",
-                    5
                 ]
             ],
             "message": "Welcome to the server!"
@@ -65,17 +78,17 @@
                 "DAMAGE_TILE_GROUP",
                 "MODIFY_TILE_LIST"
             ],
-            "bad_packets_ship": [
-                "ENTITY_INTERACT",
-                "OPEN_CONTAINER",
-                "CLOSE_CONTAINER"
-            ],
             "bad_packets_mild": [
                 "CONNECT_WIRE",
                 "DISCONNECT_ALL_WIRES",
                 "DAMAGE_TILE",
                 "DAMAGE_TILE_GROUP",
                 "MODIFY_TILE_LIST"
+            ],
+            "bad_packets_ship": [
+                "ENTITY_INTERACT",
+                "OPEN_CONTAINER",
+                "CLOSE_CONTAINER"
             ],
             "blacklist": [
                 "bomb",
@@ -161,7 +174,13 @@
                 "[^ \\w]+"
             ]
         },
+        "players_plugin": {
+            "auto_activate": true
+        },
         "plugin_manager": {
+            "auto_activate": true
+        },
+        "poi_plugin": {
             "auto_activate": true
         },
         "starbound_config_manager": {
