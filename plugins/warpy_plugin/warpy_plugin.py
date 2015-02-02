@@ -24,7 +24,7 @@ class Warpy(SimpleCommandPlugin):
     #    warp_data = player_warp().parse(data.data)
     #    self.logger.debug("Warp packet: %s", warp_data)
 
-    @permissions(UserLevels.ADMIN)
+    @permissions(UserLevels.MODERATOR)
     def warp(self, name):
         """Warps you to a player's ship (or player to player).\nSyntax: /warp [player] (to player)"""
         if len(name) == 0:
@@ -68,7 +68,7 @@ class Warpy(SimpleCommandPlugin):
             self.move_player_ship_to_other(first_name, second_name)
 #!!!!!!!!!!!!!!!!!!!!!!!
 
-    @permissions(UserLevels.ADMIN)
+    @permissions(UserLevels.MODERATOR)
     def outpost(self, name):
         """Warps you (or another player) to the outpost.\nSyntax: /outpost [player]"""
         if len(name) == 0:
