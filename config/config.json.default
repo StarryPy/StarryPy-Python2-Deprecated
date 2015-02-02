@@ -41,7 +41,7 @@
             "auto_activate": true
         },
         "irc": {
-            "auto_activate": true,
+            "auto_activate": false,
             "bot_nickname": "StarryPyBot",
             "channel": "##test",
             "color": "^#e39313;",
