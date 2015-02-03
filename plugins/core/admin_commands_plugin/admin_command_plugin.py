@@ -172,16 +172,14 @@ class UserCommandPlugin(SimpleCommandPlugin):
             self.factory.broadcast("%s^green; kicked %s ^green;(reason: ^yellow;%s^green;)" %
                                    (self.protocol.player.colored_name(self.config.colors),
                                     info.colored_name(self.config.colors),
-                                    " ".join(reason)))
+                                    "".join(reason)))
             self.logger.info("%s kicked %s (reason: %s)", self.protocol.player.name, info.name,
-                             " ".join(reason))
+                             "".join(reason))
             tp = self.factory.protocols[info.protocol]
             tp.die()
         else:
             self.protocol.send_chat_message("Couldn't find a user by the name ^yellow;%s^green;." % name)
         return False
-
-
 
     @permissions(UserLevels.ADMIN)
     def ban(self, data):
