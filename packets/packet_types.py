@@ -205,6 +205,15 @@ player_warp_write = lambda t, world_id: player_warp().build(
 fly_ship = lambda name="fly_ship": Struct(name,
                                           celestial_coordinate())
 
+fly_ship_write = lambda x=0, y=0, z=0, planet=0, satellite=0: fly_ship().build(
+    Container(
+        celestial_coordinate=Container(
+            x=x,
+            y=y,
+            z=z,
+            planet=planet,
+            satellite=satellite)))
+
 # partially correct. Needs work on dungeon ID value
 world_start = lambda name="world_start": Struct(name,
                                                 Variant("planet"), # rename to templateData?

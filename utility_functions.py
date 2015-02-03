@@ -64,10 +64,9 @@ def move_ship_to_coords(protocol, x, y, z, planet, satellite):
     logger.info("Moving %s's ship to coordinates: %s", protocol.player.name,
                 ":".join((str(x), str(y), str(z), str(planet), str(satellite))))
     x, y, z, planet, satellite = map(int, (x, y, z, planet, satellite))
-    warp_packet = build_packet(packets.Packets.PLAYER_WARP,
-                               packets.player_warp_write(t="WARP_TO", x=x, y=y, z=z,
-                                                          planet=planet,
-                                                          satellite=satellite, player="".encode('utf-8')))
+    warp_packet = build_packet(packets.Packets.FLY_SHIP,
+                               packets.fly_ship_write(x=x, y=y, z=z, planet=planet,
+                                                      satellite=satellite))
     protocol.client_protocol.transport.write(warp_packet)
 
 

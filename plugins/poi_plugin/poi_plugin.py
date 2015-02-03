@@ -2,7 +2,7 @@ import json
 #from twisted.internet import reactor
 from base_plugin import SimpleCommandPlugin
 from plugins.core.player_manager import permissions, UserLevels
-from packets import player_warp_write, Packets, fly_ship
+from packets import Packets, fly_ship, fly_ship_write
 from utility_functions import build_packet
 
 
@@ -12,7 +12,7 @@ class PointsofInterest(SimpleCommandPlugin):
     """
     name = "poi_plugin"
     depends = ['command_dispatcher', 'player_manager']
-    commands = ["poi_set", "poi_del", "poi"]
+    commands = ["poi_set", "poi_del", "poi", "spawn"]
     auto_activate = True
 
     def after_fly_ship(self, data):
@@ -90,18 +90,35 @@ class PointsofInterest(SimpleCommandPlugin):
             if warp[1] == name:
                 x, y, z, planet, satellite = warp[0].split(":")
                 x, y, z, planet, satellite = map(int, (x, y, z, planet, satellite))
-                warp_packet = build_packet(Packets.PLAYER_WARP,
-                                           player_warp_write(t="WARP_TO",
-                                                              x=x,
-                                                              y=y,
-                                                              z=z,
-                                                              planet=planet,
-                                                              satellite=satellite))
+                warp_packet = build_packet(Packets.FLY_SHIP,
+                                           fly_ship_write(x=x,
+                                                          y=y,
+                                                          z=z,
+                                                          planet=planet,
+                                                          satellite=satellite))
                 self.protocol.client_protocol.transport.write(warp_packet)
                 self.protocol.send_chat_message("Warp drive engaged! Warping to ^yellow;%s^green;." % name)
-                #reactor.callLater(1, self.beam_to_planet, name)  # enable this for 1s delayed warping of a player
                 return
         self.protocol.send_chat_message("There is no PoI named ^yellow;%s^green;." % name)
+
+    @permissions(UserLevels.GUEST)
+    def spawn(self, data):
+        """Warps your ship to spawn.\nSyntax: /spawn"""
+        for warp in self.pois:
+            if warp[1] == 'spawn':
+                x, y, z, planet, satellite = warp[0].split(":")
+                x, y, z, planet, satellite = map(int, (x, y, z, planet, satellite))
+                warp_packet = build_packet(Packets.FLY_SHIP,
+                                           fly_ship_write(x=x,
+                                                          y=y,
+                                                          z=z,
+                                                          planet=planet,
+                                                          satellite=satellite))
+                self.protocol.client_protocol.transport.write(warp_packet)
+                self.protocol.send_chat_message("Warp drive engaged! Warping to ^yellow;%s^green;." % 'Spawn')
+                return
+            else:
+                self.protocol.send_chat_message("The spawn planet must be set first!")
 
     def savepois(self):
         try:
@@ -110,11 +127,3 @@ class PointsofInterest(SimpleCommandPlugin):
         except:
             self.logger.exception("Couldn't save PoI's.")
             raise
-
-    def beam_to_planet(self, where):
-        warp_packet = build_packet(Packets.PLAYER_WARP, player_warp_write(t="WARP_DOWN"))
-        self.protocol.client_protocol.transport.write(warp_packet)
-        self.protocol.send_chat_message("Beamed down to ^yellow;%s^green; and your ship will arrive soon." % where)
-        self.factory.broadcast_planet(
-            "%s^green; beamed down to the planet" % self.protocol.player.colored_name(self.config.colors),
-            planet=self.protocol.player.planet)

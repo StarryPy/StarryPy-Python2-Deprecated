@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 from base_plugin import SimpleCommandPlugin
 from plugins.core.player_manager import permissions, UserLevels
-from packets import player_warp_write, Packets, player_warp
+from packets import Packets, player_warp, player_warp_write, fly_ship, fly_ship_write
 from utility_functions import build_packet, move_ship_to_coords, extract_name
 
 
@@ -11,7 +11,7 @@ class Warpy(SimpleCommandPlugin):
     """
     name = "warpy_plugin"
     depends = ['command_dispatcher', 'player_manager']
-    commands = ["warp", "warp_ship", "outpost", "spawn"]
+    commands = ["warp", "warp_ship", "outpost"]
     auto_activate = True
 
     def activate(self):
@@ -45,7 +45,6 @@ class Warpy(SimpleCommandPlugin):
                 return
             self.warp_player_to_player(first_name, second_name)
 
-# THIS IS CURRENTLY BROKEN!
     @permissions(UserLevels.ADMIN)
     def warp_ship(self, location):
         """Warps a player ship to another players ship.\nSyntax: /warp_ship [player] (to player)"""
@@ -66,7 +65,6 @@ class Warpy(SimpleCommandPlugin):
                 self.protocol.send_chat_message(str(e))
                 return
             self.move_player_ship_to_other(first_name, second_name)
-#!!!!!!!!!!!!!!!!!!!!!!!
 
     @permissions(UserLevels.MODERATOR)
     def outpost(self, name):
@@ -177,13 +175,3 @@ class Warpy(SimpleCommandPlugin):
         else:
             self.protocol.send_chat_message("No player by the name ^yellow;%s^green; found." % player_string)
             self.protocol.send_chat_message(self.warp.__doc__)
-
-    @permissions(UserLevels.GUEST)
-    def spawn(self, data):
-        """Warps your ship to spawn.\nSyntax: /spawn"""
-        on_ship = self.protocol.player.on_ship
-        if not on_ship:
-            self.protocol.send_chat_message("You need to be on a ship!")
-            return
-        self.plugins['warpy_plugin'].move_player_ship(self.protocol, [x for x in self._spawn])
-        self.protocol.send_chat_message("Moving your ship to spawn.")

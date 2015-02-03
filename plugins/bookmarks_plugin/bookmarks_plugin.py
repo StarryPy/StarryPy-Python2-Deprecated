@@ -3,7 +3,7 @@ import errno
 import json
 from base_plugin import SimpleCommandPlugin
 from plugins.core.player_manager import permissions, UserLevels
-from packets import player_warp_write, Packets
+from packets import Packets, fly_ship, fly_ship_write
 from utility_functions import build_packet
 
 
@@ -13,7 +13,7 @@ class Bookmarks(SimpleCommandPlugin):
     """
     name = "bookmarks_plugin"
     depends = ['command_dispatcher', 'player_manager']
-    commands = ["bookmark", "remove", "goto"]
+    commands = ["bookmark_add", "bookmark_del", "goto"]
     auto_activate = True
 
     def activate(self):
@@ -22,8 +22,8 @@ class Bookmarks(SimpleCommandPlugin):
         self.verify_path("./config/bookmarks")
 
     @permissions(UserLevels.GUEST)
-    def bookmark(self, name):
-        """Bookmarks a planet for fast warp routes.\nSyntax: /bookmark (name)"""
+    def bookmark_add(self, name):
+        """Bookmarks a planet for fast warp routes.\nSyntax: /bookmark_add (name)"""
         filename = "./config/bookmarks/" + self.protocol.player.uuid + ".json"
         try:
             with open(filename) as f:
@@ -45,7 +45,7 @@ class Bookmarks(SimpleCommandPlugin):
                     warps.append(warp[1])
             warpnames = "^green;,^yellow; ".join(warps)
             if warpnames == "": warpnames = "^gray;(none)^green;"
-            self.protocol.send_chat_message(self.bookmark.__doc__)
+            self.protocol.send_chat_message(self.bookmark_add.__doc__)
             self.protocol.send_chat_message("Please, provide a valid bookmark name!\nBookmarks: ^yellow;" + warpnames)
             return
 
@@ -61,8 +61,8 @@ class Bookmarks(SimpleCommandPlugin):
         self.savebms()
 
     @permissions(UserLevels.GUEST)
-    def remove(self, name):
-        """Removes current planet from bookmarks.\nSyntax: /remove (name)"""
+    def bookmark_del(self, name):
+        """Removes current planet from bookmarks.\nSyntax: /bookmark_del (name)"""
         filename = "./config/bookmarks/" + self.protocol.player.uuid + ".json"
         try:
             with open(filename) as f:
@@ -77,7 +77,7 @@ class Bookmarks(SimpleCommandPlugin):
                     warps.append(warp[1])
             warpnames = "^green;,^yellow; ".join(warps)
             if warpnames == "": warpnames = "^gray;(none)^green;"
-            self.protocol.send_chat_message(self.remove.__doc__)
+            self.protocol.send_chat_message(self.bookmark_del.__doc__)
             self.protocol.send_chat_message("Please, provide a valid bookmark name!\nBookmarks: ^yellow;" + warpnames)
             return
 
@@ -118,25 +118,17 @@ class Bookmarks(SimpleCommandPlugin):
         for warp in self.bookmarks:
             if warp[1] == name:
                 x, y, z, planet, satellite = warp[0].split(":")
-                x, y, z, planet, satellite = map((x, y, z, planet, satellite))
-                warp_packet = build_packet(Packets.PLAYER_WARP,
-                                           player_warp_write(t="WARP_TO",
-                                                              x=x,
-                                                              y=y,
-                                                              z=z,
-                                                              planet=planet,
-                                                              satellite=satellite))
+                x, y, z, planet, satellite = map(int, (x, y, z, planet, satellite))
+                warp_packet = build_packet(Packets.FLY_SHIP,
+                                           fly_ship_write(x=x,
+                                                          y=y,
+                                                          z=z,
+                                                          planet=planet,
+                                                          satellite=satellite))
                 self.protocol.client_protocol.transport.write(warp_packet)
                 self.protocol.send_chat_message("Warp drive engaged! Warping to ^yellow;%s^green;." % name)
                 return
         self.protocol.send_chat_message("There is no bookmark named: ^yellow;%s" % name)
-
-    def verify_path(self, path):
-        try:
-            os.makedirs(path)
-        except OSError as exception:
-            if exception.errno != errno.EEXIST:
-                raise
 
     def savebms(self):
         filename = "./config/bookmarks/" + self.protocol.player.uuid + ".json"
@@ -147,10 +139,12 @@ class Bookmarks(SimpleCommandPlugin):
             self.logger.exception("Couldn't save bookmarks.")
             raise
 
-    def beam_to_planet(self, where):
-        warp_packet = build_packet(Packets.PLAYER_WARP, player_warp_write(t="WARP_DOWN"))
-        self.protocol.client_protocol.transport.write(warp_packet)
-        self.protocol.send_chat_message("Beamed down to ^yellow;%s^green; and your ship will arrive soon." % where)
-        self.factory.broadcast_planet(
-            "%s^green; beamed down to the planet" % self.protocol.player.colored_name(self.config.colors),
-            planet=self.protocol.player.planet)
+    def verify_path(self, path):
+        """
+        Helper function to make sure path exists, and create if it doesn't.
+        """
+        try:
+            os.makedirs(path)
+        except OSError as exception:
+            if exception.errno != errno.EEXIST:
+                raise
