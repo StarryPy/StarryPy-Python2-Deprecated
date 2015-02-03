@@ -1,5 +1,4 @@
 import json
-#from twisted.internet import reactor
 from base_plugin import SimpleCommandPlugin
 from plugins.core.player_manager import permissions, UserLevels
 from packets import Packets, fly_ship, fly_ship_write
@@ -15,9 +14,6 @@ class PointsofInterest(SimpleCommandPlugin):
     commands = ["poi_set", "poi_del", "poi", "spawn"]
     auto_activate = True
 
-    def after_fly_ship(self, data):
-        self.logger.debug("Coords: %s", fly_ship().parse(data.data))
-
     def activate(self):
         super(PointsofInterest, self).activate()
         self.player_manager = self.plugins['player_manager'].player_manager
@@ -27,7 +23,6 @@ class PointsofInterest(SimpleCommandPlugin):
         except:
             self.pois = []
 
-    # Commands that allows admins to define Planets of Interest (PoI) any player can /poi to.
     @permissions(UserLevels.ADMIN)
     def poi_set(self, name):
         """Sets current planet as Planet of Interest (PoI).\nSyntax: /poi_set (name)"""

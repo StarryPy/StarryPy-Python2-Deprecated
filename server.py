@@ -24,6 +24,13 @@ from utility_functions import build_packet
 VERSION = "1.4.4"
 
 
+VDEBUG_LVL = 9 
+logging.addLevelName(VDEBUG_LVL, "VDEBUG")
+def vdebug(self, message, *args, **kws):
+    if self.isEnabledFor(VDEBUG_LVL):
+        self._log(VDEBUG_LVL, message, args, **kws) 
+logging.Logger.vdebug = vdebug
+
 def port_check(upstream_hostname, upstream_port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.settimeout(1)
@@ -48,7 +55,7 @@ class StarryPyServerProtocol(Protocol):
         """
         """
         self.id = str(uuid4().hex)
-        logger.debug("Creating protocol with ID %s.", self.id)
+        logger.vdebug("Creating protocol with ID %s.", self.id)
         self.factory.protocols[self.id] = self
         self.player = None
         self.state = None
@@ -447,7 +454,7 @@ class StarryPyServerProtocol(Protocol):
                 self.send_chat_message(line)
             return
         if self.player is not None:
-            logger.debug(('Calling send_chat_message from player %s on channel'
+            logger.vdebug(('Calling send_chat_message from player %s on channel'
                           ' %s with mode %s with reported username of %s with'
                           ' message: %s'), self.player.name, channel, mode, name, text)
         chat_data = packets.chat_received().build(Container(mode=mode,
@@ -455,12 +462,12 @@ class StarryPyServerProtocol(Protocol):
                                                             client_id=0,
                                                             name=name,
                                                             message=text.encode("utf-8")))
-        logger.debug("Built chat payload. Data: %s", chat_data.encode("hex"))
+        logger.vdebug("Built chat payload. Data: %s", chat_data.encode("hex"))
         chat_packet = build_packet(packets.Packets.CHAT_RECEIVED,
                                    chat_data)
-        logger.debug("Built chat packet. Data: %s", chat_packet.encode("hex"))
+        logger.vdebug("Built chat packet. Data: %s", chat_packet.encode("hex"))
         self.transport.write(chat_packet)
-        logger.debug("Sent chat message with text: %s", text)
+        logger.vdebug("Sent chat message with text: %s", text)
 
     def write(self, data):
         """
@@ -635,12 +642,12 @@ class StarryPyServerFactory(ServerFactory):
 
         :rtype : Protocol
         """
-        logger.debug("Building protocol to address %s", address)
+        logger.vdebug("Building protocol to address %s", address)
         p = ServerFactory.buildProtocol(self, address)
         return p
 
     def reap_dead_protocols(self):
-        logger.debug("Reaping dead connections.")
+        logger.vdebug("Reaping dead connections.")
         count = 0
         start_time = datetime.datetime.now()
         for protocol in self.protocols.itervalues():
@@ -658,7 +665,7 @@ class StarryPyServerFactory(ServerFactory):
         elif count > 1:
             logger.info("%d connections reaped.")
         else:
-            logger.debug("No connections reaped.")
+            logger.vdebug("No connections reaped.")
 
 
 class StarboundClientFactory(ClientFactory):
@@ -668,11 +675,11 @@ class StarboundClientFactory(ClientFactory):
     protocol = ClientProtocol
 
     def __init__(self, server_protocol):
-        logger.debug("Client protocol instantiated.")
+        logger.vdebug("Client protocol instantiated.")
         self.server_protocol = server_protocol
 
     def buildProtocol(self, address):
-        logger.debug("Building protocol in StarboundClientFactory to address %s", address)
+        logger.vdebug("Building protocol in StarboundClientFactory to address %s", address)
         protocol = ClientFactory.buildProtocol(self, address)
         protocol.server_protocol = self.server_protocol
         return protocol
@@ -703,6 +710,8 @@ if __name__ == '__main__':
     log_format = logging.Formatter('%(asctime)s - %(levelname)s - %(name)s # %(message)s')
     if config.log_level == 'DEBUG':
         log_level = logging.DEBUG
+    elif config.log_level == 'VDEBUG':
+        log_level = "VDEBUG"
     else:
         log_level = logging.INFO
     
