@@ -428,7 +428,7 @@ class StarryPyServerProtocol(Protocol):
         """
         return self.call_mapping[p.id](p)
 
-    def send_chat_message(self, text, mode=0, channel='', name=''):
+    def send_chat_message(self, text, mode='BROADCAST', channel='', name=''):
         """
         Convenience function to send chat messages to the client. Note that this
         does *not* send messages to the server at large; broadcast should be
@@ -451,7 +451,7 @@ class StarryPyServerProtocol(Protocol):
                           ' %s with mode %s with reported username of %s with'
                           ' message: %s'), self.player.name, channel, mode, name, text)
         chat_data = packets.chat_received().build(Container(mode=mode,
-                                                            chat_channel=channel,
+                                                            channel=channel,
                                                             client_id=0,
                                                             name=name,
                                                             message=text.encode("utf-8")))

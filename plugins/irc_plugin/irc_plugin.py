@@ -47,6 +47,8 @@ class IrcPlugin(BasePlugin):
 
     def on_chat_sent(self, data):
         parsed = chat_sent().parse(data.data)
+        if parsed.send_mode == 'LOCAL':
+            return True
         if not parsed.message.startswith('/'):
             for p in self.irc_factory.irc_clients.itervalues():
                 p.msg(self.channel, "<%s> %s" % (self.protocol.player.name.encode("utf-8"), parsed.message.encode("utf-8")))
@@ -55,10 +57,8 @@ class IrcPlugin(BasePlugin):
     def on_client_connect(self, data):
         parsed = client_connect().parse(data.data)
         self.logger.info(parsed.name)
-
         for p in self.irc_factory.irc_clients.itervalues():
             p.msg(self.channel, "%s connected" % parsed.name.encode("utf-8"))
-
         return True
 
     def on_client_disconnect_request(self, data):

@@ -13,7 +13,6 @@ class ModChatter(SimpleCommandPlugin):
 
     def activate(self):
         super(ModChatter, self).activate()
-        self.prefix = self.config.chat_prefix
         self.player_manager = self.plugins['player_manager'].player_manager
 
     @permissions(UserLevels.MODERATOR)

@@ -79,13 +79,6 @@ class EntityType(IntEnum):
     NPC = 8
 
 
-class MessageContextMode(IntEnum):
-    CHANNEL = 0
-    BROADCAST = 1
-    WHISPER = 2
-    COMMAND_RESULT = 3
-
-
 class PacketOutOfOrder(Exception):
     pass
 
@@ -140,8 +133,12 @@ connect_response = lambda name="connect_response": Struct(name,
 
 # corrected. needs testing
 chat_received = lambda name="chat_received": Struct(name,
-                                                    Byte("mode"),
-                                                    star_string("chat_channel"),
+                                                    Enum(Byte("mode"),
+                                                         CHANNEL=0,
+                                                         BROADCAST=1,
+                                                         WHISPER=2,
+                                                         COMMAND_RESULT=3),
+                                                    star_string("channel"),
                                                     UBInt32("client_id"),
                                                     star_string("name"),
                                                     star_string("message"))
@@ -154,6 +151,11 @@ chat_sent = lambda name="chat_sent": Struct(name,
                                                  LOCAL=1,
                                                  PARTY=2)
                                             )
+
+chat_sent_write = lambda message, send_mode: chat_sent().build(
+        Container(
+            message=message,
+            send_mode=send_mode))
 
 # quite a bit of guesswork and hackery here with the ship_upgrades.
 client_connect = lambda name="client_connect": Struct(name,
@@ -236,10 +238,12 @@ give_item = lambda name="give_item": Struct(name,
                                             Byte("variant_type"),
                                             star_string("description"))
 
-give_item_write = lambda name, count: give_item().build(Container(name=name,
-                                                                  count=count,
-                                                                  variant_type=7,
-                                                                  description=''))
+give_item_write = lambda name, count: give_item().build(
+        Container(
+            name=name,
+            count=count,
+            variant_type=7,
+            description=''))
 
 update_world_properties = lambda name="world_properties": Struct(name,
                                                                  UBInt8("count"),
