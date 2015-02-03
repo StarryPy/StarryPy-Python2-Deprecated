@@ -2,7 +2,7 @@ import json
 #from twisted.internet import reactor
 from base_plugin import SimpleCommandPlugin
 from plugins.core.player_manager import permissions, UserLevels
-from packets import player_warp_write, Packets
+from packets import player_warp_write, Packets, fly_ship
 from utility_functions import build_packet
 
 
@@ -14,6 +14,9 @@ class PointsofInterest(SimpleCommandPlugin):
     depends = ['command_dispatcher', 'player_manager']
     commands = ["poi_set", "poi_del", "poi"]
     auto_activate = True
+
+    def after_fly_ship(self, data):
+        self.logger.debug("Coords: %s", fly_ship().parse(data.data))
 
     def activate(self):
         super(PointsofInterest, self).activate()

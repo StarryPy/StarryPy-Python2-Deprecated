@@ -188,6 +188,9 @@ class BasePlugin(object):
     def on_player_warp(self, data):
         return True
 
+    def on_fly_ship(self, data):
+        return True
+
     def on_central_structure_update(self, data):
         return True
 
@@ -333,6 +336,9 @@ class BasePlugin(object):
         return True
 
     def after_player_warp(self, data):
+        return True
+
+    def after_fly_ship(self, data):
         return True
 
     def after_central_structure_update(self, data):

@@ -181,12 +181,12 @@ client_disconnect_request = lambda name="client_disconnect_request": Struct(name
 celestial_request = lambda name="celestial_request": Struct(name,
                                                             GreedyRange(star_string("requests")))
 
-world_coordinate = lambda name="world_coordinate": Struct(name,
-                                                          SBInt32("x"),
-                                                          SBInt32("y"),
-                                                          SBInt32("z"),
-                                                          SBInt32("planet"),
-                                                          SBInt32("satellite"))
+celestial_coordinate = lambda name="celestial_coordinate": Struct(name,
+                                                                  SBInt32("x"),
+                                                                  SBInt32("y"),
+                                                                  SBInt32("z"),
+                                                                  SBInt32("planet"),
+                                                                  SBInt32("satellite"))
 
 player_warp = lambda name="player_warp": Struct(name,
                                                   Enum(UBInt8("warp_type"),
@@ -202,6 +202,8 @@ player_warp_write = lambda t, world_id: player_warp().build(
         warp_type=t,
         world_id=world_id))
 
+fly_ship = lambda name="fly_ship": Struct(name,
+                                          celestial_coordinate())
 
 # partially correct. Needs work on dungeon ID value
 world_start = lambda name="world_start": Struct(name,
@@ -209,7 +211,8 @@ world_start = lambda name="world_start": Struct(name,
                                                 StarByteArray("sky_data"),
                                                 StarByteArray("weather_data"),
                                                 #dungeon id stuff here
-                                                Array(2, BFloat32("coordinate")),
+                                                BFloat32("x"),
+                                                BFloat32("y"),
                                                 Variant("world_properties"),
                                                 UBInt32("client_id"),
                                                 Flag("local_interpolation"))

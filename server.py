@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 from _socket import SHUT_RDWR
-import gettext
+#import gettext
 import locale
 import logging
 from uuid import uuid4
@@ -8,13 +8,12 @@ import sys
 import socket
 import datetime
 
-import construct
 from twisted.internet import reactor
 from twisted.internet.error import CannotListenError
 from twisted.internet.protocol import ClientFactory, ServerFactory, Protocol, connectionDone
+from twisted.internet.task import LoopingCall
 from construct import Container
 import construct.core
-from twisted.internet.task import LoopingCall
 
 from config import ConfigurationManager
 from packet_stream import PacketStream
@@ -23,10 +22,6 @@ from plugin_manager import PluginManager, route, FatalPluginError
 from utility_functions import build_packet
 
 VERSION = "1.4.4"
-TRACE = False
-TRACE_LVL = 9
-logging.addLevelName(9, "TRACE")
-logging.Logger.trace = lambda s, m, *a, **k: s._log(TRACE_LVL, m, a, **k)
 
 
 def port_check(upstream_hostname, upstream_port):
@@ -53,11 +48,11 @@ class StarryPyServerProtocol(Protocol):
         """
         """
         self.id = str(uuid4().hex)
-        logger.trace("Creating protocol with ID %s.", self.id)
+        logger.debug("Creating protocol with ID %s.", self.id)
         self.factory.protocols[self.id] = self
         self.player = None
         self.state = None
-        logger.trace("Trying to initialize configuration manager.")
+        logger.debug("Trying to initialize configuration manager.")
         self.config = ConfigurationManager()
         self.parsing = False
         self.buffering_packet = None
@@ -75,7 +70,7 @@ class StarryPyServerProtocol(Protocol):
             packets.Packets.CLIENT_DISCONNECT_REQUEST: self.client_disconnect_request, # 8
             packets.Packets.HANDSHAKE_RESPONSE: self.handshake_response, # 9
             packets.Packets.PLAYER_WARP: self.player_warp, # 10
-            packets.Packets.FLY_SHIP: lambda x: True, # 11
+            packets.Packets.FLY_SHIP: self.fly_ship, # 11
             packets.Packets.CHAT_SENT: self.chat_sent, # 12
             packets.Packets.CELESTIAL_REQUEST: self.celestial_request, # 13
             packets.Packets.CLIENT_CONTEXT_UPDATE: self.client_context_update, # 14
@@ -416,6 +411,16 @@ class StarryPyServerProtocol(Protocol):
         """
         return True
 
+    @route
+    def fly_ship(self, data):
+        """
+        Called when the players moves their ship.
+
+        :param data: The fly_ship data.
+        :rtype : bool
+        """
+        return True
+
     def handle_starbound_packets(self, p):
         """
         This function is the meat of it all. Every time a full packet with
@@ -442,16 +447,18 @@ class StarryPyServerProtocol(Protocol):
                 self.send_chat_message(line)
             return
         if self.player is not None:
-            logger.trace("Calling send_chat_message from player %s on channel %d with mode %d with reported username of %s with message: %s", self.player.name, channel, mode, name, text)
+            logger.debug(('Calling send_chat_message from player %s on channel'
+                          ' %s with mode %s with reported username of %s with'
+                          ' message: %s'), self.player.name, channel, mode, name, text)
         chat_data = packets.chat_received().build(Container(mode=mode,
                                                             chat_channel=channel,
                                                             client_id=0,
                                                             name=name,
                                                             message=text.encode("utf-8")))
-        logger.trace("Built chat payload. Data: %s", chat_data.encode("hex"))
+        logger.debug("Built chat payload. Data: %s", chat_data.encode("hex"))
         chat_packet = build_packet(packets.Packets.CHAT_RECEIVED,
                                    chat_data)
-        logger.trace("Built chat packet. Data: %s", chat_packet.encode("hex"))
+        logger.debug("Built chat packet. Data: %s", chat_packet.encode("hex"))
         self.transport.write(chat_packet)
         logger.debug("Sent chat message with text: %s", text)
 
@@ -638,13 +645,13 @@ class StarryPyServerFactory(ServerFactory):
         start_time = datetime.datetime.now()
         for protocol in self.protocols.itervalues():
             if (protocol.packet_stream.last_received_timestamp - start_time).total_seconds() > self.config.reap_time:
-                logger.trace("Reaping protocol %s. Reason: Server protocol timeout.", protocol.id)
+                logger.debug("Reaping protocol %s. Reason: Server protocol timeout.", protocol.id)
                 protocol.connectionLost()
                 count += 1
                 continue
             if protocol.client_protocol is not None and (protocol.client_protocol.packet_stream.last_received_timestamp - start_time).total_seconds() > self.config.reap_time:
                 protocol.connectionLost()
-                logger.trace("Reaping protocol %s. Reason: Client protocol timeout.", protocol.id)
+                logger.debug("Reaping protocol %s. Reason: Client protocol timeout.", protocol.id)
                 count += 1
         if count == 1:
             logger.info("1 connection reaped.")
@@ -661,11 +668,11 @@ class StarboundClientFactory(ClientFactory):
     protocol = ClientProtocol
 
     def __init__(self, server_protocol):
-        logger.trace("Client protocol instantiated.")
+        logger.debug("Client protocol instantiated.")
         self.server_protocol = server_protocol
 
     def buildProtocol(self, address):
-        logger.trace("Building protocol in StarboundClientFactory to address %s", address)
+        logger.debug("Building protocol in StarboundClientFactory to address %s", address)
         protocol = ClientFactory.buildProtocol(self, address)
         protocol.server_protocol = self.server_protocol
         return protocol
@@ -674,46 +681,42 @@ def init_localization():
         locale.setlocale(locale.LC_ALL, '')
     except:
         locale.setlocale(locale.LC_ALL, 'en_US.utf8')
-    """try:
-        loc = locale.getlocale()
-        filename = "res/messages_%s.mo" % locale.getlocale()[0][0:2]
-        print "Opening message file %s for locale %s." % (filename, loc[0])
-        trans = gettext.GNUTranslations(open(filename, "rb"))
-    except (IOError, TypeError, IndexError):
-        print "Locale not found. Using default messages."
-        trans = gettext.NullTranslations()
-    trans.install()"""
+    #try:
+    #    loc = locale.getlocale()
+    #    filename = "res/messages_%s.mo" % locale.getlocale()[0][0:2]
+    #    print "Opening message file %s for locale %s." % (filename, loc[0])
+    #    trans = gettext.GNUTranslations(open(filename, "rb"))
+    #except (IOError, TypeError, IndexError):
+    #    print "Locale not found. Using default messages."
+    #    trans = gettext.NullTranslations()
+    #trans.install()
 
 
 if __name__ == '__main__':
     init_localization()
+
+    print('Attempting initialization of configuration manager singleton.')
+    config = ConfigurationManager()
+
     logger = logging.getLogger('starrypy')
     logger.setLevel(9)
-    if TRACE:
-        trace_logger = logging.FileHandler("trace.log")
-        trace_logger.setLevel("TRACE")
-        trace_logger.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
-        logger.addHandler(trace_logger)
-        logger.trace("Initialized trace logger.")
+    log_format = logging.Formatter('%(asctime)s - %(levelname)s - %(name)s # %(message)s')
+    if config.log_level == 'DEBUG':
+        log_level = logging.DEBUG
+    else:
+        log_level = logging.INFO
+    
+    print('Setup console logging...')
+    console_handle = logging.StreamHandler(sys.stdout)
+    console_handle.setLevel(log_level)
+    logger.addHandler(console_handle)
+    console_handle.setFormatter(log_format)
 
-    fh_d = logging.FileHandler("debug.log")
-    fh_d.setLevel(logging.DEBUG)
-    fh_w = logging.FileHandler("server.log")
-    fh_w.setLevel(logging.INFO)
-    sh = logging.StreamHandler(sys.stdout)
-    sh.setLevel(logging.INFO)
-    logger.addHandler(sh)
-    logger.addHandler(fh_d)
-    logger.addHandler(fh_w)
-    logger.trace("Attempting initialization of configuration manager singleton.")
-    config = ConfigurationManager()
-    logger.trace("Attemping to set logging formatters from configuration.")
-    console_formatter = logging.Formatter(config.logging_format_console)
-    logfile_formatter = logging.Formatter(config.logging_format_logfile)
-    debugfile_formatter = logging.Formatter(config.logging_format_debugfile)
-    fh_d.setFormatter(debugfile_formatter)
-    fh_w.setFormatter(logfile_formatter)
-    sh.setFormatter(console_formatter)
+    print('Setup file-based logging...')
+    logfile_handle = logging.FileHandler("server.log")
+    logfile_handle.setLevel(log_level)
+    logger.addHandler(logfile_handle)
+    logfile_handle.setFormatter(log_format)
 
     if config.port_check:
         logger.debug("Port check enabled. Performing port check to %s:%d", config.upstream_hostname,
