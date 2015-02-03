@@ -47,6 +47,9 @@
             "port": 6667,
             "server": "irc.freenode.net"
         },
+        "mod_chatter": {
+            "auto_activate": true
+        },
         "motd_plugin": {
             "auto_activate": true,
             "motd": "Welcome to the server! Play nice."
