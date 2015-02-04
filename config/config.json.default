@@ -22,6 +22,9 @@
         "admin_messenger": {
             "auto_activate": true
         },
+        "afk_plugin": {
+            "auto_activate": true
+        },
         "announcer_plugin": {
             "auto_activate": true
         },

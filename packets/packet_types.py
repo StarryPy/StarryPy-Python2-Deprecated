@@ -129,7 +129,8 @@ handshake_challenge = lambda name="handshake_challenge": Struct(name,
 connect_response = lambda name="connect_response": Struct(name,
                                                           Flag("success"),
                                                           VLQ("client_id"),
-                                                          star_string("reject_reason"))
+                                                          star_string("reject_reason"),
+                                                          GreedyRange(star_string("celestial_info")))
 
 # corrected. needs testing
 chat_received = lambda name="chat_received": Struct(name,
@@ -264,6 +265,10 @@ entity_create = Struct("entity_create",
                                   VLQ("entity_size"),
                                   String("entity", lambda ctx: ctx.entity_size),
                                   SignedVLQ("entity_id"))))
+
+entity_update = lambda name="entity_update": Struct(name,
+                                                    UBInt32("entity_id"),
+                                                    StarByteArray("delta"))
 
 client_context_update = lambda name="client_context": Struct(name,
                                                              VLQ("length"),
