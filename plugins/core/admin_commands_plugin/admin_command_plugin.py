@@ -333,6 +333,9 @@ class UserCommandPlugin(SimpleCommandPlugin):
     @permissions(UserLevels.ADMIN)
     def shutdown(self, data):
         """Shutdown the server in n seconds.\nSyntax: /shutdown (seconds) (>0)"""
+        if len(data) == 0:
+            self.protocol.send_chat_message(self.shutdown.__doc__)
+            return
         try:
             x = float(data[0])
         except ValueError:
