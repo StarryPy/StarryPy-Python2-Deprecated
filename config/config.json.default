@@ -28,6 +28,9 @@
         "bookmarks_plugin": {
             "auto_activate": true
         },
+        "brutus_whisper": {
+            "auto_activate": true
+        },
         "chat_logger": {
             "auto_activate": true
         },
@@ -165,7 +168,10 @@
                 "spinningrocket",
                 "stationaryrocket"
             ],
-            "protected_planets": []
+            "player_planets": {
+            },
+            "protected_planets": [
+            ]
         },
         "player_manager": {
             "auto_activate": true,
@@ -184,6 +190,9 @@
             "auto_activate": true
         },
         "starbound_config_manager": {
+            "auto_activate": true
+        },
+        "uptime_plugin": {
             "auto_activate": true
         },
         "user_management_commands": {
