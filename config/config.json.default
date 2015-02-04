@@ -56,6 +56,9 @@
             "port": 6667,
             "server": "irc.freenode.net"
         },
+        "loginwho_plugin": {
+            "auto_activate": true
+        },
         "mod_chatter": {
             "auto_activate": true
         },
