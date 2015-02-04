@@ -18,14 +18,11 @@ from utility_functions import path
 @contextmanager
 def _autoclosing_session(sm):
     session = sm()
-
     try:
         yield session
-
     except:
         session.rollback()
         raise
-
     finally:
         session.close()
 
@@ -162,12 +159,12 @@ class Player(Base):
     ips = relationship("IPAddress", order_by="IPAddress.id", backref="players")
 
     def colored_name(self, colors):
-        logger.debug("Building colored name.")
+        logger.vdebug("Building colored name.")
         color = colors[UserLevels(self.access_level).lower()]
-        logger.debug("Color is %s", color)
+        logger.vdebug("Color is %s", color)
         name = self.name
-        logger.debug("Name is %s", name)
-        logger.debug("Returning the following data for colored name. %s:%s:%s",
+        logger.vdebug("Name is %s", name)
+        logger.vdebug("Returning the following data for colored name. %s:%s:%s",
                      color, name, colors['default'])
         return color + name + colors["default"]
 
