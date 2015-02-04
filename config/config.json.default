@@ -23,7 +23,9 @@
             "auto_activate": true
         },
         "afk_plugin": {
-            "auto_activate": true
+            "auto_activate": true,
+            "afk_message": "^gray;is now AFK.",
+            "afkreturn_message": "^gray;has returned."
         },
         "announcer_plugin": {
             "auto_activate": true
@@ -44,6 +46,9 @@
             "auto_activate": true
         },
         "emotes_plugin": {
+            "auto_activate": true
+        },
+        "fuelgiver_plugin": {
             "auto_activate": true
         },
         "irc": {
