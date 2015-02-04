@@ -182,6 +182,9 @@
             "protected_planets": [
             ]
         },
+        "planet_visitor_announcer_plugin": {
+            "auto_activate": true
+        },
         "player_manager": {
             "auto_activate": true,
             "name_removal_regexes": [
