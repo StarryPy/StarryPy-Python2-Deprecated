@@ -23,9 +23,9 @@
             "auto_activate": true
         },
         "afk_plugin": {
-            "auto_activate": true,
             "afk_message": "^gray;is now AFK.",
-            "afkreturn_message": "^gray;has returned."
+            "afkreturn_message": "^gray;has returned.",
+            "auto_activate": true
         },
         "announcer_plugin": {
             "auto_activate": true
@@ -49,7 +49,7 @@
             "auto_activate": true
         },
         "fuelgiver_plugin": {
-            "auto_activate": true
+            "auto_activate": false
         },
         "irc": {
             "auto_activate": false,
@@ -75,7 +75,7 @@
             "auto_activate": true
         },
         "new_player_greeter_plugin": {
-            "auto_activate": true,
+            "auto_activate": false,
             "items": [
                 [
                     "coalore",
@@ -208,6 +208,16 @@
         },
         "starbound_config_manager": {
             "auto_activate": true
+        },
+        "starteritems_plugin": {
+            "auto_activate": false,
+            "message": "Enjoy these gifts from us!",
+            "items": [
+                [
+                    "coalore",
+                    200
+                ]
+            ]
         },
         "uptime_plugin": {
             "auto_activate": true
