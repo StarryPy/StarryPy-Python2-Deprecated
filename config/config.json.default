@@ -40,6 +40,9 @@
         "command_dispatcher": {
             "auto_activate": true
         },
+        "emotes_plugin": {
+            "auto_activate": true
+        },
         "irc": {
             "auto_activate": false,
             "bot_nickname": "StarryPyBot",
