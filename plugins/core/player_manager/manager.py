@@ -251,7 +251,6 @@ class PlayerManager(object):
                 if player.name != name:
                     logger.info("Detected username change.")
                     player.name = name
-                    self.protocol.player.name = name
                 if ip not in player.ips:
                     player.ips.append(IPAddress(ip=ip))
                     player.ip = ip
