@@ -2,4 +2,5 @@ sqlalchemy
 twisted
 enum34
 construct
+tornado
 nose
