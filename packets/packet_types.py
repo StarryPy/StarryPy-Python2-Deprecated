@@ -91,16 +91,7 @@ class HexAdapter(Adapter):
     def _decode(self, obj, context):
         return obj.encode("hex")
 
-
-# may need to be corrected. new version only has hash, uses ByteArray
-handshake_response = lambda name="handshake_response": Struct(name,
-                                                              star_string("claim_response"),
-                                                              star_string("hash"))
-
-# small correction. added proper context. may need to check if this is correct (need double. used bfloat64).
-universe_time_update = lambda name="universe_time": Struct(name,
-                                                           #VLQ("unknown"))
-                                                           BFloat64("universe_time"))
+# ---------- Utility constructs ---------
 
 packet = lambda name="base_packet": Struct(name,
                                            Byte("id"),
@@ -112,53 +103,27 @@ start_packet = lambda name="interim_packet": Struct(name,
                                                     Byte("id"),
                                                     SignedVLQ("payload_size"))
 
-protocol_version = lambda name="protocol_version": Struct(name,
-                                                          UBInt32("server_build"))
-
 connection = lambda name="connection": Struct(name,
                                               GreedyRange(Byte("compressed_data")))
 
-# may need to be corrected. new version only has salt, uses ByteArray
-handshake_challenge = lambda name="handshake_challenge": Struct(name,
-                                                                star_string("claim_message"),
-                                                                star_string("salt"),
-                                                                SBInt32("round_count"))
+celestial_coordinate = lambda name="celestial_coordinate": Struct(name,
+                                                                  SBInt32("x"),
+                                                                  SBInt32("y"),
+                                                                  SBInt32("z"),
+                                                                  SBInt32("planet"),
+                                                                  SBInt32("satellite"))
 
-# Needs to be corrected to include 'celestial information' as well as proper reject
-# sucess handling.
-connect_response = lambda name="connect_response": Struct(name,
-                                                          Flag("success"),
-                                                          VLQ("client_id"),
-                                                          star_string("reject_reason"),
-                                                          GreedyRange(star_string("celestial_info")))
+projectile = DictVariant("projectile")
 
-# corrected. needs testing
-chat_received = lambda name="chat_received": Struct(name,
-                                                    Enum(Byte("mode"),
-                                                         CHANNEL=0,
-                                                         BROADCAST=1,
-                                                         WHISPER=2,
-                                                         COMMAND_RESULT=3),
-                                                    star_string("channel"),
-                                                    UBInt32("client_id"),
-                                                    star_string("name"),
-                                                    star_string("message"))
+# ---------------------------------------
 
-# corrected. shouldn't need too much testing
-chat_sent = lambda name="chat_sent": Struct(name,
-                                            star_string("message"),
-                                            Enum(Byte("send_mode"),
-                                                 BROADCAST=0,
-                                                 LOCAL=1,
-                                                 PARTY=2)
-                                            )
+# ----- Primary connection sequence -----
 
-chat_sent_write = lambda message, send_mode: chat_sent().build(
-        Container(
-            message=message,
-            send_mode=send_mode))
+# (0) - ProtocolVersion : S -> C
+protocol_version = lambda name="protocol_version": Struct(name,
+                                                          UBInt32("server_build"))
 
-# quite a bit of guesswork and hackery here with the ship_upgrades.
+# (7) - ClientConnect : C -> S
 client_connect = lambda name="client_connect": Struct(name,
                                                       VLQ("asset_digest_length"),
                                                       String("asset_digest",
@@ -172,25 +137,78 @@ client_connect = lambda name="client_connect": Struct(name,
                                                       StarByteArray("ship_data"),
                                                       UBInt32("ship_level"),
                                                       UBInt32("max_fuel"),
-                                                      VLQ("capabilities"),
+                                                      VLQ("capabilities_length"),
+                                                      Array(lambda ctx: ctx.capabilities_length,
+                                                            Struct("capabilities",
+                                                                   star_string("value"))),
                                                       star_string("account"))
 
+# (3) - HandshakeChallenge : S -> C
+handshake_challenge = lambda name="handshake_challenge": Struct(name,
+                                                                StarByteArray("salt"))
+
+# (9) - HandshakeResponse : C -> S
+handshake_response = lambda name="handshake_response": Struct(name,
+                                                              star_string("hash"))
+
+# (2) - ConnectResponse : S -> C
+connect_response = lambda name="connect_response": Struct(name,
+                                                          Flag("success"),
+                                                          VLQ("client_id"),
+                                                          star_string("reject_reason"),
+                                                          Flag("celestial_info_exists"),
+                                                          If(lambda ctx: ctx.celestial_info_exists,
+                                                              Struct(
+                                                                  "celestial_data",
+                                                                  SBInt32("planet_orbital_levels"),
+                                                                  SBInt32("satellite_orbital_levels"),
+                                                                  SBInt32("chunk_size"),
+                                                                  SBInt32("xy_min"),
+                                                                  SBInt32("xy_max"),
+                                                                  SBInt32("z_min"),
+                                                                  SBInt32("z_max"))))
+
+# ---------------------------------------
+
+# (1) - ServerDisconnect
 server_disconnect = lambda name="server_disconnect": Struct(name,
                                                             star_string("reason"))
 
+# (5) - UniverseTimeUpdate
+universe_time_update = lambda name="universe_time": Struct(name,
+                                                           BFloat64("universe_time"))
+
+# (8) - ClientDisconnectRequest
 client_disconnect_request = lambda name="client_disconnect_request": Struct(name,
                                                                             Byte("data"))
 
-celestial_request = lambda name="celestial_request": Struct(name,
-                                                            GreedyRange(star_string("requests")))
+# (4) - ChatReceived
+chat_received = lambda name="chat_received": Struct(name,
+                                                    Enum(Byte("mode"),
+                                                         CHANNEL=0,
+                                                         BROADCAST=1,
+                                                         WHISPER=2,
+                                                         COMMAND_RESULT=3),
+                                                    star_string("channel"),
+                                                    UBInt32("client_id"),
+                                                    star_string("name"),
+                                                    star_string("message"))
 
-celestial_coordinate = lambda name="celestial_coordinate": Struct(name,
-                                                                  SBInt32("x"),
-                                                                  SBInt32("y"),
-                                                                  SBInt32("z"),
-                                                                  SBInt32("planet"),
-                                                                  SBInt32("satellite"))
+# (12) - ChatSent
+chat_sent = lambda name="chat_sent": Struct(name,
+                                            star_string("message"),
+                                            Enum(Byte("send_mode"),
+                                                 BROADCAST=0,
+                                                 LOCAL=1,
+                                                 PARTY=2)
+                                            )
 
+chat_sent_write = lambda message, send_mode: chat_sent().build(
+        Container(
+            message=message,
+            send_mode=send_mode))
+
+# (10) - PlayerWarp
 player_warp = lambda name="player_warp": Struct(name,
                                                   Enum(UBInt8("warp_type"),
                                                        WARP_TO=0,
@@ -205,6 +223,7 @@ player_warp_write = lambda t, world_id: player_warp().build(
         warp_type=t,
         world_id=world_id))
 
+# (11) - FlyShip
 fly_ship = lambda name="fly_ship": Struct(name,
                                           celestial_coordinate())
 
@@ -217,22 +236,39 @@ fly_ship_write = lambda x=0, y=0, z=0, planet=0, satellite=0: fly_ship().build(
             planet=planet,
             satellite=satellite)))
 
-# partially correct. Needs work on dungeon ID value
+# (13) - CelestialRequest
+celestial_request = lambda name="celestial_request": Struct(name,
+                                                            GreedyRange(star_string("requests")))
+
+# (14) - ClientContextUpdate
+client_context_update = lambda name="client_context": Struct(name,
+                                                             VLQ("length"),
+                                                             Byte("arguments"),
+                                                             Array(lambda ctx: ctx.arguments,
+                                                                   Struct("key",
+                                                                   Variant("value"))))
+
+# (15) - WorldStart
 world_start = lambda name="world_start": Struct(name,
-                                                Variant("planet"), # rename to templateData?
+                                                Variant("planet"),
                                                 StarByteArray("sky_data"),
                                                 StarByteArray("weather_data"),
-                                                #dungeon id stuff here
+                                                # Dungeon ID stuff here
                                                 BFloat32("x"),
                                                 BFloat32("y"),
                                                 Variant("world_properties"),
                                                 UBInt32("client_id"),
                                                 Flag("local_interpolation"))
 
+# (16) - WorldStop
 world_stop = lambda name="world_stop": Struct(name,
                                               star_string("status"))
 
-# I THINK this is ok. Will test later.
+# (17) - CentralStructureUpdate
+central_structure_update = lambda name="central_structure_update": Struct(name,
+                                                                          Variant("structureData"))
+
+# (23) - GiveItem
 give_item = lambda name="give_item": Struct(name,
                                             star_string("name"),
                                             VLQ("count"),
@@ -246,6 +282,7 @@ give_item_write = lambda name, count: give_item().build(
             variant_type=7,
             description=''))
 
+# (52) - UpdateWorldProperties
 update_world_properties = lambda name="world_properties": Struct(name,
                                                                  UBInt8("count"),
                                                                  Array(lambda ctx: ctx.count,
@@ -258,6 +295,7 @@ update_world_properties_write = lambda dictionary: update_world_properties().bui
         count=len(dictionary),
         properties=[Container(key=k, value=Container(type="SVLQ", data=v)) for k, v in dictionary.items()]))
 
+# (45) - EntityCreate
 entity_create = Struct("entity_create",
                        GreedyRange(
                            Struct("entity",
@@ -266,18 +304,11 @@ entity_create = Struct("entity_create",
                                   String("entity", lambda ctx: ctx.entity_size),
                                   SignedVLQ("entity_id"))))
 
+# (46) - EntityUpdate
 entity_update = lambda name="entity_update": Struct(name,
                                                     UBInt32("entity_id"),
                                                     StarByteArray("delta"))
 
-client_context_update = lambda name="client_context": Struct(name,
-                                                             VLQ("length"),
-                                                             Byte("arguments"),
-                                                             Array(lambda ctx: ctx.arguments,
-                                                                   Struct("key",
-                                                                   Variant("value"))))
-
-central_structure_update = lambda name="central_structure_update": Struct(name,
-                                                                          Variant("structureData"))
-
-projectile = DictVariant("projectile")
+# (53) - Heartbeat
+heartbeat = lambda name="heartbeat": Structure(name,
+                                               UBInt64("remote_step"))

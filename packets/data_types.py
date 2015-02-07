@@ -108,6 +108,8 @@ class WarpVariant(Construct):
         elif x == 3:
             flag = Flag("").parse_stream(stream)
             return Field("", 16).parse_stream(stream).encode("hex")
+        elif x == 4:
+            return star_string().parse_stream(stream)
     def _build(self, obj, stream, context):
         if len(obj) == 32:
             _write_stream(stream, 1, chr(3))
