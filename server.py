@@ -3,6 +3,7 @@ from _socket import SHUT_RDWR
 #import gettext
 import locale
 import logging
+import logging.handlers
 from uuid import uuid4
 import sys
 import socket
@@ -24,11 +25,11 @@ from utility_functions import build_packet
 VERSION = "1.4.4"
 
 
-VDEBUG_LVL = 9 
+VDEBUG_LVL = 9
 logging.addLevelName(VDEBUG_LVL, "VDEBUG")
 def vdebug(self, message, *args, **kws):
     if self.isEnabledFor(VDEBUG_LVL):
-        self._log(VDEBUG_LVL, message, args, **kws) 
+        self._log(VDEBUG_LVL, message, args, **kws)
 logging.Logger.vdebug = vdebug
 
 def port_check(upstream_hostname, upstream_port):
@@ -715,7 +716,7 @@ if __name__ == '__main__':
         log_level = "VDEBUG"
     else:
         log_level = logging.INFO
-    
+
     print('Setup console logging...')
     console_handle = logging.StreamHandler(sys.stdout)
     console_handle.setLevel(log_level)
@@ -723,7 +724,7 @@ if __name__ == '__main__':
     console_handle.setFormatter(log_format)
 
     print('Setup file-based logging...')
-    logfile_handle = logging.FileHandler("server.log")
+    logfile_handle = logging.handlers.TimedRotatingFileHandler("server.log", when='midnight', interval=5, backupCount=4)
     logfile_handle.setLevel(log_level)
     logger.addHandler(logfile_handle)
     logfile_handle.setFormatter(log_format)
