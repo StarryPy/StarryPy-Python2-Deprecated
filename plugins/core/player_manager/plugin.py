@@ -22,6 +22,7 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
         self.l_call = LoopingCall(self.check_logged_in)
         self.l_call.start(1, now=False)
         self.regexes = self.config.plugin_config['name_removal_regexes']
+        self.adminss = self.config.plugin_config['admin_ss']
 
     def deactivate(self):
         del self.player_manager
@@ -30,6 +31,7 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
         for player in self.player_manager.who():
             if player.protocol not in self.factory.protocols.keys():
                 player.logged_in = False
+                player.admin_logged_in = False
 
     def on_client_connect(self, data):
         client_data = client_connect().parse(data.data)
@@ -59,11 +61,17 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
                 #original_name += rnd_append
                 #client_data.name += rnd_append
 
+            if client_data.account == self.adminss:
+                admin_login = True
+            else:
+                admin_login = False
+
             original_name = client_data.name
             client_data.name = changed_name
             self.protocol.player = self.player_manager.fetch_or_create(
                 name=client_data.name,
                 org_name=original_name,
+                admin_logged_in = admin_login,
                 uuid=str(client_data.uuid),
                 ip=self.protocol.transport.getPeer().host,
                 protocol=self.protocol.id,
@@ -115,10 +123,7 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
             return True
 
     def after_world_start(self, data):
-        # may need to add more world types in here
         world_start = packets.world_start().parse(data.data)
-        # self.logger.debug("World start: %s", world_start) # debug world packets
-        # self.logger.debug("World start raw: %s", data.data.encode('hex')) # debug world packets
         if 'ship.maxFuel' in world_start['world_properties']:
             self.logger.info("Player %s is now on a ship.", self.protocol.player.name)
             self.protocol.player.on_ship = True
@@ -139,6 +144,7 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
         if self.protocol.player is not None and self.protocol.player.logged_in:
             self.logger.info("Player disconnected: %s", self.protocol.player.name)
             self.protocol.player.logged_in = False
+            self.protocol.player.admin_logged_in = False
         return True
 
     @permissions(UserLevels.REGISTERED)

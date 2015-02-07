@@ -148,6 +148,7 @@ class Player(Base):
     last_seen = Column(DateTime)
     access_level = Column(Integer)
     logged_in = Column(Boolean)
+    admin_logged_in = Column(Boolean)
     protocol = Column(String)
     client_id = Column(Integer)
     ip = Column(String)
@@ -215,6 +216,7 @@ class PlayerManager(object):
         with _autoclosing_session(self.sessionmaker) as session:
             for player in session.query(Player).filter_by(logged_in=True).all():
                 player.logged_in = False
+                player.admin_logged_in = False
                 player.protocol = None
                 session.commit()
 
@@ -233,7 +235,7 @@ class PlayerManager(object):
 
         return to_return
 
-    def fetch_or_create(self, uuid, name, org_name, ip, protocol=None):
+    def fetch_or_create(self, uuid, name, org_name, admin_logged_in, ip, protocol=None):
         with _autoclosing_session(self.sessionmaker) as session:
             if session.query(Player).filter_by(uuid=uuid, logged_in=True).first():
                 raise AlreadyLoggedIn
@@ -256,12 +258,14 @@ class PlayerManager(object):
                     player.ip = ip
                 player.protocol = protocol
                 player.last_seen = datetime.datetime.now()
+                player.admin_logged_in = admin_logged_in
             else:
                 logger.info("Adding new player with name: %s" % name)
                 player = Player(uuid=uuid, name=name, org_name=org_name,
                                 last_seen=datetime.datetime.now(),
                                 access_level=int(UserLevels.GUEST),
                                 logged_in=False,
+                                admin_logged_in=False,
                                 protocol=protocol,
                                 client_id=-1,
                                 ip=ip,
@@ -385,7 +389,13 @@ def permissions(level=UserLevels.OWNER):
         @wraps(f)
         def wrapped_function(self, *args, **kwargs):
             if self.protocol.player.access_level >= level:
-                return f(self, *args, **kwargs)
+                if level >= UserLevels.MODERATOR:
+                    if self.protocol.player.admin_logged_in == 0:
+                        self.protocol.send_chat_message("^red;You're not logged in, so I can't let you do that.^yellow;")
+                    else:
+                        return f(self, *args, **kwargs)
+                else:
+                    return f(self, *args, **kwargs)
             else:
                 self.protocol.send_chat_message("You are not authorized to do this.")
                 return False
