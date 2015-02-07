@@ -44,3 +44,4 @@ nosetests.xml
 
 # Vim mess cleanup
 *.swp
+*.un~
