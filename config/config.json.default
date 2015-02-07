@@ -1,5 +1,4 @@
 {
-    "admin_ss": "tester",
     "bind_address": "",
     "bind_port": 21025,
     "chat_prefix": "#",
@@ -197,6 +196,7 @@
             "auto_activate": true
         },
         "player_manager": {
+            "admin_ss": "tester",
             "auto_activate": true,
             "name_removal_regexes": [
                 "\\^#[\\w]+;",
