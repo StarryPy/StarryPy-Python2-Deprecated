@@ -38,7 +38,7 @@ def recursive_dictionary_update(d, u):
 def build_packet(packet_type, data):
     """
     Convenience method to build packets for sending.
-    :param packet_type: An integer 1 <= packet_type <= 48
+    :param packet_type: An integer 1 <= packet_type <= 53
     :param data: Data to send.
     :return: The build packet.
     :rtype : str
@@ -49,8 +49,7 @@ def build_packet(packet_type, data):
 
 
 class Planet(object):
-    def __init__(self, sector, x, y, z, planet, satellite):
-        self.sector = sector
+    def __init__(self, x, y, z, planet, satellite):
         self.x = x
         self.y = y
         self.z = z
@@ -58,17 +57,16 @@ class Planet(object):
         self.satellite = satellite
 
     def __str__(self):
-        return "%s:%d:%d:%d:%d:%d" % (self.sector, self.x, self.y, self.z, self.planet, self.satellite)
+        return "%d:%d:%d:%d:%d" % (self.x, self.y, self.z, self.planet, self.satellite)
 
 
-def move_ship_to_coords(protocol, sector, x, y, z, planet, satellite):
+def move_ship_to_coords(protocol, x, y, z, planet, satellite):
     logger.info("Moving %s's ship to coordinates: %s", protocol.player.name,
-                ":".join((sector, str(x), str(y), str(z), str(planet), str(satellite))))
+                ":".join((str(x), str(y), str(z), str(planet), str(satellite))))
     x, y, z, planet, satellite = map(int, (x, y, z, planet, satellite))
-    warp_packet = build_packet(packets.Packets.WARP_COMMAND,
-                               packets.warp_command_write(t="MOVE_SHIP", sector=sector, x=x, y=y, z=z,
-                                                          planet=planet,
-                                                          satellite=satellite, player="".encode('utf-8')))
+    warp_packet = build_packet(packets.Packets.FLY_SHIP,
+                               packets.fly_ship_write(x=x, y=y, z=z, planet=planet,
+                                                      satellite=satellite))
     protocol.client_protocol.transport.write(warp_packet)
 
 

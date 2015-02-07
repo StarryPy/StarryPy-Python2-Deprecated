@@ -1,6 +1,6 @@
 import logging
 from construct import Construct, Struct, Byte, BFloat64, Flag, \
-    String, Container
+    String, Container, Field
 from construct.core import _read_stream, _write_stream, Adapter
 
 
@@ -75,10 +75,10 @@ class Joiner(Adapter):
         return obj
     def _decode(self, obj, context):
         return "".join(obj)
+
 star_string_struct = lambda name="star_string": Struct(name,
                                                        VLQ("length"),
-                                                       String("string", lambda ctx: ctx.length)
-)
+                                                       String("string", lambda ctx: ctx.length))
 
 class VariantVariant(Construct):
     def _parse(self, stream, context):
@@ -95,6 +95,33 @@ class DictVariant(Construct):
             c[key] = value
         return c
 
+class WarpVariant(Construct):
+# Not all variants have been properly treated!
+    def _parse(self, stream, context):
+        x = Byte("").parse_stream(stream)
+        if x == 0:
+            return None
+        elif x == 1:
+            return star_string().parse_stream(stream)
+        elif x == 2:
+            return None
+        elif x == 3:
+            flag = Flag("").parse_stream(stream)
+            return Field("", 16).parse_stream(stream).encode("hex")
+    def _build(self, obj, stream, context):
+        if len(obj) == 32:
+            _write_stream(stream, 1, chr(3))
+            _write_stream(stream, 1, chr(1))
+            _write_stream(stream, len(obj.decode("hex")), obj.decode("hex"))
+            return
+        elif obj is "outpost":
+            _write_stream(stream, 1, chr(1))
+            star_string()._build(obj, stream, context)
+            return
+        elif obj is None:
+            _write_stream(stream, 1, chr(4))
+            _write_stream(stream, 1, chr(0))
+            return
 
 class Variant(Construct):
     def _parse(self, stream, context):

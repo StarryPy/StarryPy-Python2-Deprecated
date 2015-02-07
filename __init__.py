@@ -1,7 +1,8 @@
 import logging
-TRACE_LVL = 9
-logging.addLevelName(TRACE_LVL, "TRACE")
 
-def trace(self, message, *args, **kws):
-    self._log(TRACE_LVL, message, args, **kws)
-logging.Logger.trace = trace
+VDEBUG_LVL = 9 
+logging.addLevelName(VDEBUG_LVL, "VDEBUG")
+def vdebug(self, message, *args, **kws):
+    if self.isEnabledFor(VDEBUG_LVL):
+        self._log(VDEBUG_LVL, message, args, **kws) 
+logging.Logger.vdebug = vdebug

@@ -2,13 +2,11 @@ import json
 from twisted.python.filepath import FilePath
 from base_plugin import SimpleCommandPlugin
 from plugin_manager import FatalPluginError
-from plugins.core import permissions, UserLevels
 
 
 class StarboundConfigManager(SimpleCommandPlugin):
     name = "starbound_config_manager"
-    depends = ['command_dispatcher', 'warpy_plugin']
-    commands = ["spawn"]
+    depends = ['command_dispatcher']
 
     def activate(self):
         super(StarboundConfigManager, self).activate()
@@ -26,14 +24,7 @@ class StarboundConfigManager(SimpleCommandPlugin):
             raise FatalPluginError(
                 "Could not parse the starbound configuration file as JSON. Error given from JSON decoder: %s" % str(
                     e))
-        if self.config.upstream_port != starbound_config['gamePort']:
+        if self.config.upstream_port != starbound_config['gameServerPort']:
             raise FatalPluginError(
-                "The starbound gamePort option (%d) does not match the config.json upstream_port (%d)." % (
-                    starbound_config['gamePort'], self.config.upstream_port))
-        self._spawn = starbound_config['defaultWorldCoordinate'].split(":")
-
-    @permissions(UserLevels.GUEST)
-    def spawn(self, data):
-        __doc__ = _("""Moves your ship to spawn. Syntax: /spawn""")
-        self.plugins['warpy_plugin'].move_player_ship(self.protocol, [x for x in self._spawn])
-        self.protocol.send_chat_message(_("Moving your ship to spawn."))
+                "The starbound gameServerPort option (%d) does not match the config.json upstream_port (%d)." % (
+                    starbound_config['gameServerPort'], self.config.upstream_port))

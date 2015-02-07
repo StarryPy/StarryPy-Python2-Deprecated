@@ -36,8 +36,11 @@ nosetests.xml
 .pydevproject
 
 # Project specific
-*config.json
+*.json
 *.db
 *.db-journal
 *.log
 .idea/
+
+# Vim mess cleanup
+*.swp

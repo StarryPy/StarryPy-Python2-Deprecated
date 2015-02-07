@@ -1,3 +1,4 @@
+from twisted.internet import reactor, defer
 from base_plugin import BasePlugin
 from utility_functions import give_item_to_player
 
@@ -12,7 +13,7 @@ class NewPlayerGreeter(BasePlugin):
     def activate(self):
         super(NewPlayerGreeter, self).activate()
 
-    def after_connect_response(self, data):
+    def after_world_start(self, data):
         if self.protocol.player is not None and self.protocol.player.logged_in:
             my_storage = self.protocol.player.storage
             if not 'given_starter_items' in my_storage or my_storage['given_starter_items'] == "False":

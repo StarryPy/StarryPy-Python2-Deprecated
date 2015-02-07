@@ -1,0 +1,1 @@
+from bookmarks_plugin import Bookmarks

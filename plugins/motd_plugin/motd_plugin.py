@@ -9,7 +9,7 @@ class MOTDPlugin(SimpleCommandPlugin):
     successful connection.
     """
     name = "motd_plugin"
-    commands = ["motd", "set_motd"]
+    commands = ["motd", "motd_set"]
     auto_activate = True
 
     def activate(self):
@@ -25,19 +25,19 @@ class MOTDPlugin(SimpleCommandPlugin):
         self.send_motd()
 
     def send_motd(self):
-        self.protocol.send_chat_message(_("Message of the Day:\n%s") % self._motd)
+        #self.protocol.send_chat_message("^yellow;%s" % self._motd)
+        if not self.config.server_name:
+            self.config.server_name = "MY"
+        self.protocol.send_chat_message("%s" % (self._motd))
 
     @permissions(UserLevels.GUEST)
     def motd(self, data):
-        __doc__ = _("""Displays the message of the day. Usage: /motd""")
-        if len(data) == 0:
-            self.send_motd()
-        else:
-            self.set_motd(data)
+        """Displays the message of the day.\nSyntax: /motd"""
+        self.send_motd()
 
     @permissions(UserLevels.MODERATOR)
-    def set_motd(self, motd):
-        __doc__ = _("""Sets the message of the day to a new value. Usage: /set_motd [New message of the day]""")
+    def motd_set(self, motd):
+        """Sets the message of the day to a new value.\nSyntax: /motd_set (new message of the day)"""
         try:
             self._motd = " ".join(motd).encode("utf-8")
             self.config.plugin_config['motd'] = self._motd

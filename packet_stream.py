@@ -29,7 +29,7 @@ class PacketStream(object):
         self.packet_size = None
         self.protocol = protocol
         self.direction = None
-        self.last_received_timestamp = datetime.datetime.utcnow()
+        self.last_received_timestamp = datetime.datetime.now()
 
     def __add__(self, other):
         self._stream += other
@@ -39,7 +39,7 @@ class PacketStream(object):
         except:
             pass
         finally:
-            self.last_received_timestamp = datetime.datetime.utcnow()
+            self.last_received_timestamp = datetime.datetime.now()
         return self
 
     def start_packet(self):
@@ -55,8 +55,8 @@ class PacketStream(object):
                 self.header_length = 1 + len(packets.SignedVLQ("").build(packet_header.payload_size))
                 self.packet_size = self.payload_size + self.header_length
                 return True
-        except:
-            self.logger.exception("Unknown error in start_packet.")
+        except RuntimeError:
+            self.logger.error("Unknown error in start_packet.")
             return False
 
     def check_packet(self):
@@ -71,14 +71,13 @@ class PacketStream(object):
                         z = zlib.decompressobj()
                         p_parsed.data = z.decompress(p_parsed.data)
                     except zlib.error:
-
                         self.logger.error("Decompression error in check_packet.")
-                        self.logger.trace("Parsed packet:")
-                        self.logger.trace(pprint.pformat(p_parsed))
-                        self.logger.trace("Packet data:")
-                        self.logger.trace(pprint.pformat(p_parsed.original_data.encode("hex")))
-                        self.logger.trace("Following packet data:")
-                        self.logger.trace(pprint.pformat(self._stream.encode("hex")))
+                        self.logger.debug("Parsed packet:")
+                        self.logger.debug(pprint.pformat(p_parsed))
+                        self.logger.debug("Packet data:")
+                        self.logger.debug(pprint.pformat(p_parsed.original_data.encode("hex")))
+                        self.logger.debug("Following packet data:")
+                        self.logger.debug(pprint.pformat(self._stream.encode("hex")))
                         raise
                 packet = Packet(packet_id=p_parsed.id, payload_size=p_parsed.payload_size, data=p_parsed.data,
                                 original_data=p, direction=self.direction)
@@ -88,8 +87,9 @@ class PacketStream(object):
                 self.reset()
                 if self.start_packet():
                     self.check_packet()
-        except:
-            self.logger.exception("Unknown error in check_packet")
+        except RuntimeError:
+            self.logger.error("Unknown error in check_packet")
+            #return False
 
     def reset(self):
         self.id = None
