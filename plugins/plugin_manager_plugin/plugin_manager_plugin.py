@@ -13,7 +13,7 @@ class PluginManagerPlugin(SimpleCommandPlugin):
     def plugin_manager(self):
         return self.protocol.plugin_manager
 
-    @permissions(UserLevels.OWNER)
+    @permissions(UserLevels.ADMIN)
     def plugin_list(self, data):
         """Displays all currently loaded plugins.\nSyntax: /plugin_list"""
         self.protocol.send_chat_message("Currently loaded plugins: ^yellow;%s" % "^green;, ^yellow;".join(
@@ -26,6 +26,7 @@ class PluginManagerPlugin(SimpleCommandPlugin):
     @permissions(UserLevels.OWNER)
     def plugin_disable(self, data):
         """Disables a currently activated plugin.\nSyntax: /plugin_disable (plugin name)"""
+        self.logger.debug("disable_plugin called: %s" " ".join(data))
         if len(data) == 0:
             self.protocol.send_chat_message("You have to specify a plugin.")
             return
@@ -47,6 +48,7 @@ class PluginManagerPlugin(SimpleCommandPlugin):
     @permissions(UserLevels.OWNER)
     def plugin_enable(self, data):
         """Enables a currently deactivated plugin.\nSyntax: /plugin_enable (plugin name)"""
+        self.logger.debug("enable_plugin called: %s", " ".join(data))
         if len(data) == 0:
             self.protocol.send_chat_message("You have to specify a plugin.")
             return
@@ -69,6 +71,8 @@ class PluginManagerPlugin(SimpleCommandPlugin):
             func = self.plugins['command_dispatcher'].commands.get(command, None)
             if func is None:
                 self.protocol.send_chat_message("Couldn't find a command with the name ^yellow;%s" % command)
+            elif func.level > self.protocol.player.access_level:
+                self.protocol.send_chat_message("You do not have access to this command.")
             else:
                 #self.protocol.send_chat_message("%s%s: %s" % (self.config.command_prefix, command, func.__doc__))
                 self.protocol.send_chat_message("%s" % func.__doc__)

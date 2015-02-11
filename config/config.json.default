@@ -14,10 +14,7 @@
     },
     "command_prefix": "/",
     "core_plugin_path": "core_plugins",
-    "debug_file": "debug.log",
-    "logging_format_console": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    "logging_format_debugfile": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    "logging_format_logfile": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    "log_level": "DEBUG",
     "owner_uuid": "!!--REPLACE THIS--!!",
     "passthrough": false,
     "player_db": "config/player.db",
@@ -26,8 +23,8 @@
             "auto_activate": true
         },
         "afk_plugin": {
-            "afk_msg": "is now AFK",
-            "afkreturn_msg": "has returned",
+            "afk_msg": "^gray;is now AFK.",
+            "afkreturn_msg": "^gray;has returned.",
             "auto_activate": true
         },
         "announcer_plugin": {
@@ -44,7 +41,8 @@
         },
         "claims": {
             "auto_activate": true,
-            "max_claims": 5
+            "max_claims": 5,
+            "unclaimable_planets": []
         },
         "colored_names_plugin": {
             "auto_activate": true
@@ -56,12 +54,12 @@
             "auto_activate": true
         },
         "fuelgiver_plugin": {
-            "auto_activate": true
+            "auto_activate": false
         },
         "irc": {
             "auto_activate": false,
-            "bot_nickname": "botname",
-            "channel": "#channel",
+            "bot_nickname": "StarryPyBot",
+            "channel": "##test",
             "color": "^#e39313;",
             "echo_from_channel": true,
             "nickserv_password": "password",
@@ -69,6 +67,9 @@
             "server": "irc.freenode.net"
         },
         "loginwho_plugin": {
+            "auto_activate": true
+        },
+        "mod_chatter": {
             "auto_activate": true
         },
         "motd_plugin": {
@@ -79,40 +80,18 @@
             "auto_activate": true
         },
         "new_player_greeter_plugin": {
-            "auto_activate": true,
+            "auto_activate": false,
             "items": [
+                [
+                    "coalore",
+                    200
+                ]
             ],
-            "message": "Welcome new Starbounder ;)"
-        },
-        "starteritems_plugin": {
-            "auto_activate": true,
-            "items": [
-            [ "bandage", 20 ],
-            [ "burger", 20 ],
-            [ "stoneaxe", 1 ],
-            [ "stonehoe", 1 ],
-            [ "stonepickaxe", 1 ],
-            [ "solariumore", 30 ],
-            [ "money", 1000 ]
-            ],
-            "message": "You were given a set of starter items ;)"
+            "message": "Welcome to the server!"
         },
         "planet_protect": {
             "auto_activate": true,
-            "protect_everything": false,
             "bad_packets": [
-                "CONNECT_WIRE",
-                "DISCONNECT_ALL_WIRES",
-                "ENTITY_INTERACT",
-                "OPEN_CONTAINER",
-                "CLOSE_CONTAINER",
-                "SWAP_IN_CONTAINER",
-                "DAMAGE_TILE",
-                "DAMAGE_TILE_GROUP",
-                "REQUEST_DROP",
-                "MODIFY_TILE_LIST"
-            ],
-            "bad_packets_mild": [
                 "CONNECT_WIRE",
                 "DISCONNECT_ALL_WIRES",
                 "DAMAGE_TILE",
@@ -194,18 +173,22 @@
                 "spinningrocket",
                 "stationaryrocket"
             ],
-            "player_planets": {},
-            "protected_planets": []
+            "player_planets": {
+            },
+            "protect_everything": false,
+            "protected_planets": [
+            ]
+        },
+        "planet_visitor_announcer_plugin": {
+            "auto_activate": true
         },
         "player_manager": {
+            "admin_ss": "tester",
             "auto_activate": true,
             "name_removal_regexes": [
                 "\\^#[\\w]+;",
                 "[^ \\w]+"
             ]
-        },
-        "planet_visitor_announcer_plugin": {
-            "auto_activate": true
         },
         "players_plugin": {
             "auto_activate": true
@@ -213,8 +196,21 @@
         "plugin_manager": {
             "auto_activate": true
         },
+        "poi_plugin": {
+            "auto_activate": true
+        },
         "starbound_config_manager": {
             "auto_activate": true
+        },
+        "starteritems_plugin": {
+            "auto_activate": false,
+            "message": "Enjoy these gifts from us!",
+            "items": [
+                [
+                    "coalore",
+                    200
+                ]
+            ]
         },
         "uptime_plugin": {
             "auto_activate": true
@@ -230,7 +226,7 @@
             "cookie_token": "",
             "log_path": "webgui.log",
             "log_path_access": "webgui_access.log",
-            "ownerpassword": "!!PUT A PASSWORD HERE",
+            "ownerpassword": "--ADD PASSWORD--",
             "port": 8083,
             "remember_cookie_token": true,
             "restart_script": ""

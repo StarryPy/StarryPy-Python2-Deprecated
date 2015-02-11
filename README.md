@@ -15,12 +15,13 @@ With the built-in plugins (which are removable):
 * Join/quit announcements.
 * And more.
 
+## Version 1.5 is here!
+
+With this most recent release, we are compatible with the current release of Starbound (Upbeat Giraffe). Any bugs found in the process, please open an issue ticket, so we can squash them as quickly as possible.
 
 ## Upgrading from older versions of StarryPy
 
-In version 1.4.x a new requirement "sqlite3" has been added to requirements.txt.
-It is required to perform DB upgrade. Install manually with: pip install sqlite3
-
+StarryPy 1.5 is **NOT** backwards compatible with older versions. As unfortunate as it is, we suggest wiping your database, and starting fresh. It will save a lot of headaches in the long run.
 
 ## Installation
 
@@ -116,6 +117,13 @@ variables:
   on.
 * passthrough: **Make sure this is false.** It is an emergency off switch for
   StarryPy.
+  
+In addition you may also want to setup
+  
+* owner_uuid: This should be the UUID associated with whatever in-game character you want to have 'ownership' rights on the server. From there you can promote others to moderator, admin, or even owner as well.
+* admin_ss: This is a password that unlocks the ability for Moderators, Admins and Owners to use commands on the server. This is a deadman switch system, meaning that you **will not be able to use privileged commands** if you do not have this password setup. Once you have set a password here, when logging into your server from Starbound, type this password in the `account` field. This is used **in addition** to your server password.
+* log_level: This is, but default, set to `DEBUG`. If you want leaner logs, set it to `INFO`. If you want to see all the details going on in the background, set it to `VDEBUG`.
+* irc settings: If you want chat replication to an IRC chatroom, setup your bot parameters here. A password is may not be required for all servers, but the added security isn't a bad idea.
 
 Finally, find starbound.config and change `gameport` to be exactly the same as
 `upstream_port` in config.json.
@@ -134,7 +142,7 @@ Enter `python server.py` to start the proxy.
 
 StarryPy is nearly entirely plugin driven (our plugin manager is a plugin!), so
 there are quite a few built-in plugins. The truly important plugins are in the
-core\_plugins folder. If you remove any of those, it's likely that most other
+`core/` plugins folder. If you remove any of those, it's likely that most other
 plugins will break. We'll break them down by core plugin and normal plugin
 classes.
 
@@ -180,11 +188,6 @@ prefixed with ## will be sent to moderators+ only. `Access: Everyone`
 
 This plugin simply announces whenever a player joins or quits the server.
 
-#### Bouncer
-
-This plugin prevents non-registered users from building or destroying anything. It
-is disabled by default.
-
 #### Colored names
 
 This plugin displays color codes for each username depending on rank. The colors
@@ -196,14 +199,12 @@ This plugin sends a Message of the Day on login.
 
 #### New Player Greeter
 
-Greets first-time players on the server. Gives them a greeting (located in
-new\_player\_message.txt) and gives them a pack of starter items (located in
-starter\_items.txt). Default items are 200 `coalore` and 5 `alienburger`s.
+Greets first-time players on the server. Gives them a greeting that can be configured in the config file and can also give them a pack of starter items. (200 Coal is currently included to give you a sample of the format expected.)
 
 #### Planet Protection
 
 This plugin protects specified planets against modification in any way. Currently
-if a planet is protected only registered users may modify it.
+if a planet is protected only those users who are the planet's protect list may make modifications.
 
 #### Plugin Manager
 
@@ -212,9 +213,16 @@ that it's a plugin, you don't have to tell me.
 
 #### Warpy
 
-This plugin provides various methods for warping players and ships around.
+This plugin provides various methods for warping players around.
+
+#### PoI and Bookmarks
+
+These are two seperate plugins that do similar things. Every user has the ability to planets to their own personal bookmark list, allowing for fast return to the planet later.
+
+Points of Interest are setup by administrators for the whole community, allowing fast, fuel-free travel to those desintations.
 
 #### WebGUI
+
 If activated, this will give you a web-GUI to administrate your StarryPy server. You can log in with your Character's name and the password you set as "ownerpassword" in the StarryPy config.
 
 ##### Config Parameters:
@@ -230,11 +238,6 @@ If activated, this will give you a web-GUI to administrate your StarryPy server.
 
   * [jQuery-Knob](http://anthonyterrien.com/knob/), [D3](http://d3js.org/), [Select2](https://github.com/ivaynberg/select2), [Bootstrap Validator](https://github.com/nghuuphuoc/bootstrapvalidator), [TinyMCE](http://www.tinymce.com), [jQuery Timepicker](http://trentrichardson.com/examples/timepicker/), [xCharts](http://tenxer.github.io/xcharts/), [Fancybox](http://fancyapps.com/fancybox/), [Widen FineUploader](https://github.com/Widen/fine-uploader), [Datatables](http://datatables.net), jQuery-UI 1.10.4, [Twitter Bootstrap](http://getbootstrap.com), [Flot](www.flotcharts.org), [Fullcalendar](http://arshaw.com/fullcalendar), [Moment](http://momentjs.com/), [Justified Gallery](https://github.com/miromannino/Justified-Gallery), [Morris Charts](http://www.oesmith.co.uk/morris.js/)
 
-
-#### More plugins
-
-Even more plugins can be found over at
-[our plugin list](https://github.com/MrMarvin/StarryPy_plugins).
 
 ## Plugin development
 
@@ -262,8 +265,9 @@ provide a link.
 
 ### None of the commands are working
 
-You are likely in passthrough mode or connecting to the vanilla server. Check
-config.json and ensure that passthrough is false.
+You likely did not provide the admin_ss password. If the server is responding "You're not logged in, so I can't let you do that", then this is the case. Please check that you have the admin_ss password set, and that you are putting it in the `account` field at login.
+
+If you are seeing responses from the Starbound built-in commands, then you are either in passthrough mode, connecting directly to the vanilla server, or your account is in a foul state. For the first case, check config.json and ensure that passthrough is false. For the next, ensure you are indeed connecting to to the StarryPy server port, and not the vanilla server's. If you're account is fouled, have another moderator or admin kick you character. This seems to clear the bad sate.
 
 If you are running StarryPy on the same computer you're playing it from, it is
 likely it is using the gameport in starbound.config to connect to. To avoid this,
@@ -286,17 +290,9 @@ We have quite a roadmap, here are some of the highlights you can expect in the
 next major version, and in the development branch before that if you're feeling
 brave:
 
-* Spawn networks. Free transportation between admin-designated planets, so your
-  new players can get a leg up in the world.
-* Loot rolling. So a rare item dropped and you don't think it's fair your friend
-  got it? Soon you'll be able to get good items without ending friendships and
-  going to prison on the inevitable murder charge.
-* Lotteries. Because what is life without a little risk?
 * Creature spawning. Want to spawn a couple dozen bone dragons? So do we!
 * Internationalization. Translate plugins and core messages with ease to your
   preferred language.
-* Role based access control Thought the mod/admin/owner distinction is useful,
-  having individual roles is our plan for the future.
 * Client filtering based on modded items. Though asset digests aren't supported
   right now, we want to do some minor filtering to keep out the riff-raff (if you
   as an admin want to.)
@@ -311,7 +307,7 @@ issues page.
 
 We're absolutely happy to accept pull requests. There is a freenode channel
 called [##starbound-dev](http://webchat.freenode.net/?channels=##starbound-dev)
-that we discuss our development on primarily.
+that we discuss our development on primarily. We also have the channel [##starrypy](http://webchat.freenode.net/?channels=##starrypy) for discussion specific to our wrapper.
 
 Other than that, please report any bugs you find with the appropriate section of
 the debug.log file that is generated.
