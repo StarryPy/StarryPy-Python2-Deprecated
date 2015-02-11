@@ -54,6 +54,9 @@ class BasePlugin(object):
     def on_chat_received(self, data):
         return True
 
+    def on_celestial_request(self, data):
+        return True
+
     def on_universe_time_update(self, data):
         return True
 
@@ -144,7 +147,7 @@ class BasePlugin(object):
     def on_clear_container(self, data):
         return True
 
-    def on_world_update(self, data):
+    def on_world_client_state_update(self, data):
         return True
 
     def on_entity_create(self, data):
@@ -154,6 +157,9 @@ class BasePlugin(object):
         return True
 
     def on_entity_destroy(self, data):
+        return True
+
+    def on_hit_request(self, data):
         return True
 
     def on_status_effect_request(self, data):
@@ -177,10 +183,16 @@ class BasePlugin(object):
     def on_client_connect(self, data):
         return True
 
-    def on_client_disconnect(self, player):
+    def on_client_disconnect_request(self, player):
         return True
 
-    def on_warp_command(self, data):
+    def on_player_warp(self, data):
+        return True
+
+    def on_fly_ship(self, data):
+        return True
+
+    def on_central_structure_update(self, data):
         return True
 
     def after_protocol_version(self, data):
@@ -193,6 +205,9 @@ class BasePlugin(object):
         return True
 
     def after_chat_received(self, data):
+        return True
+
+    def after_celestial_request(self, data):
         return True
 
     def after_universe_time_update(self, data):
@@ -285,7 +300,7 @@ class BasePlugin(object):
     def after_clear_container(self, data):
         return True
 
-    def after_world_update(self, data):
+    def after_world_client_state_update(self, data):
         return True
 
     def after_entity_create(self, data):
@@ -295,6 +310,9 @@ class BasePlugin(object):
         return True
 
     def after_entity_destroy(self, data):
+        return True
+
+    def after_hit_request(self, data):
         return True
 
     def after_status_effect_request(self, data):
@@ -318,10 +336,16 @@ class BasePlugin(object):
     def after_client_connect(self, data):
         return True
 
-    def after_client_disconnect(self, data):
+    def after_client_disconnect_request(self, data):
         return True
 
-    def after_warp_command(self, data):
+    def after_player_warp(self, data):
+        return True
+
+    def after_fly_ship(self, data):
+        return True
+
+    def after_central_structure_update(self, data):
         return True
 
     def __repr__(self):

@@ -7,7 +7,7 @@ from time import time
 
 class FuelGiver(SimpleCommandPlugin):
     """
-    Welcomes new players by giving them fuel to leave the spawn world.
+    Courteously give players fuel once a day (for those who ask for it).
     """
     name = "fuelgiver_plugin"
     depends = ["command_dispatcher", "player_manager"]
@@ -24,7 +24,7 @@ class FuelGiver(SimpleCommandPlugin):
         try:
             my_storage = self.protocol.player.storage
         except AttributeError:
-#            self.logger.debug("Tried to give item to non-existent protocol.")
+            self.logger.warning("Tried to give item to non-existent protocol.")
             return
         if not 'last_given_fuel' in my_storage or float(my_storage['last_given_fuel']) <= float(time()) - 86400:
             my_storage['last_given_fuel'] = str(time())
@@ -34,4 +34,3 @@ class FuelGiver(SimpleCommandPlugin):
             self.logger.info("Gave fuel to %s.", self.protocol.player.name)
         else:
             self.protocol.send_chat_message("^red;No... -.- Go mining!")
- 

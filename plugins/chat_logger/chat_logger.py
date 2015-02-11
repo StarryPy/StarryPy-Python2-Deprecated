@@ -3,6 +3,9 @@ from packets import chat_sent
 
 
 class ChatLogger(BasePlugin):
+    """
+    Plugin which parses player chatter into the log file.
+    """
     name = "chat_logger"
 
     def on_chat_sent(self, data):

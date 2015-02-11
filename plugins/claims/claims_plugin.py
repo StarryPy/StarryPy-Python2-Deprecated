@@ -1,4 +1,3 @@
-import re
 from base_plugin import SimpleCommandPlugin
 from plugins.core.player_manager import UserLevels, permissions
 from utility_functions import extract_name
@@ -6,9 +5,9 @@ from utility_functions import extract_name
 
 class ClaimsPlugin(SimpleCommandPlugin):
     """
-Allows planets to be either protector or unprotected. On protected planets,
-only admins can build. Planets are unprotected by default.
-"""
+    Allows planets to be either protector or unprotected. On protected planets,
+    only admins can build. Planets are unprotected by default.
+    """
     name = "claims"
     description = "Claims planets."
     commands = ["claim", "unclaim", "claim_list", "unclaimable"]
@@ -30,7 +29,6 @@ only admins can build. Planets are unprotected by default.
         self.protected_planets = self.config.config['plugin_config']['planet_protect']['protected_planets']
         self.player_planets = self.config.config['plugin_config']['planet_protect']['player_planets']
         self.player_manager = self.plugins["player_manager"].player_manager
-        self.regexes = self.plugins['player_manager'].regexes
 
     @permissions(UserLevels.ADMIN)
     def unclaimable(self, data):

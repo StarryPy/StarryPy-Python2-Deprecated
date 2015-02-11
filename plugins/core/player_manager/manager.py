@@ -18,14 +18,11 @@ from utility_functions import path
 @contextmanager
 def _autoclosing_session(sm):
     session = sm()
-
     try:
         yield session
-
     except:
         session.rollback()
         raise
-
     finally:
         session.close()
 
@@ -87,7 +84,6 @@ class Base(object):
 class Banned(Exception):
     pass
 
-
 class _UserLevels(object):
     ranks = dict(
     GUEST = 0,
@@ -105,7 +101,6 @@ class _UserLevels(object):
             return super(_UserLevels, self).__getattribute__('ranks')[item]
         else:
             return super(_UserLevels, self).__getattribute__(item)
-
 
 UserLevels = _UserLevels()
 
@@ -167,6 +162,7 @@ class Player(Base):
     last_seen = Column(DateTime)
     access_level = Column(Integer)
     logged_in = Column(Boolean)
+    admin_logged_in = Column(Boolean)
     protocol = Column(String)
     client_id = Column(Integer)
     ip = Column(String)
@@ -178,8 +174,13 @@ class Player(Base):
     ips = relationship("IPAddress", order_by="IPAddress.id", backref="players")
 
     def colored_name(self, colors):
+        logger.vdebug("Building colored name.")
         color = colors[UserLevels(self.access_level).lower()]
+        logger.vdebug("Color is %s", color)
         name = self.name
+        logger.vdebug("Name is %s", name)
+        logger.vdebug("Returning the following data for colored name. %s:%s:%s",
+                     color, name, colors['default'])
         return color + name + colors["default"]
 
     @property
@@ -222,7 +223,6 @@ class Ban(Base):
 class PlayerManager(object):
     def __init__(self, config):
         self.config = config
-        migrate_db(self.config)
         logger.info("Loading player database.")
         self.engine = create_engine('sqlite:///%s' % path.preauthChild(self.config.player_db).path)
         Base.metadata.create_all(self.engine)
@@ -230,6 +230,7 @@ class PlayerManager(object):
         with _autoclosing_session(self.sessionmaker) as session:
             for player in session.query(Player).filter_by(logged_in=True).all():
                 player.logged_in = False
+                player.admin_logged_in = False
                 player.protocol = None
                 session.commit()
 
@@ -248,7 +249,7 @@ class PlayerManager(object):
 
         return to_return
 
-    def fetch_or_create(self, uuid, name, org_name, ip, protocol=None):
+    def fetch_or_create(self, uuid, name, org_name, admin_logged_in, ip, protocol=None):
         with _autoclosing_session(self.sessionmaker) as session:
             if session.query(Player).filter_by(uuid=uuid, logged_in=True).first():
                 raise AlreadyLoggedIn
@@ -261,30 +262,24 @@ class PlayerManager(object):
                             name).uuid != self.get_by_org_name(org_name).uuid):
                 logger.info("Got a duplicate nickname, affixing _ to name")
                 name += "_"
-
             player = session.query(Player).filter_by(uuid=uuid).first()
             if player:
                 if player.name != name:
                     logger.info("Detected username change.")
                     player.name = name
-                    self.protocol.player.name = name
-                    #name = str(player.name)
-                    #csp = data_parser.ChatSent.build(dict(message="/nick %s" % name,
-                    #                                      channel=0))
-                    #asyncio.Task(protocol.client_raw_write(pparser.build_packet
-                    #                                            'chat_sent'], csp)))
-                    #player.protocol.transport.write(build_packet(Packets.CHAT_RECEIVED, chat_received().build(p)))
                 if ip not in player.ips:
                     player.ips.append(IPAddress(ip=ip))
                     player.ip = ip
                 player.protocol = protocol
                 player.last_seen = datetime.datetime.now()
+                player.admin_logged_in = admin_logged_in
             else:
                 logger.info("Adding new player with name: %s" % name)
                 player = Player(uuid=uuid, name=name, org_name=org_name,
                                 last_seen=datetime.datetime.now(),
                                 access_level=int(UserLevels.GUEST),
                                 logged_in=False,
+                                admin_logged_in=False,
                                 protocol=protocol,
                                 client_id=-1,
                                 ip=ip,
@@ -408,7 +403,13 @@ def permissions(level=UserLevels.OWNER):
         @wraps(f)
         def wrapped_function(self, *args, **kwargs):
             if self.protocol.player.access_level >= level:
-                return f(self, *args, **kwargs)
+                if level >= UserLevels.MODERATOR:
+                    if self.protocol.player.admin_logged_in == 0:
+                        self.protocol.send_chat_message("^red;You're not logged in, so I can't let you do that.^yellow;")
+                    else:
+                        return f(self, *args, **kwargs)
+                else:
+                    return f(self, *args, **kwargs)
             else:
                 self.protocol.send_chat_message("You are not authorized to do this.")
                 return False
