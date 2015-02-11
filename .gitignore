@@ -47,3 +47,6 @@ nosetests.xml
 *.swp
 *.un~
 .ropeproject/
+
+# Mac cleanup
+.DS_Store

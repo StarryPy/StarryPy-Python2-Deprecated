@@ -13,6 +13,7 @@ logger = logging.getLogger("starrypy.utility_functions")
 
 
 def give_item_to_player(player_protocol, item, count=1):
+    logger.debug("Giving item %s (count: %s) to %s", item, count, player_protocol.player.name)
     item_count = int(count)
     maximum = 1000
     while item_count > 0:

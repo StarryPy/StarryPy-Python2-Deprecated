@@ -247,7 +247,7 @@ class StarryPyServerProtocol(Protocol):
         return True
 
     @route
-    def item(self, data):
+    def give_item(self, data):
         return True
 
     @route
@@ -521,6 +521,7 @@ class ClientProtocol(Protocol):
     def __init__(self):
         self.packet_stream = PacketStream(self)
         self.packet_stream.direction = packets.Direction.SERVER
+        logger.debug("Client protocol instantiated.")
 
     def connectionMade(self):
         """
@@ -599,6 +600,7 @@ class StarryPyServerFactory(ServerFactory):
             sys.exit()
         self.reaper = LoopingCall(self.reap_dead_protocols)
         self.reaper.start(self.config.reap_time)
+        logger.debug("Factory created, endpoint of port %d" % self.config.bind_port)
 
     def stopFactory(self):
         """

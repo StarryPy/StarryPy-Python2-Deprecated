@@ -54,7 +54,7 @@ class ConfigurationManager(object):
             self.logger.warning("StarryPy will now exit. Please examine config.json and adjust the variables appropriately.")
             sys.exit()
 
-
+        self.logger.debug("Created configuration manager.")
         self.save()
 
     def save(self):
