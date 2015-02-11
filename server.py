@@ -97,7 +97,7 @@ class StarryPyServerProtocol(Protocol):
             packets.Packets.UPDATE_TILE_PROTECTION: lambda x: True, # 27
             packets.Packets.MODIFY_TILE_LIST: self.modify_tile_list, # 28
             packets.Packets.DAMAGE_TILE_GROUP: self.damage_tile_group, # 29
-            packets.Packets.COLLECT_LIQUID: lambda x: True, # 30
+            packets.Packets.COLLECT_LIQUID: self.collect_liquid, # 30
             packets.Packets.REQUEST_DROP: self.request_drop, # 31
             packets.Packets.SPAWN_ENTITY: self.spawn_entity, # 32
             packets.Packets.ENTITY_INTERACT: self.entity_interact, # 33
@@ -272,6 +272,10 @@ class StarryPyServerProtocol(Protocol):
 
     @route
     def damage_tile_group(self, data):
+        return True
+
+    @route
+    def collect_liquid(self, data):
         return True
 
     @route

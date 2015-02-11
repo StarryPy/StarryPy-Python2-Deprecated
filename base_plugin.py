@@ -110,6 +110,9 @@ class BasePlugin(object):
     def on_damage_tile_group(self, data):
         return True
 
+    def on_collect_liquid(self, data):
+        return True
+
     def on_request_drop(self, data):
         return True
 
@@ -261,6 +264,9 @@ class BasePlugin(object):
         return True
 
     def after_damage_tile_group(self, data):
+        return True
+
+    def after_collect_liquid(self, data):
         return True
 
     def after_request_drop(self, data):
