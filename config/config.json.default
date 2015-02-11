@@ -94,22 +94,9 @@
             "bad_packets": [
                 "CONNECT_WIRE",
                 "DISCONNECT_ALL_WIRES",
-                "SWAP_IN_CONTAINER",
                 "DAMAGE_TILE",
                 "DAMAGE_TILE_GROUP",
                 "MODIFY_TILE_LIST"
-            ],
-            "bad_packets_mild": [
-                "CONNECT_WIRE",
-                "DISCONNECT_ALL_WIRES",
-                "DAMAGE_TILE",
-                "DAMAGE_TILE_GROUP",
-                "MODIFY_TILE_LIST"
-            ],
-            "bad_packets_ship": [
-                "ENTITY_INTERACT",
-                "OPEN_CONTAINER",
-                "CLOSE_CONTAINER"
             ],
             "blacklist": [
                 "bomb",
