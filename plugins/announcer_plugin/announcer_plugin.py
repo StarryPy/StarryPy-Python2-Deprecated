@@ -17,15 +17,14 @@ class Announcer(BasePlugin):
             c = connect_response().parse(data.data)
             if c.success:
                 self.factory.broadcast(
-                    self.protocol.player.colored_name(self.config.colors) + " logged in.", 0, "", "Announcer")
+                    self.protocol.player.colored_name(self.config.colors) + " logged in.", 0, "Announcer")
         except AttributeError:
             return
         except:
             self.logger.exception("Unknown error in after_connect_response.")
             return
 
-    def on_client_disconnect(self, data):
+    def on_client_disconnect_request(self, data):
         if self.protocol.player is not None:
             self.factory.broadcast(self.protocol.player.colored_name(self.config.colors) + " logged out.", 0,
-                                   "", "Announcer")
-
+                                   "Announcer")

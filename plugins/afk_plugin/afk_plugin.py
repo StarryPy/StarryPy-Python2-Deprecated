@@ -26,7 +26,7 @@ class AFKCommand(SimpleCommandPlugin):
             self.afk_message = self.config.plugin_config["afk_msg"]
             self.afkreturn_message = self.config.plugin_config["afkreturn_msg"]
         except Exception as e:
-            self.logger.info("Error occured! %s" % e)
+            self.logger.error("Error occured! %s", e)
             if self.protocol is not None:
                 self.protocol.send_chat_message("Reload failed! Please check config.json!")
                 self.protocol.send_chat_message("Initiating with default values...")

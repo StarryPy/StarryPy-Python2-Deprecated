@@ -13,7 +13,7 @@ class PluginManagerPlugin(SimpleCommandPlugin):
     def plugin_manager(self):
         return self.protocol.plugin_manager
 
-    @permissions(UserLevels.OWNER)
+    @permissions(UserLevels.ADMIN)
     def plugin_list(self, data):
         """Displays all currently loaded plugins.\nSyntax: /plugin_list"""
         self.protocol.send_chat_message("Currently loaded plugins: ^yellow;%s" % "^green;, ^yellow;".join(
@@ -26,6 +26,7 @@ class PluginManagerPlugin(SimpleCommandPlugin):
     @permissions(UserLevels.OWNER)
     def plugin_disable(self, data):
         """Disables a currently activated plugin.\nSyntax: /plugin_disable (plugin name)"""
+        self.logger.debug("disable_plugin called: %s" " ".join(data))
         if len(data) == 0:
             self.protocol.send_chat_message("You have to specify a plugin.")
             return
@@ -47,6 +48,7 @@ class PluginManagerPlugin(SimpleCommandPlugin):
     @permissions(UserLevels.OWNER)
     def plugin_enable(self, data):
         """Enables a currently deactivated plugin.\nSyntax: /plugin_enable (plugin name)"""
+        self.logger.debug("enable_plugin called: %s", " ".join(data))
         if len(data) == 0:
             self.protocol.send_chat_message("You have to specify a plugin.")
             return

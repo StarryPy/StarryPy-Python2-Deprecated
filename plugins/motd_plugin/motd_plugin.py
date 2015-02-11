@@ -34,10 +34,6 @@ class MOTDPlugin(SimpleCommandPlugin):
     def motd(self, data):
         """Displays the message of the day.\nSyntax: /motd"""
         self.send_motd()
-#        if len(data) == 0:
-#            self.send_motd()
-#        else:
-#            self.motd_set(data)
 
     @permissions(UserLevels.MODERATOR)
     def motd_set(self, motd):
@@ -50,5 +46,3 @@ class MOTDPlugin(SimpleCommandPlugin):
         except:
             self.logger.exception("Couldn't change message of the day.")
             raise
-
-

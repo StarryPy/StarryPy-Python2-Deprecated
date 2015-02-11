@@ -109,15 +109,15 @@ class BRWhisperPlugin(SimpleCommandPlugin):
         try:
             if not self.sspy_enabled_dict[self.protocol.player.name]:
                 self.sspy_enabled_dict[self.protocol.player.name] = True
-                self.protocol.send_chat_message("SocialSpy has been ^yellow;enabled^green;!")
+                self.protocol.send_chat_message("SocialSpy has been ^green;enabled^yellow;!")
             else:
                 self.sspy_enabled_dict[self.protocol.player.name] = False
-                self.protocol.send_chat_message("SocialSpy has been ^red;disabled^green;!")
+                self.protocol.send_chat_message("SocialSpy has been ^red;disabled^yellow;!")
         except:
             if len(data) != 0 and " ".join(data).lower() in ["on", "true"]:
                 self.sspy_enabled_dict[self.protocol.player.name] = True
-                self.protocol.send_chat_message("SocialSpy has been ^yellow;enabled^green;!")
+                self.protocol.send_chat_message("SocialSpy has been ^green;enabled^yellow;!")
             else:
                 self.sspy_enabled_dict[self.protocol.player.name] = False
                 self.protocol.send_chat_message(self.ss.__doc__)
-                self.protocol.send_chat_message("SocialSpy is ^red;disabled^green;!")
+                self.protocol.send_chat_message("SocialSpy is ^red;disabled^yellow;!")
