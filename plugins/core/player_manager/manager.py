@@ -52,6 +52,14 @@ def migrate_db(config):
             dbcur.execute('ALTER TABLE `players` ADD COLUMN `org_name`;')
             dbcur.execute('UPDATE `players` SET `org_name`=`name`;')
             dbcon.commit()
+
+    try:
+        dbcur.execute('SELECT admin_logged_in FROM players;')
+    except sqlite3.OperationalError, e:
+        if "column" in str(e):
+            dbcur.execute('ALTER TABLE `players` ADD COLUMN `admin_logged_in`;')
+            dbcur.execute('UPDATE `players` SET `admin_logged_in`=0;')
+            dbcon.commit()
     dbcon.close()
 
 
