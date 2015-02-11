@@ -22,7 +22,7 @@ import packets
 from plugin_manager import PluginManager, route, FatalPluginError
 from utility_functions import build_packet
 
-VERSION = "1.4.4"
+VERSION = "1.5"
 
 
 VDEBUG_LVL = 9
