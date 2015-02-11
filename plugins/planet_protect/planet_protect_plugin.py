@@ -1,7 +1,7 @@
 import re
 from base_plugin import SimpleCommandPlugin
 from plugins.core.player_manager import UserLevels, permissions
-from packets import entity_create, EntityType, star_string
+from packets import entity_create, EntityType, star_string, entity_interact_result, InteractionType
 from utility_functions import extract_name
 
 
@@ -168,13 +168,37 @@ class PlanetProtectPlugin(SimpleCommandPlugin):
             if name in self.player_planets[self.protocol.player.planet]:
                 return True
             else:
-                entities = entity_create.parse(data.data)
+                entities = entity_create().parse(data.data)
                 for entity in entities.entity:
+                    self.logger.vdebug("Entity Type: %s", entity.entity_type)
                     if entity.entity_type == EntityType.PROJECTILE:
-                        if self.block_all: return False
-                        p_type = star_string("").parse(entity.entity)
-                        if p_type in self.blacklist:
-                            self.logger.info(
-                                "Player %s attempted to use a prohibited projectile, %s, on a protected planet.",
-                                self.protocol.player.org_name, p_type)
+                        self.logger.vdebug("projectile detected")
+                        if self.block_all:
                             return False
+                        p_type = star_string("").parse(entity.payload)
+                        self.logger.vdebug("projectile: %s", p_type)
+                        if p_type in self.blacklist:
+                            self.logger.vdebug("%s",self.blacklist)
+                            if p_type in ['water']:
+                                self.logger.vdebug(
+                                    "Player %s attempted to use a prohibited projectile, %s, on a protected planet.",
+                                    self.protocol.player.org_name, p_type)
+                            else:
+                                self.logger.info(
+                                    "Player %s attempted to use a prohibited projectile, %s, on a protected planet.",
+                                    self.protocol.player.org_name, p_type)
+                            return False
+
+    def on_entity_interact_result(self, data):
+        """Chest protection"""
+        if self.protocol.player.planet in self.protected_planets and self.protocol.player.access_level < UserLevels.ADMIN:
+            self.logger.vdebug("User %s attmepted to interact on a protected planet.", self.protocol.player.name)
+            name = self.protocol.player.org_name
+            if name in self.player_planets[self.protocol.player.planet]:
+                return True
+            else:
+                entity = entity_interact_result().parse(data.data)
+                if entity.interaction_type == InteractionType.OPEN_CONTAINER:
+                    self.logger.vdebug("User %s attmepted to open container ID %s", self.protocol.player.name, entity.target_entity_id)
+                    self.logger.vdebug("This is not permitted.")
+                    return False

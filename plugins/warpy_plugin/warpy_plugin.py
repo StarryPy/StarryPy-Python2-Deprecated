@@ -18,12 +18,6 @@ class Warpy(SimpleCommandPlugin):
         super(Warpy, self).activate()
         self.player_manager = self.plugins['player_manager'].player_manager
 
-    ## Warp debugging
-    #def on_player_warp(self, data):
-    #    self.logger.debug("Warp packet: %s", data.data.encode('hex'))
-    #    warp_data = player_warp().parse(data.data)
-    #    self.logger.debug("Warp packet: %s", warp_data)
-
     @permissions(UserLevels.MODERATOR)
     def warp(self, name):
         """Warps you to a player's ship (or player to player).\nSyntax: /warp [player] (to player)"""

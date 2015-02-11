@@ -115,7 +115,7 @@ class StarryPyServerProtocol(Protocol):
             packets.Packets.ENTITY_CREATE: self.entity_create, # 45
             packets.Packets.ENTITY_UPDATE: self.entity_update, # 46
             packets.Packets.ENTITY_DESTROY: self.entity_destroy, # 47
-            packets.Packets.HIT_REQUEST: lambda x: True, # 48
+            packets.Packets.HIT_REQUEST: self.hit_request, # 48
             packets.Packets.DAMAGE_REQUEST: lambda x: True, # 49
             packets.Packets.DAMAGE_NOTIFICATION: self.damage_notification, # 50
             packets.Packets.CALL_SCRIPTED_ENTITY: lambda x: True, # 51
@@ -152,8 +152,8 @@ class StarryPyServerProtocol(Protocol):
         """
         if 53 >= packet.id:
             # DEBUG - print all packet IDs going to client
-            #if packet.id not in [14, 44, 46, 53]:
-            #    logger.info("From Client: %s", packet.id)
+            if packet.id not in [14, 44, 45, 46, 47, 51, 53]:
+                logger.info("From Client: %s", packet.id)
             if self.handle_starbound_packets(packet):
                 self.client_protocol.transport.write(
                     packet.original_data)
@@ -340,6 +340,10 @@ class StarryPyServerProtocol(Protocol):
 
     @route
     def entity_destroy(self, data):
+        return True
+
+    @route
+    def hit_request(self, data):
         return True
 
     @route
@@ -543,7 +547,8 @@ class ClientProtocol(Protocol):
         """
         try:
             # DEBUG - print all packet IDs coming from client
-            # logger.info("From Server: %s", packet.id)
+            if packet.id not in [5, 14, 25, 45, 46, 47, 51, 53]:
+                logger.info("From Server: %s", packet.id)
             if self.server_protocol.handle_starbound_packets(
                     packet):
                 self.server_protocol.write(packet.original_data)

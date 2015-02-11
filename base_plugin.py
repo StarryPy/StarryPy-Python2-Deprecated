@@ -161,6 +161,9 @@ class BasePlugin(object):
     def on_entity_destroy(self, data):
         return True
 
+    def on_hit_request(self, data):
+        return True
+
     def on_status_effect_request(self, data):
         return True
 
@@ -309,6 +312,9 @@ class BasePlugin(object):
         return True
 
     def after_entity_destroy(self, data):
+        return True
+
+    def after_hit_request(self, data):
         return True
 
     def after_status_effect_request(self, data):

@@ -79,6 +79,22 @@ class EntityType(IntEnum):
     NPC = 8
 
 
+class InteractionType(IntEnum):
+    NONE = 0
+    OPEN_COCKPIT_INTERFACE = 1
+    OPEN_CONTAINER = 2
+    SIT_DOWN = 3
+    OPEN_CRAFTING_INTERFACE = 4
+    PLAY_CINEMATIC = 5
+    OPEN_SONGBOOK_INTERFACE = 6
+    OPEN_NPC_CRAFTING_INTERFACE = 7
+    OPEN_NPC_BOUNTY_INTERFACE = 8
+    OPEN_AI_INTERFACE = 9
+    OPEN_TELEPORT_DIALOG = 10
+    SHOW_POPUP = 11
+    SCRIPT_CONSOLE = 12
+
+
 class PacketOutOfOrder(Exception):
     pass
 
@@ -282,6 +298,94 @@ give_item_write = lambda name, count: give_item().build(
             variant_type=7,
             description=''))
 
+# (38) - SwapInContainer
+swap_in_container = lambda name="swap_in_container": Struct(name,
+                                                            VLQ("entity_id"), # Where are we putting stuff
+                                                            star_string("item_name"),
+                                                            VLQ("count"),
+                                                            Byte("variant_type"),
+                                                            StarByteArray("item_description"),
+                                                            VLQ("slot"))
+
+# (24) - SwapInContainerResult - aka what item is selected / in our hand (does
+# not mean wielding)
+swap_in_container_result = lambda name="swap_in_container_result": Struct(name,
+                                                                          star_string("item_name"),
+                                                                          VLQ("count"),
+                                                                          Byte("variant_type"),
+                                                                          GreedyRange(StarByteArray("item_description")))
+
+# (34) - SpawnEntity
+spawn_entity = lambda name="spawn_entity": Struct(name,
+                                                  GreedyRange(
+                                                        Struct("entity",
+                                                               Byte("entity_type"),
+                                                               VLQ("payload_size"),
+                                                               String("payload", lambda ctx: ctx.payload_size))))
+
+# (45) - EntityCreate
+entity_create = lambda name="entity_create": Struct(name,
+                                                    GreedyRange(
+                                                        Struct("entity",
+                                                               Byte("entity_type"),
+                                                               VLQ("payload_size"),
+                                                               String("payload", lambda ctx: ctx.payload_size),
+                                                               VLQ("entity_id"))))
+
+# (46) - EntityUpdate
+entity_update = lambda name="entity_update": Struct(name,
+                                                    UBInt32("entity_id"),
+                                                    StarByteArray("delta"))
+
+# (47) - EntityDestroy
+entity_destroy = lambda name="entity_destroy": Struct(name,
+                                                      UBInt32("entity_id"),
+                                                      Flag("death"))
+
+# (30) - EntityInteract
+entity_interact = lambda name="entity_interact": Struct(name,
+                                                        UBInt32("source_entity_id"),
+                                                        BFloat32("source_x"),
+                                                        BFloat32("source_y"),
+                                                        UBInt32("target_entity_id"))
+
+# (26) - EntityInteractResult
+entity_interact_result = lambda name="entity_interact_result": Struct(name,
+                                                                      UBInt32("interaction_type"),
+                                                                      UBInt32("target_entity_id"),
+                                                                      Variant("entity_data"))
+
+# (48) - HitRequest
+hit_request = lambda name="hit_request": Struct(name,
+                                                UBInt32("source_entity_id"),
+                                                UBInt32("target_entity_id"))
+
+# (DamageRequest) - DamageRequest
+damage_request = lambda name="damage_request": Struct(name,
+                                                      UBInt32("source_entity_id"),
+                                                      UBInt32("target_entity_id"),
+                                                      UBint8("hit_type"),
+                                                      UBInt8("damage_type"),
+                                                      BFloat32("damage"),
+                                                      BFloat32("knockback_x"),
+                                                      BFloat32("knockback_y"),
+                                                      UBInt32("source_entity_id_wut"),
+                                                      star_string("damage_source_kind"),
+                                                      GreedyReange(star_string("stuats_effects"))
+                                                      )
+
+# (50) - DamageNotification
+damage_notification = lambda name="damage_notification": Struct(name,
+                                                                UBInt32("source_entity_id"),
+                                                                UBInt32("source_entity_id_wut"),
+                                                                UBInt32("target_entity_id"),
+                                                                VLQ("x"),
+                                                                VLQ("y"),
+                                                                VLQ("damage"),
+                                                                star_string("damage_kind"),
+                                                                star_string("target_material"),
+                                                                Flag("killed"))
+
 # (52) - UpdateWorldProperties
 update_world_properties = lambda name="world_properties": Struct(name,
                                                                  UBInt8("count"),
@@ -294,20 +398,6 @@ update_world_properties_write = lambda dictionary: update_world_properties().bui
     Container(
         count=len(dictionary),
         properties=[Container(key=k, value=Container(type="SVLQ", data=v)) for k, v in dictionary.items()]))
-
-# (45) - EntityCreate
-entity_create = Struct("entity_create",
-                       GreedyRange(
-                           Struct("entity",
-                                  Byte("entity_type"),
-                                  VLQ("entity_size"),
-                                  String("entity", lambda ctx: ctx.entity_size),
-                                  SignedVLQ("entity_id"))))
-
-# (46) - EntityUpdate
-entity_update = lambda name="entity_update": Struct(name,
-                                                    UBInt32("entity_id"),
-                                                    StarByteArray("delta"))
 
 # (53) - Heartbeat
 heartbeat = lambda name="heartbeat": Structure(name,
