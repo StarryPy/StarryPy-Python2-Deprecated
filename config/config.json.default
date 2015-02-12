@@ -19,6 +19,9 @@
     "passthrough": false,
     "player_db": "config/player.db",
     "plugin_config": {
+        "Base Plugin": {
+            "auto_activate": true
+        },
         "admin_messenger": {
             "auto_activate": true
         },
@@ -92,11 +95,13 @@
         "planet_protect": {
             "auto_activate": true,
             "bad_packets": [
+                "COLLECT_LIQUID",
                 "CONNECT_WIRE",
                 "DISCONNECT_ALL_WIRES",
                 "DAMAGE_TILE",
                 "DAMAGE_TILE_GROUP",
-                "MODIFY_TILE_LIST"
+                "MODIFY_TILE_LIST",
+                "SPAWN_ENTITY"
             ],
             "blacklist": [
                 "bomb",
