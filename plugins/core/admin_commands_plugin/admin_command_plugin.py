@@ -1,4 +1,4 @@
-#import pprint
+import pprint
 import socket
 from twisted.internet import reactor
 from base_plugin import SimpleCommandPlugin, BasePlugin
