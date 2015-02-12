@@ -176,8 +176,7 @@ class PlanetProtectPlugin(SimpleCommandPlugin):
                         p_type = star_string("").parse(entity.payload)
                         self.logger.vdebug("projectile: %s", p_type)
                         if p_type in self.blacklist:
-                            self.logger.vdebug("%s",self.blacklist)
-                            if p_type in ['water']:
+                            if p_type in ['water', 'glowingrain']:
                                 self.logger.vdebug(
                                     "Player %s attempted to use a prohibited projectile, %s, on a protected planet.",
                                     self.protocol.player.org_name, p_type)

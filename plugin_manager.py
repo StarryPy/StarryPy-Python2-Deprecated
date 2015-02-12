@@ -91,8 +91,8 @@ class PluginManager(object):
                         plugin.logger = logging.getLogger('starrypy.plugins.%s' % plugin.name)
                         seen_plugins.append(plugin)
 
-            except ImportError:
-                self.logger.critical("Import error for %s", name)
+            except ImportError as e:
+                self.logger.critical("Import error for %s: %s", name, e)
         try:
             dependencies = {x.name: set(x.depends) for x in seen_plugins}
             classes = {x.name: x for x in seen_plugins}
@@ -108,6 +108,7 @@ class PluginManager(object):
                 for name in ready:
                     self.plugins[name] = classes[name]()
                     self.load_order.append(name)
+                    self.logger.debug("Instantiated plugin '%s'" % name)
                     del (dependencies[name])
                 for name, depends in dependencies.iteritems():
                     to_load = depends & set(self.plugins.iterkeys())

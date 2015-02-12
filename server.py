@@ -97,7 +97,7 @@ class StarryPyServerProtocol(Protocol):
             packets.Packets.UPDATE_TILE_PROTECTION: lambda x: True, # 27
             packets.Packets.MODIFY_TILE_LIST: self.modify_tile_list, # 28
             packets.Packets.DAMAGE_TILE_GROUP: self.damage_tile_group, # 29
-            packets.Packets.COLLECT_LIQUID: lambda x: True, # 30
+            packets.Packets.COLLECT_LIQUID: self.collect_liquid, # 30
             packets.Packets.REQUEST_DROP: self.request_drop, # 31
             packets.Packets.SPAWN_ENTITY: self.spawn_entity, # 32
             packets.Packets.ENTITY_INTERACT: self.entity_interact, # 33
@@ -247,7 +247,7 @@ class StarryPyServerProtocol(Protocol):
         return True
 
     @route
-    def item(self, data):
+    def give_item(self, data):
         return True
 
     @route
@@ -272,6 +272,10 @@ class StarryPyServerProtocol(Protocol):
 
     @route
     def damage_tile_group(self, data):
+        return True
+
+    @route
+    def collect_liquid(self, data):
         return True
 
     @route
@@ -521,6 +525,7 @@ class ClientProtocol(Protocol):
     def __init__(self):
         self.packet_stream = PacketStream(self)
         self.packet_stream.direction = packets.Direction.SERVER
+        logger.debug("Client protocol instantiated.")
 
     def connectionMade(self):
         """
@@ -599,6 +604,7 @@ class StarryPyServerFactory(ServerFactory):
             sys.exit()
         self.reaper = LoopingCall(self.reap_dead_protocols)
         self.reaper.start(self.config.reap_time)
+        logger.debug("Factory created, endpoint of port %d" % self.config.bind_port)
 
     def stopFactory(self):
         """

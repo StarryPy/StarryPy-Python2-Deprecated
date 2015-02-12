@@ -74,10 +74,13 @@ class Warpy(SimpleCommandPlugin):
             self.warp_player_to_outpost(player_name)
 
     def warp_self_to_player(self, name):
+        self.logger.debug("Warp command called by %s to %s", self.protocol.player.name, name)
         name = " ".join(name)
         self.warp_player_to_player(self.protocol.player.name, name)
 
     def warp_player_to_player(self, from_string, to_string):
+        self.logger.debug("Warp player-to-player command called by %s: %s to %s", self.protocol.player.name,
+                          from_string, to_string)
         from_player = self.player_manager.get_logged_in_by_name(from_string)
         to_player = self.player_manager.get_logged_in_by_name(to_string)
         if from_player is not None:

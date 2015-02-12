@@ -8,7 +8,7 @@ import sqlite3
 
 from sqlalchemy.ext.mutable import Mutable
 from sqlalchemy.orm import sessionmaker, relationship, backref
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey, Boolean, func
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey, Boolean, func, exc
 from sqlalchemy.ext.declarative import declarative_base as sqla_declarative_base
 from twisted.words.ewords import AlreadyLoggedIn
 from sqlalchemy.types import TypeDecorator, VARCHAR
@@ -92,6 +92,7 @@ class Base(object):
 class Banned(Exception):
     pass
 
+
 class _UserLevels(object):
     ranks = dict(
     GUEST = 0,
@@ -109,6 +110,7 @@ class _UserLevels(object):
             return super(_UserLevels, self).__getattribute__('ranks')[item]
         else:
             return super(_UserLevels, self).__getattribute__(item)
+
 
 UserLevels = _UserLevels()
 
@@ -232,7 +234,10 @@ class PlayerManager(object):
     def __init__(self, config):
         self.config = config
         logger.info("Loading player database.")
-        self.engine = create_engine('sqlite:///%s' % path.preauthChild(self.config.player_db).path)
+        try:
+            self.engine = create_engine('sqlite:///%s' % path.preauthChild(self.config.player_db).path)
+        except exc.SQLAlchemyError as e:
+            logger.warning("SQL Errror: %s", e)
         Base.metadata.create_all(self.engine)
         self.sessionmaker = sessionmaker(bind=self.engine, autoflush=True)
         with _autoclosing_session(self.sessionmaker) as session:

@@ -284,6 +284,15 @@ world_stop = lambda name="world_stop": Struct(name,
 central_structure_update = lambda name="central_structure_update": Struct(name,
                                                                           Variant("structureData"))
 
+# (30) - CollectLiquid
+collect_liquid = lambda name="collect_liquid": Struct(name,
+                                                      VLQ("length"),
+                                                      Array(lambda ctx: ctx.length,
+                                                            Struct("tile_positions",
+                                                                UBInt32("x"),
+                                                                UBInt32("y"))),
+                                                      UBInt8("liquid_id"))
+
 # (23) - GiveItem
 give_item = lambda name="give_item": Struct(name,
                                             star_string("name"),

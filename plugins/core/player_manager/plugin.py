@@ -7,7 +7,7 @@ from twisted.words.ewords import AlreadyLoggedIn
 
 from base_plugin import SimpleCommandPlugin
 from manager import PlayerManager, Banned, Player, permissions, UserLevels
-from packets import client_connect, connect_response, warp_command
+from packets import client_connect, connect_response
 import packets
 from utility_functions import extract_name, build_packet, Planet
 
