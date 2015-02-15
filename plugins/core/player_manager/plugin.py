@@ -99,7 +99,9 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
                 Container(
                     success=False,
                     client_id=0,
-                    reject_reason=reason
+                    reject_reason=reason,
+                    celestial_info_exists=False,
+                    celestial_data=None
                 )
             ) + unlocked_sector_magic
         )
