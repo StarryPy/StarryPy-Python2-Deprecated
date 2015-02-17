@@ -306,7 +306,7 @@ class PlayerManager(object):
                                 admin_logged_in=False,
                                 protocol=protocol,
                                 client_id=-1,
-                                party_id=-"",
+                                party_id="",
                                 ip=ip,
                                 planet="",
                                 on_ship=True)
