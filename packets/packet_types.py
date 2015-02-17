@@ -257,12 +257,25 @@ celestial_request = lambda name="celestial_request": Struct(name,
                                                             GreedyRange(star_string("requests")))
 
 # (14) - ClientContextUpdate
+#client_context_update = lambda name="client_context": Struct(name,
+#                                                             VLQ("length"),
+#                                                             Byte("arguments"),
+#                                                             Array(lambda ctx: ctx.arguments,
+#                                                                   Struct("key",
+#                                                                   Variant("value"))))
 client_context_update = lambda name="client_context": Struct(name,
                                                              VLQ("length"),
-                                                             Byte("arguments"),
-                                                             Array(lambda ctx: ctx.arguments,
-                                                                   Struct("key",
-                                                                   Variant("value"))))
+                                                             Peek(Byte("a")),
+                                                             If(lambda ctx: ctx["a"] == 0,
+                                                                Struct("junk",
+                                                                       Padding(1),
+                                                                       VLQ("extra_length"))),
+                                                             If(lambda ctx: ctx["a"] > 8,
+                                                                Struct("junk2",
+                                                                       VLQ("extra_length"))),
+                                                             VLQ("subpackets"),
+                                                             Array(lambda ctx: ctx.subpackets,
+                                                                   (Variant("subpacket"))))
 
 # (15) - WorldStart
 world_start = lambda name="world_start": Struct(name,

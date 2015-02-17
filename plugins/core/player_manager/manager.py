@@ -54,6 +54,14 @@ def migrate_db(config):
             dbcon.commit()
 
     try:
+        dbcur.execute('SELECT party_id FROM players;')
+    except sqlite3.OperationalError, e:
+        if "column" in str(e):
+            dbcur.execute('ALTER TABLE `players` ADD COLUMN `party_id`;')
+            dbcur.execute('UPDATE `players` SET `party_id`="";')
+            dbcon.commit()
+
+    try:
         dbcur.execute('SELECT admin_logged_in FROM players;')
     except sqlite3.OperationalError, e:
         if "column" in str(e):
@@ -175,6 +183,7 @@ class Player(Base):
     admin_logged_in = Column(Boolean)
     protocol = Column(String)
     client_id = Column(Integer)
+    party_id = Column(String)
     ip = Column(String)
     plugin_storage = Column(JSONEncodedDict, default=dict())
     planet = Column(String)
@@ -233,6 +242,7 @@ class Ban(Base):
 class PlayerManager(object):
     def __init__(self, config):
         self.config = config
+        migrate_db(self.config)
         logger.info("Loading player database.")
         try:
             self.engine = create_engine('sqlite:///%s' % path.preauthChild(self.config.player_db).path)
@@ -244,6 +254,7 @@ class PlayerManager(object):
             for player in session.query(Player).filter_by(logged_in=True).all():
                 player.logged_in = False
                 player.admin_logged_in = False
+                player.party_id = ""
                 player.protocol = None
                 session.commit()
 
@@ -295,6 +306,7 @@ class PlayerManager(object):
                                 admin_logged_in=False,
                                 protocol=protocol,
                                 client_id=-1,
+                                party_id=-"",
                                 ip=ip,
                                 planet="",
                                 on_ship=True)

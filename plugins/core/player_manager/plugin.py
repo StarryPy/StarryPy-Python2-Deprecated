@@ -32,6 +32,7 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
             if player.protocol not in self.factory.protocols.keys():
                 player.logged_in = False
                 player.admin_logged_in = False
+                player.party_id = ""
 
     def on_client_connect(self, data):
         client_data = client_connect().parse(data.data)
@@ -116,6 +117,7 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
             else:
                 self.protocol.player.client_id = connection_parameters.client_id
                 self.protocol.player.logged_in = True
+                self.protocol.player.party_id = ""
                 self.logger.info("Player %s (UUID: %s, IP: %s) logged in" % (
                     self.protocol.player.name, self.protocol.player.uuid,
                     self.protocol.transport.getPeer().host))
