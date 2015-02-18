@@ -35,7 +35,7 @@ class LoginHandler(BaseHandler):
             self.render("login.html")
         else:
             self.set_secure_cookie("player", self.get_argument("name", strip=False))
-            self.factory.broadcast("An admin has joined the server through Web-GUI.", 0, "", self.get_argument("name", strip=False))
+            self.factory.broadcast("An admin has joined the server through Web-GUI.", 0, self.get_argument("name", strip=False))
             self.failed_login = False
             self.redirect(self.get_argument("next", "/"))
 
