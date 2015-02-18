@@ -47,10 +47,13 @@ def migrate_db(config):
 
     res = dbcur.execute("PRAGMA user_version;")
     db_version = res.fetchone()[0]
-    if db_version is 0:
-        logger.info("Migrating DB from version 0 to version 1.")
-        dbcur.execute('DROP TABLE `ips`;')
-        dbcur.execute("PRAGMA user_version = 1;")
+    try:
+        if db_version is 0:
+            dbcur.execute('DROP TABLE `ips`;')
+            dbcur.execute("PRAGMA user_version = 1;")
+            logger.info("Migrating DB from version 0 to version 1.")
+    except sqlite3.OperationalError, e:
+        logger.info("No DB exists. Will create a new one.")
 
     try:
         dbcur.execute('SELECT org_name FROM players;')
