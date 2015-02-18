@@ -45,10 +45,18 @@ def migrate_db(config):
     dbcon = sqlite3.connect(path.preauthChild(config.player_db).path)
     dbcur = dbcon.cursor()
 
+    res = dbcur.execute("PRAGMA user_version;")
+    db_version = res.fetchone()[0]
+    if db_version is 0:
+        logger.info("Migrating DB from version 0 to version 1.")
+        dbcur.execute('DROP TABLE `ips`;')
+        dbcur.execute("PRAGMA user_version = 1;")
+
     try:
         dbcur.execute('SELECT org_name FROM players;')
     except sqlite3.OperationalError, e:
         if "column" in str(e):
+            logger.info("Updating DB to include org_name column.")
             dbcur.execute('ALTER TABLE `players` ADD COLUMN `org_name`;')
             dbcur.execute('UPDATE `players` SET `org_name`=`name`;')
             dbcon.commit()
@@ -57,6 +65,7 @@ def migrate_db(config):
         dbcur.execute('SELECT party_id FROM players;')
     except sqlite3.OperationalError, e:
         if "column" in str(e):
+            logger.info("Updating DB to include party_id column.")
             dbcur.execute('ALTER TABLE `players` ADD COLUMN `party_id`;')
             dbcur.execute('UPDATE `players` SET `party_id`="";')
             dbcon.commit()
@@ -65,11 +74,12 @@ def migrate_db(config):
         dbcur.execute('SELECT admin_logged_in FROM players;')
     except sqlite3.OperationalError, e:
         if "column" in str(e):
+            logger.info("Updating DB to include admin_logged_in column.")
             dbcur.execute('ALTER TABLE `players` ADD COLUMN `admin_logged_in`;')
             dbcur.execute('UPDATE `players` SET `admin_logged_in`=0;')
             dbcon.commit()
-    dbcon.close()
 
+    dbcon.close()
 
 logger = logging.getLogger("starrypy.player_manager.manager")
 
@@ -291,7 +301,8 @@ class PlayerManager(object):
                 if player.name != name:
                     logger.info("Detected username change.")
                     player.name = name
-                if ip not in player.ips:
+                if not session.query(IPAddress).filter_by(uuid=uuid, ip=ip).first():
+                    logger.debug("New ip address detected for user. Adding to database.")
                     player.ips.append(IPAddress(ip=ip))
                     player.ip = ip
                 player.protocol = protocol
