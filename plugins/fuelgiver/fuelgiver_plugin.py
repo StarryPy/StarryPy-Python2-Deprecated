@@ -28,7 +28,7 @@ class FuelGiver(SimpleCommandPlugin):
             return
         if not 'last_given_fuel' in my_storage or float(my_storage['last_given_fuel']) <= float(time()) - 86400:
             my_storage['last_given_fuel'] = str(time())
-            give_item_to_player(self.protocol, "fillerup", 1)
+            given = give_item_to_player(self.protocol, "fillerup", 1)
             self.protocol.player.storage = my_storage
             self.protocol.send_chat_message("You were given a daily fuel supply! Now go explore ;)")
             self.logger.info("Gave fuel to %s.", self.protocol.player.name)
