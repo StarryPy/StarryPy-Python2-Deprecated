@@ -422,5 +422,5 @@ update_world_properties_write = lambda dictionary: update_world_properties().bui
         properties=[Container(key=k, value=Container(type="SVLQ", data=v)) for k, v in dictionary.items()]))
 
 # (53) - Heartbeat
-heartbeat = lambda name="heartbeat": Structure(name,
-                                               UBInt64("remote_step"))
+heartbeat = lambda name="heartbeat": Struct(name,
+                                            VLQ("remote_step"))
