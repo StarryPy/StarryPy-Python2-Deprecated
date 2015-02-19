@@ -19,6 +19,11 @@ class Singleton(type):
 class ConfigurationManager(object):
     __metaclass__ = Singleton
     logger = logging.getLogger("starrypy.config.ConfigurationManager")
+    log_format = logging.Formatter('%(asctime)s - %(levelname)s - %(name)s # %(message)s')
+    logfile_handle = logging.FileHandler("config.log")
+    logfile_handle.setLevel(9)
+    logger.addHandler(logfile_handle)
+    logfile_handle.setFormatter(log_format)
 
     def __init__(self):
         default_config_path = path.preauthChild("config/config.json.default")
@@ -27,7 +32,8 @@ class ConfigurationManager(object):
             try:
                 with default_config_path.open() as default_config:
                     default = json.load(default_config)
-            except ValueError:
+            except ValueError as e:
+                print "Error: %s" % e
                 self.logger.critical("The configuration defaults file (config.json.default) contains invalid JSON. Please run it against a JSON linter, such as http://jsonlint.com. Shutting down." )
                 sys.exit()
         else:
@@ -39,7 +45,8 @@ class ConfigurationManager(object):
                 with self.config_path.open() as c:
                     config = json.load(c)
                     self.config = recursive_dictionary_update(default, config)
-            except ValueError:
+            except ValueError as e:
+                print "Error: %s" % e
                 self.logger.critical("The configuration file (config.json) contains invalid JSON. Please run it against a JSON linter, such as http://jsonlint.com. Shutting down.")
                 sys.exit()
         else:
