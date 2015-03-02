@@ -281,14 +281,14 @@ class UserCommandPlugin(SimpleCommandPlugin):
                         item_count = item[1]
                     else:
                         item_count = 1
-                    give_item_to_player(target_protocol, item_name, item_count)
+                    given = give_item_to_player(target_protocol, item_name, item_count)
                     target_protocol.send_chat_message(
                         "%s^green; has given you: ^yellow;%s^green; (count: ^cyan;%s^green;)" % (
-                            self.protocol.player.colored_name(self.config.colors), item_name, item_count))
+                            self.protocol.player.colored_name(self.config.colors), item_name, given))
                     self.protocol.send_chat_message("Sent ^yellow;%s^green; (count: ^cyan;%s^green;) to %s" % (
-                        item_name, item_count, target_player.colored_name(self.config.colors)))
+                        item_name, given, target_player.colored_name(self.config.colors)))
                     self.logger.info("%s gave %s %s (count: %s)", self.protocol.player.name, name, item_name,
-                                     item_count)
+                                     given)
                 else:
                     self.protocol.send_chat_message("You have to give an item name.")
             else:

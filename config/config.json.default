@@ -191,8 +191,8 @@
             "admin_ss": "tester",
             "auto_activate": true,
             "name_removal_regexes": [
-                "\\^#[\\w]+;",
-                "[^ \\w]+"
+                "\\^\\w+;|\\^#\\w+;|\\W",
+                "\\s\\s+"
             ]
         },
         "players_plugin": {

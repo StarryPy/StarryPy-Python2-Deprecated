@@ -45,23 +45,44 @@ def migrate_db(config):
     dbcon = sqlite3.connect(path.preauthChild(config.player_db).path)
     dbcur = dbcon.cursor()
 
+    res = dbcur.execute("PRAGMA user_version;")
+    db_version = res.fetchone()[0]
+    try:
+        if db_version is 0:
+            dbcur.execute('DROP TABLE `ips`;')
+            dbcur.execute("PRAGMA user_version = 1;")
+            logger.info("Migrating DB from version 0 to version 1.")
+    except sqlite3.OperationalError, e:
+        logger.info("No DB exists. Will create a new one.")
+
     try:
         dbcur.execute('SELECT org_name FROM players;')
     except sqlite3.OperationalError, e:
         if "column" in str(e):
+            logger.info("Updating DB to include org_name column.")
             dbcur.execute('ALTER TABLE `players` ADD COLUMN `org_name`;')
             dbcur.execute('UPDATE `players` SET `org_name`=`name`;')
+            dbcon.commit()
+
+    try:
+        dbcur.execute('SELECT party_id FROM players;')
+    except sqlite3.OperationalError, e:
+        if "column" in str(e):
+            logger.info("Updating DB to include party_id column.")
+            dbcur.execute('ALTER TABLE `players` ADD COLUMN `party_id`;')
+            dbcur.execute('UPDATE `players` SET `party_id`="";')
             dbcon.commit()
 
     try:
         dbcur.execute('SELECT admin_logged_in FROM players;')
     except sqlite3.OperationalError, e:
         if "column" in str(e):
+            logger.info("Updating DB to include admin_logged_in column.")
             dbcur.execute('ALTER TABLE `players` ADD COLUMN `admin_logged_in`;')
             dbcur.execute('UPDATE `players` SET `admin_logged_in`=0;')
             dbcon.commit()
-    dbcon.close()
 
+    dbcon.close()
 
 logger = logging.getLogger("starrypy.player_manager.manager")
 
@@ -175,6 +196,7 @@ class Player(Base):
     admin_logged_in = Column(Boolean)
     protocol = Column(String)
     client_id = Column(Integer)
+    party_id = Column(String)
     ip = Column(String)
     plugin_storage = Column(JSONEncodedDict, default=dict())
     planet = Column(String)
@@ -233,6 +255,7 @@ class Ban(Base):
 class PlayerManager(object):
     def __init__(self, config):
         self.config = config
+        migrate_db(self.config)
         logger.info("Loading player database.")
         try:
             self.engine = create_engine('sqlite:///%s' % path.preauthChild(self.config.player_db).path)
@@ -244,6 +267,7 @@ class PlayerManager(object):
             for player in session.query(Player).filter_by(logged_in=True).all():
                 player.logged_in = False
                 player.admin_logged_in = False
+                player.party_id = ""
                 player.protocol = None
                 session.commit()
 
@@ -280,7 +304,8 @@ class PlayerManager(object):
                 if player.name != name:
                     logger.info("Detected username change.")
                     player.name = name
-                if ip not in player.ips:
+                if not session.query(IPAddress).filter_by(uuid=uuid, ip=ip).first():
+                    logger.debug("New ip address detected for user. Adding to database.")
                     player.ips.append(IPAddress(ip=ip))
                     player.ip = ip
                 player.protocol = protocol
@@ -295,6 +320,7 @@ class PlayerManager(object):
                                 admin_logged_in=False,
                                 protocol=protocol,
                                 client_id=-1,
+                                party_id="",
                                 ip=ip,
                                 planet="",
                                 on_ship=True)

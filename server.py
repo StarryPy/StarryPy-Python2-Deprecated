@@ -1,4 +1,11 @@
 # -*- coding: UTF-8 -*-
+
+# This program is free software. It comes without any warranty, to
+# the extent permitted by applicable law. You can redistribute it
+# and/or modify it under the terms of the Do What The Fuck You Want
+# To Public License, Version 2, as published by Sam Hocevar. See
+# http://www.wtfpl.net/ for more details.
+
 from _socket import SHUT_RDWR
 #import gettext
 import locale
@@ -22,7 +29,7 @@ import packets
 from plugin_manager import PluginManager, route, FatalPluginError
 from utility_functions import build_packet
 
-VERSION = "1.5"
+VERSION = "1.5.1"
 
 
 VDEBUG_LVL = 9

@@ -25,7 +25,7 @@ class NewPlayerGreeter(BasePlugin):
 
     def give_items(self):
         for item in self.config.plugin_config["items"]:
-            give_item_to_player(self.protocol, item[0], item[1])
+            given = give_item_to_player(self.protocol, item[0], item[1])
 
     def send_greetings(self):
         self.protocol.send_chat_message(self.config.plugin_config["message"])
