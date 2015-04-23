@@ -29,7 +29,7 @@ import packets
 from plugin_manager import PluginManager, route, FatalPluginError
 from utility_functions import build_packet
 
-VERSION = "1.5.1"
+VERSION = "1.6"
 
 
 VDEBUG_LVL = 9
@@ -76,58 +76,60 @@ class StarryPyServerProtocol(Protocol):
         self.call_mapping = {
             packets.Packets.PROTOCOL_VERSION: self.protocol_version, # 0
             packets.Packets.SERVER_DISCONNECT: self.server_disconnect, # 1
-            packets.Packets.CONNECT_RESPONSE: self.connect_response, # 2
-            packets.Packets.HANDSHAKE_CHALLENGE: self.handshake_challenge, #3
-            packets.Packets.CHAT_RECEIVED: self.chat_received, # 4
-            packets.Packets.UNIVERSE_TIME_UPDATE: self.universe_time_update, # 5
-            packets.Packets.CELESTIAL_RESPONSE: lambda x: True, # 6
-            packets.Packets.CLIENT_CONNECT: self.client_connect, # 7
-            packets.Packets.CLIENT_DISCONNECT_REQUEST: self.client_disconnect_request, # 8
-            packets.Packets.HANDSHAKE_RESPONSE: self.handshake_response, # 9
-            packets.Packets.PLAYER_WARP: self.player_warp, # 10
-            packets.Packets.FLY_SHIP: self.fly_ship, # 11
-            packets.Packets.CHAT_SENT: self.chat_sent, # 12
-            packets.Packets.CELESTIAL_REQUEST: self.celestial_request, # 13
-            packets.Packets.CLIENT_CONTEXT_UPDATE: self.client_context_update, # 14
-            packets.Packets.WORLD_START: self.world_start, # 15
-            packets.Packets.WORLD_STOP: self.world_stop, # 16
-            packets.Packets.CENTRAL_STRUCTURE_UPDATE: self.central_structure_update, # 17
-            packets.Packets.TILE_ARRAY_UPDATE: self.tile_array_update, # 18
-            packets.Packets.TILE_UPDATE: self.tile_update, # 19
-            packets.Packets.TILE_LIQUID_UPDATE: self.tile_liquid_update, # 20
-            packets.Packets.TILE_DAMAGE_UPDATE: self.tile_damage_update, # 21
-            packets.Packets.TILE_MODIFICATION_FAILURE: self.tile_modification_failure, #22
-            packets.Packets.GIVE_ITEM: self.give_item, # 23
-            packets.Packets.SWAP_IN_CONTAINER_RESULT: self.swap_in_container_result, # 24
-            packets.Packets.ENVIRONMENT_UPDATE: self.environment_update, # 25
-            packets.Packets.ENTITY_INTERACT_RESULT: self.entity_interact_result, # 26
-            packets.Packets.UPDATE_TILE_PROTECTION: lambda x: True, # 27
-            packets.Packets.MODIFY_TILE_LIST: self.modify_tile_list, # 28
-            packets.Packets.DAMAGE_TILE_GROUP: self.damage_tile_group, # 29
-            packets.Packets.COLLECT_LIQUID: self.collect_liquid, # 30
-            packets.Packets.REQUEST_DROP: self.request_drop, # 31
-            packets.Packets.SPAWN_ENTITY: self.spawn_entity, # 32
-            packets.Packets.ENTITY_INTERACT: self.entity_interact, # 33
-            packets.Packets.CONNECT_WIRE: self.connect_wire, # 34
-            packets.Packets.DISCONNECT_ALL_WIRES: self.disconnect_all_wires, # 35
-            packets.Packets.OPEN_CONTAINER: self.open_container, # 36
-            packets.Packets.CLOSE_CONTAINER: self.close_container, # 37
-            packets.Packets.SWAP_IN_CONTAINER: self.swap_in_container, # 38
-            packets.Packets.ITEM_APPLY_IN_CONTAINER: self.item_apply_in_container, # 39
-            packets.Packets.START_CRAFTING_IN_CONTAINER: self.start_crafting_in_container, # 40
-            packets.Packets.STOP_CRAFTING_IN_CONTAINER: self.stop_crafting_in_container, # 41
-            packets.Packets.BURN_CONTAINER: self.burn_container, # 42
-            packets.Packets.CLEAR_CONTAINER: self.clear_container, # 43
-            packets.Packets.WORLD_CLIENT_STATE_UPDATE: self.world_client_state_update, # 44
-            packets.Packets.ENTITY_CREATE: self.entity_create, # 45
-            packets.Packets.ENTITY_UPDATE: self.entity_update, # 46
-            packets.Packets.ENTITY_DESTROY: self.entity_destroy, # 47
-            packets.Packets.HIT_REQUEST: self.hit_request, # 48
-            packets.Packets.DAMAGE_REQUEST: lambda x: True, # 49
-            packets.Packets.DAMAGE_NOTIFICATION: self.damage_notification, # 50
-            packets.Packets.CALL_SCRIPTED_ENTITY: lambda x: True, # 51
-            packets.Packets.UPDATE_WORLD_PROPERTIES: self.update_world_properties, # 52
-            packets.Packets.HEARTBEAT: self.heartbeat, # 53
+            packets.Packets.CONNECT_SUCCESS: self.connect_success, # 2
+            packets.Packets.CONNECT_FAILURE: self.connect_failure, # 3
+            packets.Packets.HANDSHAKE_CHALLENGE: self.handshake_challenge, # 4
+            packets.Packets.CHAT_RECEIVED: self.chat_received, # 5
+            packets.Packets.UNIVERSE_TIME_UPDATE: self.universe_time_update, # 6
+            packets.Packets.CELESTIAL_RESPONSE: lambda x: True, # 7
+            packets.Packets.PLAYER_WARP_RESULT: self.player_warp_result, #8
+            packets.Packets.CLIENT_CONNECT: self.client_connect, # 9
+            packets.Packets.CLIENT_DISCONNECT_REQUEST: self.client_disconnect_request, # 10
+            packets.Packets.HANDSHAKE_RESPONSE: self.handshake_response, # 11
+            packets.Packets.PLAYER_WARP: self.player_warp, # 12
+            packets.Packets.FLY_SHIP: self.fly_ship, # 13
+            packets.Packets.CHAT_SENT: self.chat_sent, # 14
+            packets.Packets.CELESTIAL_REQUEST: self.celestial_request, # 15
+            packets.Packets.CLIENT_CONTEXT_UPDATE: self.client_context_update, # 16
+            packets.Packets.WORLD_START: self.world_start, # 17
+            packets.Packets.WORLD_STOP: self.world_stop, # 18
+            packets.Packets.CENTRAL_STRUCTURE_UPDATE: self.central_structure_update, # 19
+            packets.Packets.TILE_ARRAY_UPDATE: self.tile_array_update, # 20
+            packets.Packets.TILE_UPDATE: self.tile_update, # 21
+            packets.Packets.TILE_LIQUID_UPDATE: self.tile_liquid_update, # 22
+            packets.Packets.TILE_DAMAGE_UPDATE: self.tile_damage_update, # 23
+            packets.Packets.TILE_MODIFICATION_FAILURE: self.tile_modification_failure, #24
+            packets.Packets.GIVE_ITEM: self.give_item, # 25
+            packets.Packets.SWAP_IN_CONTAINER_RESULT: self.swap_in_container_result, # 26
+            packets.Packets.ENVIRONMENT_UPDATE: self.environment_update, # 27
+            packets.Packets.ENTITY_INTERACT_RESULT: self.entity_interact_result, # 28
+            packets.Packets.UPDATE_TILE_PROTECTION: lambda x: True, # 29
+            packets.Packets.MODIFY_TILE_LIST: self.modify_tile_list, # 30
+            packets.Packets.DAMAGE_TILE_GROUP: self.damage_tile_group, # 31
+            packets.Packets.COLLECT_LIQUID: self.collect_liquid, # 32
+            packets.Packets.REQUEST_DROP: self.request_drop, # 33
+            packets.Packets.SPAWN_ENTITY: self.spawn_entity, # 34
+            packets.Packets.ENTITY_INTERACT: self.entity_interact, # 35
+            packets.Packets.CONNECT_WIRE: self.connect_wire, # 36
+            packets.Packets.DISCONNECT_ALL_WIRES: self.disconnect_all_wires, # 37
+            packets.Packets.OPEN_CONTAINER: self.open_container, # 38
+            packets.Packets.CLOSE_CONTAINER: self.close_container, # 39
+            packets.Packets.SWAP_IN_CONTAINER: self.swap_in_container, # 40
+            packets.Packets.ITEM_APPLY_IN_CONTAINER: self.item_apply_in_container, # 41
+            packets.Packets.START_CRAFTING_IN_CONTAINER: self.start_crafting_in_container, # 42
+            packets.Packets.STOP_CRAFTING_IN_CONTAINER: self.stop_crafting_in_container, # 43
+            packets.Packets.BURN_CONTAINER: self.burn_container, # 44
+            packets.Packets.CLEAR_CONTAINER: self.clear_container, # 45
+            packets.Packets.WORLD_CLIENT_STATE_UPDATE: self.world_client_state_update, # 46
+            packets.Packets.ENTITY_CREATE: self.entity_create, # 47
+            packets.Packets.ENTITY_UPDATE: self.entity_update, # 48
+            packets.Packets.ENTITY_DESTROY: self.entity_destroy, # 49
+            packets.Packets.HIT_REQUEST: self.hit_request, # 50
+            packets.Packets.DAMAGE_REQUEST: lambda x: True, # 51
+            packets.Packets.DAMAGE_NOTIFICATION: self.damage_notification, # 52
+            packets.Packets.CALL_SCRIPTED_ENTITY: lambda x: True, # 53
+            packets.Packets.UPDATE_WORLD_PROPERTIES: self.update_world_properties, # 54
+            packets.Packets.HEARTBEAT: self.heartbeat, # 55
         }
         self.client_protocol = None
         self.packet_stream = PacketStream(self)
@@ -157,9 +159,9 @@ class StarryPyServerProtocol(Protocol):
         Processing of parsed data is handled in handle_starbound_packets()
         :rtype : None
         """
-        if 53 >= packet.id:
+        if 55 >= packet.id:
             # if packet.id not in [14, 44, 45, 46, 47, 51, 53]:
-            #    logger.info("From Client: %s", packet.id)
+            # logger.info("From Client: %s", packet.id)
             if self.handle_starbound_packets(packet):
                 self.client_protocol.transport.write(
                     packet.original_data)
@@ -369,10 +371,19 @@ class StarryPyServerProtocol(Protocol):
         return True
 
     @route
-    def connect_response(self, data):
+    def connect_success(self, data):
         """
-        Called when the server responds to the client's connection request
-        after handshaking.
+        Called when the server successfully connects with the client.
+
+        :param data: Parsed packet.
+        :rtype : bool
+        """
+        return True
+
+    @route
+    def connect_failure(self, data):
+        """
+        Called when the server fails to connect with the client.
 
         :param data: Parsed packet.
         :rtype : bool
@@ -435,6 +446,16 @@ class StarryPyServerProtocol(Protocol):
         return True
 
     @route
+    def player_warp_result(self, data):
+        """
+        Called when the players begins to warp.
+
+        :param data: The player_warp data.
+        :rtype : bool
+        """
+        return True
+
+    @route
     def fly_ship(self, data):
         """
         Called when the players moves their ship.
@@ -447,7 +468,7 @@ class StarryPyServerProtocol(Protocol):
     def handle_starbound_packets(self, p):
         """
         This function is the meat of it all. Every time a full packet with
-        a derived ID <= 53, it is passed through here.
+        a derived ID <= 55, it is passed through here.
         """
         return self.call_mapping[p.id](p)
 

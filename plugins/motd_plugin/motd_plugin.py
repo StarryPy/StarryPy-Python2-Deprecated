@@ -21,7 +21,7 @@ class MOTDPlugin(SimpleCommandPlugin):
             self._motd = "Welcome to the server! Play nice."
             self.config.plugin_config['motd'] = self._motd
 
-    def after_connect_response(self, data):
+    def after_connect_success(self, data):
         self.send_motd()
 
     def send_motd(self):
