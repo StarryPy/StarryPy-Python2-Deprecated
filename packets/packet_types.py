@@ -1,7 +1,7 @@
 from construct import *
 from enum import IntEnum
 from data_types import SignedVLQ, VLQ, Variant, star_string, DictVariant, StarByteArray
-#from data_types import WarpVariant
+from data_types import ChunkVariant
 
 
 class Direction(IntEnum):
@@ -218,20 +218,19 @@ protocol_version = lambda name="protocol_version": Struct(name,
 
 # (9) - ClientConnect : C -> S
 client_connect = lambda name="client_connect": Struct(name,
-                                                      VLQ("asset_digest_length"),
-                                                      String("asset_digest",
-                                                             lambda ctx: ctx.asset_digest_length),
+                                                      StarByteArray("asset_digest"),
                                                       HexAdapter(Field("uuid", 16)),
                                                       star_string("name"),
                                                       star_string("species"),
-                                                      StarByteArray("ship_data"),
+                                                      ChunkVariant("ship_data"),
                                                       UBInt32("ship_level"),
                                                       UBInt32("max_fuel"),
                                                       VLQ("capabilities_length"),
                                                       Array(lambda ctx: ctx.capabilities_length,
                                                             Struct("capabilities",
                                                                    star_string("value"))),
-                                                      star_string("account"))
+                                                      star_string("account")
+                                                      )
 
 # (4) - HandshakeChallenge : S -> C
 handshake_challenge = lambda name="handshake_challenge": Struct(name,
@@ -240,23 +239,6 @@ handshake_challenge = lambda name="handshake_challenge": Struct(name,
 # (11) - HandshakeResponse : C -> S
 handshake_response = lambda name="handshake_response": Struct(name,
                                                               star_string("hash"))
-
-## (2) - ConnectResponse : S -> C
-#connect_response = lambda name="connect_response": Struct(name,
-#                                                          Flag("success"),
-#                                                          VLQ("client_id"),
-#                                                          star_string("reject_reason"),
-#                                                          Flag("celestial_info_exists"),
-#                                                          If(lambda ctx: ctx.celestial_info_exists,
-#                                                              Struct(
-#                                                                  "celestial_data",
-#                                                                  SBInt32("planet_orbital_levels"),
-#                                                                  SBInt32("satellite_orbital_levels"),
-#                                                                  SBInt32("chunk_size"),
-#                                                                  SBInt32("xy_min"),
-#                                                                  SBInt32("xy_max"),
-#                                                                  SBInt32("z_min"),
-#                                                                  SBInt32("z_max"))))
 
 # (2) - ConnectSuccess : S -> C
 connect_success = lambda name="connect_success": Struct(name,

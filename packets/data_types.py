@@ -1,5 +1,5 @@
 import logging
-from construct import Construct, Struct, Byte, BFloat64, Flag, \
+from construct import Construct, Struct, Byte, BFloat32, BFloat64, Flag, \
     String, Container, Field
 from construct.core import _read_stream, _write_stream, Adapter
 
@@ -84,6 +84,18 @@ class VariantVariant(Construct):
     def _parse(self, stream, context):
         l = VLQ("").parse_stream(stream)
         return [Variant("").parse_stream(stream) for _ in range(l)]
+
+class ChunkVariant(Construct):
+    def _parse(self, stream, context):
+        l = VLQ("").parse_stream(stream)
+        c = {}
+        for x in range(l):
+            junk1 = Byte("").parse_stream(stream)
+            junk2 = Byte("").parse_stream(stream)
+            junk3 = BFloat32("").parse_stream(stream)
+            junk4 = Byte("").parse_stream(stream)
+            junk5 = StarByteArray("").parse_stream(stream)
+        return c
 
 class DictVariant(Construct):
     def _parse(self, stream, context):
