@@ -4,7 +4,7 @@ import json
 from base_plugin import SimpleCommandPlugin
 from plugins.core.player_manager import permissions, UserLevels
 from packets import Packets, fly_ship, fly_ship_write
-from utility_functions import build_packet
+from utility_functions import build_packet, verify_path
 
 
 class Bookmarks(SimpleCommandPlugin):
@@ -19,7 +19,7 @@ class Bookmarks(SimpleCommandPlugin):
     def activate(self):
         super(Bookmarks, self).activate()
         self.player_manager = self.plugins['player_manager'].player_manager
-        self.verify_path("./config/bookmarks")
+        verify_path("./config/bookmarks")
 
     @permissions(UserLevels.GUEST)
     def bookmark_add(self, name):

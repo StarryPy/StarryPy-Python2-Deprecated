@@ -6,6 +6,7 @@ from construct import Container
 from twisted.python.filepath import FilePath
 
 import packets
+import errno
 
 
 path = FilePath(os.path.dirname(os.path.abspath(__file__)))
@@ -95,3 +96,12 @@ def extract_name(l):
     raise ValueError("Final terminator character of <%s> not found" %
                      terminator)
 
+def verify_path(path):
+    """
+    Helper function to make sure path exists, and create if it doesn't.
+    """
+    try:
+        os.makedirs(path)
+    except OSError as exception:
+        if exception.errno != errno.EEXIST:
+            raise
