@@ -1,5 +1,5 @@
 from base_plugin import BasePlugin
-from packets import connect_response
+from packets import connect_success
 
 
 class Announcer(BasePlugin):
@@ -12,16 +12,16 @@ class Announcer(BasePlugin):
     def activate(self):
         super(Announcer, self).activate()
 
-    def after_connect_response(self, data):
+    def after_connect_success(self, data):
         try:
-            c = connect_response().parse(data.data)
+            c = connect_success().parse(data.data)
             if c.success:
                 self.factory.broadcast(
                     self.protocol.player.colored_name(self.config.colors) + " logged in.", 0, "Announcer")
         except AttributeError:
             return
         except:
-            self.logger.exception("Unknown error in after_connect_response.")
+            self.logger.exception("Unknown error in after_connect_success.")
             return
 
     def on_client_disconnect_request(self, data):

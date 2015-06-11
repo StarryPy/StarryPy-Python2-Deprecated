@@ -176,7 +176,10 @@ class BasePlugin(object):
     def on_heartbeat(self, data):
         return True
 
-    def on_connect_response(self, data):
+    def on_connect_success(self, data):
+        return True
+
+    def on_connect_failure(self, data):
         return True
 
     def on_chat_sent(self, data):
@@ -192,6 +195,9 @@ class BasePlugin(object):
         return True
 
     def on_player_warp(self, data):
+        return True
+
+    def on_player_warp_result(self, data):
         return True
 
     def on_fly_ship(self, data):
@@ -332,7 +338,10 @@ class BasePlugin(object):
     def after_heartbeat(self, data):
         return True
 
-    def after_connect_response(self, data):
+    def after_connect_success(self, data):
+        return True
+
+    def after_connect_failure(self, data):
         return True
 
     def after_chat_sent(self, data):
@@ -348,6 +357,9 @@ class BasePlugin(object):
         return True
 
     def after_player_warp(self, data):
+        return True
+
+    def after_player_warp_result(self, data):
         return True
 
     def after_fly_ship(self, data):

@@ -14,5 +14,5 @@ class LoginWhoPlugin(BasePlugin):
         super(LoginWhoPlugin, self).activate()
         self.user_commands = self.plugins['user_management_commands']
 
-    def after_connect_response(self, data):
+    def after_connect_success(self, data):
         self.user_commands.who(data)
