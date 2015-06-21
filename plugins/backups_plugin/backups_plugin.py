@@ -287,7 +287,7 @@ class BackupsPlugin(SimpleCommandPlugin):
 
         times.append(timestamp )
 
-        src = self.config.starbound_path + 'universe/' + planet_file
+        src = self.config.starbound_path + '/universe/' + planet_file
         dst_path = './backups/' + player_name + '/' + planet_name + '/'
         dst = dst_path + planet_file + '_' + timestamp
         self._prep_path(dst_path)
@@ -346,7 +346,7 @@ class BackupsPlugin(SimpleCommandPlugin):
         timestamp = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M")
         times = [ timestamp ]
 
-        src = self.config.starbound_path + 'universe/' + planet_file
+        src = self.config.starbound_path + '/universe/' + planet_file
         dst_path = './backups/' + player_name + '/' + planet_name + '/'
         dst = dst_path + planet_file + '_' + timestamp
         self._prep_path(dst_path)
@@ -453,7 +453,7 @@ class BackupsPlugin(SimpleCommandPlugin):
         planet_file = '_'.join(current_planet.split(':')) + '.world'
         src_path = './backups/' + player_name + '/' + planet_name + '/'
         src = src_path + planet_file + '_' + timestamp
-        dst = self.config.starbound_path + 'universe/' + planet_file
+        dst = self.config.starbound_path + '/universe/' + planet_file
         self._copy_file(src, dst)
 
         self.protocol.send_chat_message('The planet has been successfully restored.')
