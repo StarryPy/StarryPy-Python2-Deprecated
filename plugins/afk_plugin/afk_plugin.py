@@ -13,7 +13,6 @@ class AFKCommand(SimpleCommandPlugin):
     name = "afk_plugin"
     depends = ["command_dispatcher", "player_manager"]
     commands = ["afk"]
-    auto_activate = True
     afk_list = dict()
 
     def activate(self):

@@ -12,7 +12,6 @@ class PointsofInterest(SimpleCommandPlugin):
     name = "poi_plugin"
     depends = ['command_dispatcher', 'player_manager']
     commands = ["poi_set", "poi_del", "poi", "spawn"]
-    auto_activate = True
 
     def activate(self):
         super(PointsofInterest, self).activate()

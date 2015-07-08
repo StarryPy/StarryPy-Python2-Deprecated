@@ -14,7 +14,6 @@ class Bookmarks(SimpleCommandPlugin):
     name = "bookmarks_plugin"
     depends = ['command_dispatcher', 'player_manager']
     commands = ["bookmark_add", "bookmark_del", "goto"]
-    auto_activate = True
 
     def activate(self):
         super(Bookmarks, self).activate()

@@ -13,7 +13,6 @@ class UptimePlugin(SimpleCommandPlugin):
     name = "uptime_plugin"
     depends = ["command_dispatcher", "player_manager"]
     commands = ["uptime"]
-    auto_activate = True
 
     def activate(self):
         super(UptimePlugin, self).activate()

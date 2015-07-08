@@ -21,7 +21,7 @@
         "chat_logger",
         "claims",
         "core",
-        "emotes_plugin",
+        "emotes",
         "loginwho_plugin",
         "mod_chatter",
         "motd_plugin",
@@ -31,8 +31,7 @@
         "plugin_manager_plugin",
         "poi_plugin",
         "udp_forwarder",
-        "uptime_plugin",
-        "warpy_plugin",
+        "uptime",
         "web_gui"
     ],
     "command_prefix": "/",

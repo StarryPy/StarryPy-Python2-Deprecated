@@ -9,7 +9,6 @@ class ModChatter(SimpleCommandPlugin):
     name = "mod_chatter"
     depends = ['command_dispatcher', 'player_manager']
     commands = ["modchat", "mc"]
-    auto_activate = True
 
     def activate(self):
         super(ModChatter, self).activate()

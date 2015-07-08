@@ -14,7 +14,6 @@ class BRWhisperPlugin(SimpleCommandPlugin):
     name = "brutus_whisper"
     depends = ['command_dispatcher', 'player_manager']
     commands = ["whisper", "w", "r", "ss"]
-    auto_activate = True
 
     def activate(self):
         super(BRWhisperPlugin, self).activate()

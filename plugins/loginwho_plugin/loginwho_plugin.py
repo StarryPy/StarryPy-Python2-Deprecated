@@ -8,7 +8,6 @@ class LoginWhoPlugin(BasePlugin):
     """
     name = "loginwho_plugin"
     depends = ["command_dispatcher", "user_management_commands"]
-    auto_activate = True
 
     def activate(self):
         super(LoginWhoPlugin, self).activate()

@@ -11,7 +11,6 @@ class EmotesPlugin(SimpleCommandPlugin):
     name = "emotes_plugin"
     depends = ["command_dispatcher", "player_manager"]
     commands = ["me"]
-    auto_activate = True
 
     def activate(self):
         super(EmotesPlugin, self).activate()

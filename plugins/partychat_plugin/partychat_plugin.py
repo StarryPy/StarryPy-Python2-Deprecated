@@ -13,7 +13,6 @@ class PartyChatPlugin(SimpleCommandPlugin):
     name = "partychat_plugin"
     commands = ["party", "p", "party_check"]
     depends = ['command_dispatcher', 'player_manager']
-    auto_activate = True
 
     def activate(self):
         super(PartyChatPlugin, self).activate()

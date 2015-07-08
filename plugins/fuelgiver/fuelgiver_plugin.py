@@ -12,7 +12,6 @@ class FuelGiver(SimpleCommandPlugin):
     name = "fuelgiver_plugin"
     depends = ["command_dispatcher", "player_manager"]
     commands = ["fuel"]
-    auto_activate = True
 
     def activate(self):
         super(FuelGiver, self).activate()

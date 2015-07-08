@@ -113,7 +113,7 @@ class PluginManager(object):
 
         except ImportError:
             self.logger.critical("Import error for %s\n" % name)
-            self.logger.info("Installed plugins:\n\n%s\n" % "\n".join( self.installed_plugins() ))
+            # self.logger.info("Installed plugins:\n\n%s\n" % "\n".join( self.installed_plugins() ))
 
     def resolve_dependencies(self, plugin_list):
         """

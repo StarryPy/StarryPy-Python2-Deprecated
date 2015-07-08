@@ -10,7 +10,6 @@ class StarterItems(SimpleCommandPlugin):
     name = "starteritems_plugin"
     depends = ["command_dispatcher", "player_manager"]
     commands = ["starteritems"]
-    auto_activate = True
 
     def activate(self):
         super(StarterItems, self).activate()
