@@ -19,13 +19,6 @@ class BasePlugin(object):
     description = "The common class for all plugins to inherit from."
     version = ".1"
     depends = []
-    auto_activate = True
-
-    def __init__(self):
-        plugin_config = self.config.plugin_config
-        if 'auto_activate' not in plugin_config:
-            plugin_config['auto_activate'] = self.auto_activate
-        self.config.plugin_config = plugin_config
 
     def activate(self):
         """
@@ -386,7 +379,6 @@ class SimpleCommandPlugin(BasePlugin):
     depends = ["command_dispatcher"]
     commands = []
     command_aliases = {}
-    auto_activate = True
 
     def activate(self):
         super(SimpleCommandPlugin, self).activate()

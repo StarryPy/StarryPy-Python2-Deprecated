@@ -8,7 +8,6 @@ class AdminMessenger(BasePlugin):
     """Adds support to message moderators/admins/owner with a @@ prefixed message."""
     name = "admin_messenger"
     depends = ['player_manager']
-    auto_activate = True
 
     def activate(self):
         super(AdminMessenger, self).activate()

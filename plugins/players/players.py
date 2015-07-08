@@ -9,7 +9,6 @@ class PlayersPlugin(SimpleCommandPlugin):
     name = "players_plugin"
     depends = ["command_dispatcher", "user_management_commands"]
     commands = ["players"]
-    auto_activate = True
 
     def activate(self):
         super(PlayersPlugin, self).activate()

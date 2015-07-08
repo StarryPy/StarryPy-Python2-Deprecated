@@ -12,55 +12,49 @@
         "owner": "^#F7434C;",
         "registered": "^#A0F743;"
     },
+    "initial_plugins": [
+        "afk_plugin",
+        "admin_messenger",
+        "announcer_plugin",
+        "bookmarks_plugin",
+        "brutus_whisper",
+        "chat_logger",
+        "claims",
+        "core",
+        "emotes_plugin",
+        "loginwho_plugin",
+        "mod_chatter",
+        "motd_plugin",
+        "new_player_greeter_plugin",
+        "planet_protect",
+        "players",
+        "plugin_manager_plugin",
+        "poi_plugin",
+        "udp_forwarder",
+        "uptime_plugin",
+        "warpy_plugin",
+        "web_gui"
+    ],
     "command_prefix": "/",
     "core_plugin_path": "core_plugins",
     "log_level": "DEBUG",
+    "debug_file": "debug.log",
+    "logging_format_console": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    "logging_format_debugfile": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    "logging_format_logfile": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     "owner_uuid": "!!--REPLACE THIS--!!",
     "passthrough": false,
     "player_db": "config/player.db",
     "plugin_config": {
-        "Base Plugin": {
-            "auto_activate": true
-        },
-        "admin_messenger": {
-            "auto_activate": true
-        },
         "afk_plugin": {
             "afk_msg": "^gray;is now AFK.",
-            "afkreturn_msg": "^gray;has returned.",
-            "auto_activate": true
-        },
-        "announcer_plugin": {
-            "auto_activate": true
-        },
-        "bookmarks_plugin": {
-            "auto_activate": true
-        },
-        "brutus_whisper": {
-            "auto_activate": true
-        },
-        "chat_logger": {
-            "auto_activate": true
+            "afkreturn_msg": "^gray;has returned."
         },
         "claims": {
-            "auto_activate": true,
             "max_claims": 5,
             "unclaimable_planets": []
         },
-        "colored_names_plugin": {
-            "auto_activate": true
-        },
-        "command_dispatcher": {
-            "auto_activate": true
-        },
-        "emotes_plugin": {
-            "auto_activate": true
-        },
-        "fuelgiver_plugin": {
-            "auto_activate": false
-        },
         "irc": {
-            "auto_activate": false,
             "bot_nickname": "StarryPyBot",
             "channel": "##test",
             "color": "^#e39313;",
@@ -69,21 +63,10 @@
             "port": 6667,
             "server": "irc.freenode.net"
         },
-        "loginwho_plugin": {
-            "auto_activate": true
-        },
-        "mod_chatter": {
-            "auto_activate": true
-        },
         "motd_plugin": {
-            "auto_activate": true,
             "motd": "Welcome to the server! Play nice."
         },
-        "mute_manager": {
-            "auto_activate": true
-        },
         "new_player_greeter_plugin": {
-            "auto_activate": false,
             "items": [
                 [
                     "coalore",
@@ -93,7 +76,6 @@
             "message": "Welcome to the server!"
         },
         "planet_protect": {
-            "auto_activate": true,
             "bad_packets": [
                 "COLLECT_LIQUID",
                 "CONNECT_WIRE",
@@ -184,31 +166,14 @@
             "protected_planets": [
             ]
         },
-        "planet_visitor_announcer_plugin": {
-            "auto_activate": true
-        },
         "player_manager": {
             "admin_ss": "tester",
-            "auto_activate": true,
             "name_removal_regexes": [
                 "\\^\\w+;|\\^#\\w+;|\\W",
                 "\\s\\s+"
             ]
         },
-        "players_plugin": {
-            "auto_activate": true
-        },
-        "plugin_manager": {
-            "auto_activate": true
-        },
-        "poi_plugin": {
-            "auto_activate": true
-        },
-        "starbound_config_manager": {
-            "auto_activate": true
-        },
         "starteritems_plugin": {
-            "auto_activate": false,
             "message": "Enjoy these gifts from us!",
             "items": [
                 [
@@ -217,17 +182,7 @@
                 ]
             ]
         },
-        "uptime_plugin": {
-            "auto_activate": true
-        },
-        "user_management_commands": {
-            "auto_activate": true
-        },
-        "warpy_plugin": {
-            "auto_activate": true
-        },
         "web_gui": {
-            "auto_activate": true,
             "cookie_token": "",
             "log_path": "webgui.log",
             "log_path_access": "webgui_access.log",
@@ -238,6 +193,7 @@
         }
     },
     "plugin_path": "plugins",
+    "core_plugin_path": "core",
     "port_check": true,
     "reap_time": 10,
     "server_connect_timeout": 5,
