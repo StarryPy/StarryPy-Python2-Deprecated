@@ -31,8 +31,7 @@
         "plugin_manager_plugin",
         "poi_plugin",
         "udp_forwarder",
-        "uptime",
-        "web_gui"
+        "uptime"
     ],
     "command_prefix": "/",
     "core_plugin_path": "core_plugins",
