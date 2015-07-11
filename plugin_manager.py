@@ -70,6 +70,7 @@ class PluginManager(object):
         self.logger.info( "Loaded plugins:\n\n%s\n" % "\n".join(
             ["%s" % (plugin.name) for plugin in self.plugins.itervalues()]) )
 
+
     def installed_plugins(self):
         """
         Get list of all plugins in the plugin_dir.
@@ -82,13 +83,13 @@ class PluginManager(object):
             plugin_list.append( self.get_plugin_name_from_file(f) )
         return filter(None, plugin_list)
 
+
     def get_plugin_name_from_file(self, f):
         if f.isdir():
-            name = f.basename()
+            return f.basename()
         else:
             return
 
-        return name
 
     def import_plugin(self, name):
         """
@@ -113,7 +114,7 @@ class PluginManager(object):
 
         except ImportError:
             self.logger.critical("Import error for %s\n" % name)
-            # self.logger.info("Installed plugins:\n\n%s\n" % "\n".join( self.installed_plugins() ))
+
 
     def resolve_dependencies(self, plugin_list):
         """
@@ -149,6 +150,7 @@ class PluginManager(object):
         except UnresolvedOrCircularDependencyError as e:
             self.logger.critical(str(e))
 
+
     def load_plugins(self, plugins_to_load):
         """
         Loads and instantiates plugins that it is asked to.
@@ -165,18 +167,18 @@ class PluginManager(object):
         self.resolve_dependencies(imported_plugins)
         self.activate_plugins()
 
+
     def reload_plugins(self):
         self.logger.warning("Reloading plugins.")
 
         try:
             self.deactivate_plugins()
-            self.plugins = {}
-
-            self.load_plugins( self.config.config['initial_plugins'] )
+            self.load_plugins( self.plugins )
             self.activate_plugins()
         except:
             self.logger.exception("Couldn't reload plugins!")
             raise
+
 
     def activate_plugins(self):
         for plugin in [self.plugins[x] for x in self.load_order]:
@@ -194,6 +196,7 @@ class PluginManager(object):
             except FatalPluginError as e:
                 self.logger.critical("A plugin reported a fatal error. Error: %s", str(e))
                 raise
+
 
     def do(self, protocol, command, data):
         """
