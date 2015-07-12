@@ -13,8 +13,8 @@
         "registered": "^#A0F743;"
     },
     "initial_plugins": [
-        "afk_plugin",
         "admin_messenger",
+        "afk_plugin",
         "announcer_plugin",
         "bookmarks_plugin",
         "brutus_whisper",
@@ -27,11 +27,11 @@
         "motd_plugin",
         "new_player_greeter_plugin",
         "planet_protect",
-        "players",
+        "players_plugin",
         "plugin_manager_plugin",
         "poi_plugin",
         "udp_forwarder",
-        "uptime"
+        "uptime_plugin"
     ],
     "command_prefix": "/",
     "core_plugin_path": "core_plugins",
