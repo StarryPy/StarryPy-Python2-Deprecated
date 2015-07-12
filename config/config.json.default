@@ -20,7 +20,6 @@
         "brutus_whisper",
         "chat_logger",
         "claims",
-        "core",
         "emotes",
         "loginwho_plugin",
         "mod_chatter",
@@ -191,7 +190,6 @@
         }
     },
     "plugin_path": "plugins",
-    "core_plugin_path": "core",
     "port_check": true,
     "reap_time": 10,
     "server_connect_timeout": 5,

@@ -64,8 +64,8 @@ class PluginManager(object):
         self.plugin_dir = path.child(self.config.plugin_path)
 
         sys.path.append( self.plugin_dir.path )
-        sys.path.append( self.plugin_dir.child( self.config.config['core_plugin_path'] ).path )
 
+        self.load_plugins( ['core'] )
         self.load_plugins( self.config.config['initial_plugins'] )
         self.logger.info( "Loaded plugins:\n\n%s\n" % "\n".join(
             ["%s" % (plugin.name) for plugin in self.plugins.itervalues()]) )
