@@ -12,13 +12,13 @@ class UserCommandPlugin(SimpleCommandPlugin):
     Provides a simple chat interface to the user manager.
     """
     name = "admin_commands_plugin"
-    depends = ['command_plugin', 'player_manager']
+    depends = ['command_plugin', 'player_manager_plugin']
     commands = ["who", "whoami", "whois", "promote", "kick", "ban", "ban_list", "unban", "item",
                 "planet", "mute", "unmute", "passthrough", "shutdown", "timestamps"]
 
     def activate(self):
         super(UserCommandPlugin, self).activate()
-        self.player_manager = self.plugins['player_manager'].player_manager
+        self.player_manager = self.plugins['player_manager_plugin'].player_manager
 
     @permissions(UserLevels.GUEST)
     def who(self, data):

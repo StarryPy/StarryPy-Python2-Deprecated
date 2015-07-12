@@ -12,7 +12,7 @@ class PlanetProtectPlugin(SimpleCommandPlugin):
     name = "planet_protect"
     description = "Protects planets."
     commands = ["protect", "unprotect", "protect_list", "protect_all"]
-    depends = ["player_manager", "command_plugin"]
+    depends = ["player_manager_plugin", "command_plugin"]
 
     def activate(self):
         super(PlanetProtectPlugin, self).activate()
@@ -22,7 +22,7 @@ class PlanetProtectPlugin(SimpleCommandPlugin):
         self.protected_planets = self.config.plugin_config.get("protected_planets", [])
         self.player_planets = self.config.plugin_config.get("player_planets", {})
         self.blacklist = self.config.plugin_config.get("blacklist", [])
-        self.player_manager = self.plugins["player_manager"].player_manager
+        self.player_manager = self.plugins["player_manager_plugin"].player_manager
         self.protect_everything = self.config.plugin_config.get("protect_everything", [])
         self.block_all = False
 

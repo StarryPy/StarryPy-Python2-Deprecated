@@ -9,12 +9,12 @@ class EmotesPlugin(SimpleCommandPlugin):
     Very simple plugin that adds /me <emote> command to StarryPy.
     """
     name = "emotes"
-    depends = ["command_plugin", "player_manager"]
+    depends = ["command_plugin", "player_manager_plugin"]
     commands = ["me"]
 
     def activate(self):
         super(EmotesPlugin, self).activate()
-        self.player_manager = self.plugins['player_manager'].player_manager
+        self.player_manager = self.plugins['player_manager_plugin'].player_manager
 
     @permissions(UserLevels.GUEST)
     def me(self, data):

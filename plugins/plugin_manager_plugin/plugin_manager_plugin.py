@@ -4,7 +4,7 @@ from plugin_manager import PluginNotFound
 
 class PluginManagerPlugin(SimpleCommandPlugin):
     """Provides a simple chat interface to the PluginManager"""
-    name = "plugin_manager"
+    name = "plugin_manager_plugin"
     commands = ["plugin_list", "plugin_enable", "plugin_disable", "help"]
 
     @property

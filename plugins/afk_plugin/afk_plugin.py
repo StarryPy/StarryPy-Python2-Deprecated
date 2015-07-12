@@ -11,13 +11,13 @@ from datetime import datetime
 
 class AFKCommand(SimpleCommandPlugin):
     name = "afk_plugin"
-    depends = ["command_plugin", "player_manager"]
+    depends = ["command_plugin", "player_manager_plugin"]
     commands = ["afk"]
     afk_list = dict()
 
     def activate(self):
         super(AFKCommand, self).activate()
-        self.player_manager = self.plugins["player_manager"].player_manager
+        self.player_manager = self.plugins["player_manager_plugin"].player_manager
         self.load_config()
 
     def load_config(self):

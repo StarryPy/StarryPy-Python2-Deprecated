@@ -13,7 +13,7 @@ from utility_functions import extract_name, build_packet, Planet
 
 
 class PlayerManagerPlugin(SimpleCommandPlugin):
-    name = "player_manager"
+    name = "player_manager_plugin"
     commands = ["player_list", "player_delete", "nick", "nick_set"]
 
     def activate(self):

@@ -15,7 +15,7 @@ TwistedIOLoop().install()
 
 class WebGuiPlugin(BasePlugin, PlayerManager):
     name = "web_gui"
-    depends = ['player_manager']
+    depends = ['player_manager_plugin']
 
     def __init__(self):
         super(WebGuiPlugin, self).__init__()
@@ -34,7 +34,7 @@ class WebGuiPlugin(BasePlugin, PlayerManager):
 
     def activate(self):
         super(WebGuiPlugin, self).activate()
-        self.player_manager = self.plugins['player_manager'].player_manager
+        self.player_manager = self.plugins['player_manager_plugin'].player_manager
         web_gui.WebGuiApp.config = self.config.plugin_config
         self.web_gui_app = web_gui.WebGuiApp(port=self.port, ownerpassword=self.ownerpassword,
                                              playermanager=self.player_manager, factory=self.factory,

@@ -7,12 +7,12 @@ from datetime import datetime
 class ModChatter(SimpleCommandPlugin):
     """Adds support for moderators/admins/owner group chatter."""
     name = "mod_chatter"
-    depends = ['command_plugin', 'player_manager']
+    depends = ['command_plugin', 'player_manager_plugin']
     commands = ["modchat", "mc"]
 
     def activate(self):
         super(ModChatter, self).activate()
-        self.player_manager = self.plugins['player_manager'].player_manager
+        self.player_manager = self.plugins['player_manager_plugin'].player_manager
 
     @permissions(UserLevels.MODERATOR)
     def modchat(self, data):

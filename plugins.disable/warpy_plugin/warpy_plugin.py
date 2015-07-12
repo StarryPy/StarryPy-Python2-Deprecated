@@ -10,12 +10,12 @@ class Warpy(SimpleCommandPlugin):
     Plugin that allows privileged players to warp around as they like.
     """
     name = "warpy_plugin"
-    depends = ['command_plugin', 'player_manager']
+    depends = ['command_plugin', 'player_manager_plugin']
     commands = ["warp", "warp_ship", "outpost"]
 
     def activate(self):
         super(Warpy, self).activate()
-        self.player_manager = self.plugins['player_manager'].player_manager
+        self.player_manager = self.plugins['player_manager_plugin'].player_manager
 
     @permissions(UserLevels.MODERATOR)
     def warp(self, name):

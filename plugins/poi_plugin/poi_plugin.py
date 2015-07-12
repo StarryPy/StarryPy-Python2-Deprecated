@@ -10,12 +10,12 @@ class PointsofInterest(SimpleCommandPlugin):
     Plugin that allows admins to define Planets of Interest (PoI) any player can /poi to.
     """
     name = "poi_plugin"
-    depends = ['command_plugin', 'player_manager']
+    depends = ['command_plugin', 'player_manager_plugin']
     commands = ["poi_set", "poi_del", "poi", "spawn"]
 
     def activate(self):
         super(PointsofInterest, self).activate()
-        self.player_manager = self.plugins['player_manager'].player_manager
+        self.player_manager = self.plugins['player_manager_plugin'].player_manager
         try:
             with open("./config/pois.json") as f:
                 self.pois = json.load(f)

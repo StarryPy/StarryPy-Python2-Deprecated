@@ -9,11 +9,11 @@ class ColoredNames(BasePlugin):
     Plugin that brings colors to player names in the chat box.
     """
     name = "colored_names"
-    depends = ['player_manager']
+    depends = ['player_manager_plugin']
 
     def activate(self):
         super(ColoredNames, self).activate()
-        self.player_manager = self.plugins['player_manager'].player_manager
+        self.player_manager = self.plugins['player_manager_plugin'].player_manager
 
     def on_chat_received(self, data):
         now = datetime.now()

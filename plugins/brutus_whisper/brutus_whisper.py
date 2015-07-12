@@ -12,12 +12,12 @@ from datetime import datetime
 
 class BRWhisperPlugin(SimpleCommandPlugin):
     name = "brutus_whisper"
-    depends = ['command_plugin', 'player_manager']
+    depends = ['command_plugin', 'player_manager_plugin']
     commands = ["whisper", "w", "r", "ss"]
 
     def activate(self):
         super(BRWhisperPlugin, self).activate()
-        self.player_manager = self.plugins['player_manager'].player_manager
+        self.player_manager = self.plugins['player_manager_plugin'].player_manager
         self.reply_history = dict()
         self.sspy_enabled_dict = dict()
 

@@ -10,12 +10,12 @@ class FuelGiver(SimpleCommandPlugin):
     Courteously give players fuel once a day (for those who ask for it).
     """
     name = "fuelgiver_plugin"
-    depends = ["command_plugin", "player_manager"]
+    depends = ["command_plugin", "player_manager_plugin"]
     commands = ["fuel"]
 
     def activate(self):
         super(FuelGiver, self).activate()
-        self.player_manager = self.plugins['player_manager'].player_manager
+        self.player_manager = self.plugins['player_manager_plugin'].player_manager
 
     @permissions(UserLevels.GUEST)
     def fuel(self, data):

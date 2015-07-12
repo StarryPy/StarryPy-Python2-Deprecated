@@ -12,11 +12,11 @@ class PartyChatPlugin(SimpleCommandPlugin):
     """
     name = "partychat_plugin"
     commands = ["party", "p", "party_check"]
-    depends = ['command_plugin', 'player_manager']
+    depends = ['command_plugin', 'player_manager_plugin']
 
     def activate(self):
         super(PartyChatPlugin, self).activate()
-        self.player_manager = self.plugins['player_manager'].player_manager
+        self.player_manager = self.plugins['player_manager_plugin'].player_manager
 
     @permissions(UserLevels.GUEST)
     def party(self, data):

@@ -11,7 +11,7 @@ class ClaimsPlugin(SimpleCommandPlugin):
     name = "claims"
     description = "Claims planets."
     commands = ["claim", "unclaim", "claim_list", "unclaimable"]
-    depends = ["player_manager", "command_plugin", "planet_protect"]
+    depends = ["player_manager_plugin", "command_plugin", "planet_protect"]
 
     def __init__(self):
         super(ClaimsPlugin, self).__init__()
@@ -28,7 +28,7 @@ class ClaimsPlugin(SimpleCommandPlugin):
         self.unclaimable_planets = self.config.plugin_config.get("unclaimable_planets", [])
         self.protected_planets = self.config.config['plugin_config']['planet_protect']['protected_planets']
         self.player_planets = self.config.config['plugin_config']['planet_protect']['player_planets']
-        self.player_manager = self.plugins["player_manager"].player_manager
+        self.player_manager = self.plugins["player_manager_plugin"].player_manager
 
     @permissions(UserLevels.ADMIN)
     def unclaimable(self, data):
