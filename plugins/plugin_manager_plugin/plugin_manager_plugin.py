@@ -57,20 +57,16 @@ class PluginManagerPlugin(SimpleCommandPlugin):
             self.protocol.send_chat_message("You have to specify a plugin.")
             return
 
+        if self.plugin_manager.plugins[data[0]].active:
+            self.protocol.send_chat_message("That plugin is already active.")
+            return
+
         try:
-            self.plugin_manager.config.config['initial_plugins'].append(data[0])
-            self.plugin_manager.reload_plugins()
-            # plugin = self.plugin_manager.import_plugin( data[0] )
-            # self.plugin_manager.resolve_dependencies( plugin )
+            self.plugin_manager.load_plugins(data[0])
         except PluginNotFound:
             self.protocol.send_chat_message("Couldn't find a plugin with the name %s" % data[0])
             return
 
-        # if plugin[0].active:
-        #     self.protocol.send_chat_message("That plugin is already active.")
-        #     return
-
-        # plugin[0].activate()
         self.protocol.send_chat_message("Successfully activated plugin.")
 
 
