@@ -62,7 +62,7 @@ class PluginManagerPlugin(SimpleCommandPlugin):
             return
 
         try:
-            self.plugin_manager.load_plugins(data[0])
+            self.plugin_manager.load_plugins([data[0]])
         except PluginNotFound:
             self.protocol.send_chat_message("Couldn't find a plugin with the name %s" % data[0])
             return
