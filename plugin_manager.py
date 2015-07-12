@@ -78,10 +78,7 @@ class PluginManager(object):
         :param name: None
         :return: Array of plugin names.
         """
-        plugin_list = []
-        for f in self.plugin_dir.globChildren("*"):
-            plugin_list.append( self.get_plugin_name_from_file(f) )
-        return filter(None, plugin_list)
+        return filter(None, [ self.get_plugin_name_from_file(f) for f in  self.plugin_dir.globChildren("*") ])
 
 
     def get_plugin_name_from_file(self, f):
@@ -159,11 +156,7 @@ class PluginManager(object):
                                 Must match a folder in plugin_dir.
         :return: None
         """
-        imported_plugins = []
-        for plugin in plugins_to_load:
-            imported_plugins.append( self.import_plugin(plugin) )
-        imported_plugins = flatten(imported_plugins)
-
+        imported_plugins = flatten([ self.import_plugin(plugin) for plugin in plugins_to_load ])
         self.resolve_dependencies(imported_plugins)
         self.activate_plugins()
 
@@ -192,7 +185,6 @@ class PluginManager(object):
         for plugin in [self.plugins[x] for x in reversed(self.load_order)]:
             try:
                 plugin.deactivate()
-                del(plugin)
             except FatalPluginError as e:
                 self.logger.critical("A plugin reported a fatal error. Error: %s", str(e))
                 raise

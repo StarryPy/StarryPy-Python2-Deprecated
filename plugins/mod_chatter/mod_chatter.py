@@ -7,7 +7,7 @@ from datetime import datetime
 class ModChatter(SimpleCommandPlugin):
     """Adds support for moderators/admins/owner group chatter."""
     name = "mod_chatter"
-    depends = ['command_dispatcher', 'player_manager']
+    depends = ['command_plugin', 'player_manager']
     commands = ["modchat", "mc"]
 
     def activate(self):

@@ -3,7 +3,7 @@ from packets import chat_sent
 
 
 class CommandDispatchPlugin(BasePlugin):
-    name = "command_dispatcher"
+    name = "command_plugin"
 
     def activate(self):
         super(CommandDispatchPlugin, self).activate()

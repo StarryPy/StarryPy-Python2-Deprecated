@@ -11,7 +11,7 @@ from datetime import datetime
 
 class AFKCommand(SimpleCommandPlugin):
     name = "afk_plugin"
-    depends = ["command_dispatcher", "player_manager"]
+    depends = ["command_plugin", "player_manager"]
     commands = ["afk"]
     afk_list = dict()
 

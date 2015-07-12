@@ -6,7 +6,7 @@ from plugin_manager import FatalPluginError
 
 class StarboundConfigManager(SimpleCommandPlugin):
     name = "starbound_config_manager"
-    depends = ['command_dispatcher']
+    depends = ['command_plugin']
 
     def activate(self):
         super(StarboundConfigManager, self).activate()

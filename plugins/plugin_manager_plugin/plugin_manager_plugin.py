@@ -11,15 +11,15 @@ class PluginManagerPlugin(SimpleCommandPlugin):
     def plugin_manager(self):
         return self.protocol.plugin_manager
 
+
     @permissions(UserLevels.ADMIN)
     def plugin_list(self, data):
         """Displays all currently loaded plugins.\nSyntax: /plugin_list"""
-        installed_plugins = self.plugin_manager.installed_plugins()
+        inactive_plugins = [ plugin for plugin in self.plugin_manager.installed_plugins() if plugin not in self.plugin_manager.plugins.iterkeys() ]
 
         self.protocol.send_chat_message("Currently loaded plugins: ^yellow;%s" % "^green;, ^yellow;".join(
-            [ plugin for plugin in installed_plugins if plugin in self.plugin_manager.plugins.iterkeys() ]))
+            [ plugin for plugin in self.plugin_manager.plugins.iterkeys() ]))
 
-        inactive_plugins = [ plugin for plugin in installed_plugins if plugin not in self.plugin_manager.plugins.iterkeys() ]
         if len(inactive_plugins) > 0:
             self.protocol.send_chat_message("Inactive plugins: ^red;%s" % "^green;, ^red;".join(inactive_plugins))
 
@@ -57,15 +57,16 @@ class PluginManagerPlugin(SimpleCommandPlugin):
             self.protocol.send_chat_message("You have to specify a plugin.")
             return
 
-        if self.plugin_manager.plugins[data[0]].active:
-            self.protocol.send_chat_message("That plugin is already active.")
-            return
-
         try:
-            self.plugin_manager.load_plugins([data[0]])
-        except PluginNotFound:
-            self.protocol.send_chat_message("Couldn't find a plugin with the name %s" % data[0])
-            return
+            if self.plugin_manager.plugins[data[0]].active:
+                self.protocol.send_chat_message("That plugin is already active.")
+                return
+        except ValueError: # plugin isn't in loaded plugins, so try and load it
+            try:
+                self.plugin_manager.load_plugins([data[0]])
+            except PluginNotFound:
+                self.protocol.send_chat_message("Couldn't find a plugin with the name %s" % data[0])
+                return
 
         self.protocol.send_chat_message("Successfully activated plugin.")
 
@@ -75,7 +76,7 @@ class PluginManagerPlugin(SimpleCommandPlugin):
         """Prints help messages for server commands.\nSyntax: /help [command]"""
         if len(data) > 0:
             command = data[0].lower()
-            func = self.plugins['command_dispatcher'].commands.get(command, None)
+            func = self.plugins['command_plugin'].commands.get(command, None)
             if func is None:
                 self.protocol.send_chat_message("Couldn't find a command with the name ^yellow;%s" % command)
             elif func.level > self.protocol.player.access_level:
@@ -85,7 +86,7 @@ class PluginManagerPlugin(SimpleCommandPlugin):
                 self.protocol.send_chat_message("%s" % func.__doc__)
         else:
             available = []
-            for name, f in self.plugins['command_dispatcher'].commands.iteritems():
+            for name, f in self.plugins['command_plugin'].commands.iteritems():
                 if f.level <= self.protocol.player.access_level:
                     available.append(name)
             available.sort(key=str.lower)

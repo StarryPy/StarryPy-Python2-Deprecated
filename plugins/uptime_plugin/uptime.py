@@ -11,7 +11,7 @@ class UptimePlugin(SimpleCommandPlugin):
     Very simple plugin that responds to /uptime with the time StarryPy is running.
     """
     name = "uptime_plugin"
-    depends = ["command_dispatcher", "player_manager"]
+    depends = ["command_plugin", "player_manager"]
     commands = ["uptime"]
 
     def activate(self):

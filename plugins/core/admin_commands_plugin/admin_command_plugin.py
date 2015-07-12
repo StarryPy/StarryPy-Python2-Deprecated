@@ -11,8 +11,8 @@ class UserCommandPlugin(SimpleCommandPlugin):
     """
     Provides a simple chat interface to the user manager.
     """
-    name = "user_management_commands"
-    depends = ['command_dispatcher', 'player_manager']
+    name = "admin_commands_plugin"
+    depends = ['command_plugin', 'player_manager']
     commands = ["who", "whoami", "whois", "promote", "kick", "ban", "ban_list", "unban", "item",
                 "planet", "mute", "unmute", "passthrough", "shutdown", "timestamps"]
 

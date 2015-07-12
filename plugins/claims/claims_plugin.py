@@ -11,7 +11,7 @@ class ClaimsPlugin(SimpleCommandPlugin):
     name = "claims"
     description = "Claims planets."
     commands = ["claim", "unclaim", "claim_list", "unclaimable"]
-    depends = ["player_manager", "command_dispatcher", "planet_protect"]
+    depends = ["player_manager", "command_plugin", "planet_protect"]
 
     def __init__(self):
         super(ClaimsPlugin, self).__init__()

@@ -10,7 +10,7 @@ class FuelGiver(SimpleCommandPlugin):
     Courteously give players fuel once a day (for those who ask for it).
     """
     name = "fuelgiver_plugin"
-    depends = ["command_dispatcher", "player_manager"]
+    depends = ["command_plugin", "player_manager"]
     commands = ["fuel"]
 
     def activate(self):

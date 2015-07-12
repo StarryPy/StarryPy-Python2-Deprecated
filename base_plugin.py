@@ -376,7 +376,7 @@ class SimpleCommandPlugin(BasePlugin):
     name = "simple_command_plugin"
     description = "Provides a simple parent class to define chat commands."
     version = "0.1"
-    depends = ["command_dispatcher"]
+    depends = ["command_plugin"]
     commands = []
     command_aliases = {}
 
@@ -386,12 +386,12 @@ class SimpleCommandPlugin(BasePlugin):
             f = getattr(self, command)
             if not callable(f):
                 raise CommandNameError("Could not find a method called %s" % command)
-            self.plugins['command_dispatcher'].register(f, command)
+            self.plugins['command_plugin'].register(f, command)
         for command, alias_list in self.command_aliases.iteritems():
             for alias in alias_list:
-                self.plugins['command_dispatcher'].register(alias, command)
+                self.plugins['command_plugin'].register(alias, command)
 
     def deactivate(self):
         super(SimpleCommandPlugin, self).deactivate()
         for command in self.commands:
-            self.plugins['command_dispatcher'].unregister(command)
+            self.plugins['command_plugin'].unregister(command)

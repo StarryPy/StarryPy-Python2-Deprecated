@@ -12,7 +12,7 @@ from datetime import datetime
 
 class BRWhisperPlugin(SimpleCommandPlugin):
     name = "brutus_whisper"
-    depends = ['command_dispatcher', 'player_manager']
+    depends = ['command_plugin', 'player_manager']
     commands = ["whisper", "w", "r", "ss"]
 
     def activate(self):

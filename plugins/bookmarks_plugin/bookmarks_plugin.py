@@ -12,7 +12,7 @@ class Bookmarks(SimpleCommandPlugin):
     Plugin that allows defining planets as personal bookmarks you can /goto to.
     """
     name = "bookmarks_plugin"
-    depends = ['command_dispatcher', 'player_manager']
+    depends = ['command_plugin', 'player_manager']
     commands = ["bookmark_add", "bookmark_del", "goto"]
 
     def activate(self):
