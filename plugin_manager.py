@@ -78,7 +78,8 @@ class PluginManager(object):
         :param name: None
         :return: Array of plugin names.
         """
-        return filter(None, [ self.get_plugin_name_from_file(f) for f in  self.plugin_dir.globChildren("*") ])
+        installed_plugins = filter(None, [ self.get_plugin_name_from_file(f) for f in  self.plugin_dir.globChildren("*") ])
+        return filter(lambda name: name != 'core', installed_plugins) # don't list core plugins, always loaded/installed
 
 
     def get_plugin_name_from_file(self, f):
@@ -156,8 +157,7 @@ class PluginManager(object):
                                 Must match a folder in plugin_dir.
         :return: None
         """
-        imported_plugins = flatten([ self.import_plugin(plugin) for plugin in plugins_to_load ])
-        self.resolve_dependencies(imported_plugins)
+        self.resolve_dependencies( flatten([ self.import_plugin(plugin) for plugin in plugins_to_load ]) )
         self.activate_plugins()
 
 

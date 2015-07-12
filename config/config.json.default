@@ -26,6 +26,7 @@
         "motd_plugin",
         "new_player_greeter_plugin",
         "planet_protect",
+        "planet_visitor_announcer_plugin",
         "players_plugin",
         "plugin_manager_plugin",
         "poi_plugin",
