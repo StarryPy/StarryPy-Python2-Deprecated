@@ -66,7 +66,7 @@ class PluginManager(object):
         self.load_plugins( ['core.admin_commands_plugin','core.colored_names','core.command_plugin','core.player_manager_plugin','core.starbound_config_manager'] )
         self.load_plugins( self.config.config['initial_plugins'] )
         self.logger.info( "Loaded plugins:\n\n%s\n" % "\n".join(
-            ["%s" % (plugin.name) for plugin in self.plugins.itervalues()]) )
+            ["\t%s" % (plugin.name) for plugin in self.plugins.itervalues()]) )
 
 
     def installed_plugins(self):
@@ -118,6 +118,7 @@ class PluginManager(object):
         :return: None
         """
         self.plugins_waiting_to_load = {}
+        self.load_order = []
 
         try:
             while len(dependency_hash) > 0:
