@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 from base_plugin import BasePlugin
-from plugins.core.player_manager import permissions
+from plugins.core.player_manager_plugin import permissions
 
 class LoginWhoPlugin(BasePlugin):
     """

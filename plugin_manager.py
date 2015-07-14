@@ -63,7 +63,7 @@ class PluginManager(object):
         self.plugin_dir = path.child(self.config.plugin_path)
         sys.path.append( self.plugin_dir.path )
 
-        self.load_plugins( ['core'] )
+        self.load_plugins( ['core.admin_commands_plugin','core.colored_names','core.command_plugin','core.player_manager_plugin','core.starbound_config_manager'] )
         self.load_plugins( self.config.config['initial_plugins'] )
         self.logger.info( "Loaded plugins:\n\n%s\n" % "\n".join(
             ["%s" % (plugin.name) for plugin in self.plugins.itervalues()]) )
@@ -161,12 +161,6 @@ class PluginManager(object):
                                 Names must match a folder in plugin_dir.
         :return: None
         """
-        current_plugins = self.plugins.keys()
-        current_plugins.extend(plugins_to_load)
-
-        core_names = ['admin_commands_plugin','colored_names','command_plugin','player_manager_plugin','starbound_config_manager','mute_manager']
-        plugins_to_load = [x for x in current_plugins if x not in core_names]
-
         for plugin in plugins_to_load:
             self.import_plugin(plugin)
 
@@ -186,9 +180,9 @@ class PluginManager(object):
         for plugin in [self.plugins_waiting_to_load[x] for x in plugins]:
             try:
                 self.plugins[plugin.name] = plugin()
+                self.logger.debug("Instantiated plugin '%s'" % plugin.name)
                 if len(plugin.depends) > 0:
                     self.load_dependencies(plugin.name, [ self.plugins[x] for x in dependencies[plugin.name] ])
-                self.logger.debug("Instantiated plugin '%s'" % plugin.name)
                 self.plugins[plugin.name].activate()
             except FatalPluginError as e:
                 self.logger.critical("A plugin reported a fatal error. Error: %s", str(e))

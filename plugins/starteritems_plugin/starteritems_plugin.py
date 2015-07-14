@@ -1,6 +1,6 @@
 from base_plugin import SimpleCommandPlugin
 from utility_functions import give_item_to_player
-from plugins.core.player_manager import permissions, UserLevels
+from plugins.core.player_manager_plugin import permissions, UserLevels
 
 
 class StarterItems(SimpleCommandPlugin):

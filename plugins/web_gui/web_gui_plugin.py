@@ -5,7 +5,7 @@ import random
 import json
 from datetime import datetime
 from base_plugin import BasePlugin
-from plugins.core.player_manager import PlayerManager
+from plugins.core.player_manager_plugin import PlayerManager
 from packets import chat_sent, client_connect
 from . import web_gui
 import tornado.ioloop

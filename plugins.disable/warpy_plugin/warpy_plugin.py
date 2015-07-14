@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 from base_plugin import SimpleCommandPlugin
-from plugins.core.player_manager import permissions, UserLevels
+from plugins.core.player_manager_plugin import permissions, UserLevels
 from utility_functions import build_packet, move_ship_to_coords, extract_name
 from packets import Packets, WarpAliasType, WarpWorldType, WarpActionType, player_warp, player_warp_toworld_write, player_warp_toplayer_write, player_warp_toalias_write, fly_ship, fly_ship_write
 

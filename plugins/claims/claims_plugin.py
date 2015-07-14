@@ -1,5 +1,5 @@
 from base_plugin import SimpleCommandPlugin
-from plugins.core.player_manager import UserLevels, permissions
+from plugins.core.player_manager_plugin import UserLevels, permissions
 from utility_functions import extract_name
 
 

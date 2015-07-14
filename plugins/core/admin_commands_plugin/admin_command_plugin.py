@@ -2,7 +2,7 @@ import pprint
 import socket
 from twisted.internet import reactor
 from base_plugin import SimpleCommandPlugin, BasePlugin
-from plugins.core.player_manager import permissions, UserLevels
+from plugins.core.player_manager_plugin import permissions, UserLevels
 from packets import chat_sent
 from utility_functions import give_item_to_player, extract_name
 

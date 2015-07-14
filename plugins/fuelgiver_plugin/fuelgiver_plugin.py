@@ -1,7 +1,7 @@
 #Kamilion's Fuel Giver plugin (https://gist.github.com/kamilion/9150547)
 from base_plugin import SimpleCommandPlugin
 from utility_functions import give_item_to_player
-from plugins.core.player_manager import permissions, UserLevels
+from plugins.core.player_manager_plugin import permissions, UserLevels
 from time import time
 
 

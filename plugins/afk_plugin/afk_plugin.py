@@ -5,7 +5,7 @@
 #   Description: Simple AFK command with configurable messages
 #===========================================================
 from base_plugin import SimpleCommandPlugin
-from plugins.core.player_manager import permissions, UserLevels
+from plugins.core.player_manager_plugin import permissions, UserLevels
 from datetime import datetime
 
 
