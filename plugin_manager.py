@@ -112,10 +112,9 @@ class PluginManager(object):
 
     def resolve_dependencies(self, dependency_hash):
         """
-        Resolves plugin dependencies, appends plugins to self.plugins
-        to instantiate them.
+        Resolves plugin dependency chain.
 
-        :param plugin_list: List of plugins to resolve and isntantiate.
+        :param dependency_hash: Dictionary of dependencies.
         :return: None
         """
         self.plugins_waiting_to_load = {}
@@ -143,6 +142,13 @@ class PluginManager(object):
 
 
     def load_dependencies(self, dependent_name, dependencies):
+        """
+        Loads plugin dependencies onto instance method #plugins of dependent.
+
+        :param dependent_name: Name of dependent plugin.
+        :param dependencies: Dictionary of dependencies.
+        :return: None
+        """
         for plugin in dependencies:
             self.plugin_classes[dependent_name].plugins[plugin.name] = plugin
 
