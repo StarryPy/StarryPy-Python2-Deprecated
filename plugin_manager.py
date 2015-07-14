@@ -6,7 +6,6 @@ import inspect
 import logging
 import sys
 
-from compiler.ast import flatten
 from twisted.internet import reactor
 from twisted.internet.task import deferLater
 
@@ -93,27 +92,25 @@ class PluginManager(object):
         Import plugin that has the given name, and is a subclass of base_class.
 
         :param name: The name of the plugin to import.
-        :return: List of imported classes.
+        :return: None
         """
         try:
-            seen_plugins = []
             mod = __import__(name, globals(), locals(), [], 0)
             for _, plugin in inspect.getmembers(mod, inspect.isclass):
-                if issubclass(plugin, self.base_class) and (plugin is not self.base_class) and (plugin not in seen_plugins):
+                if issubclass(plugin, self.base_class) and (plugin is not self.base_class) and (plugin not in self.plugin_classes.keys()):
                     plugin.config = self.config
                     plugin.factory = self.factory
                     plugin.active = False
                     plugin.protocol = None
                     plugin.plugins = {}
                     plugin.logger = logging.getLogger('starrypy.plugins.%s' % plugin.name)
-                    seen_plugins.append(plugin)
-            return seen_plugins
+                    self.plugin_classes[plugin.name] = plugin
 
         except ImportError:
             self.logger.critical("Import error for %s\n" % name)
 
 
-    def resolve_dependencies(self, plugin_list, dependency_hash):
+    def resolve_dependencies(self, dependency_hash):
         """
         Resolves plugin dependencies, appends plugins to self.plugins
         to instantiate them.
@@ -159,22 +156,17 @@ class PluginManager(object):
         :return: None
         """
         current_plugins = self.plugins.keys()
-        current_plugins.append(plugins_to_load)
-        plugins_to_load = flatten(current_plugins)
+        current_plugins.extend(plugins_to_load)
 
         core_names = ['admin_commands_plugin','colored_names','command_plugin','player_manager_plugin','starbound_config_manager','mute_manager']
-        plugins_to_load = [x for x in plugins_to_load if x not in core_names]
+        plugins_to_load = [x for x in current_plugins if x not in core_names]
 
-        plugin_list = []
         for plugin in plugins_to_load:
-            plugin_list.append(self.import_plugin(plugin))
-        plugin_list = filter(None, flatten(plugin_list))
+            self.import_plugin(plugin)
 
-        dependencies = { plugin.name: set(plugin.depends) for plugin in plugin_list }
-        for plugin in plugin_list:
-            self.plugin_classes[plugin.name] = plugin
+        dependencies = { plugin.name: set(plugin.depends) for plugin in self.plugin_classes.itervalues() }
 
-        self.resolve_dependencies( plugin_list, dependencies.copy() )
+        self.resolve_dependencies( dependencies.copy() )
 
         new_plugins = []
         for plugin_name in self.load_order:
