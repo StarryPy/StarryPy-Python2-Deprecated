@@ -34,7 +34,6 @@
         "uptime_plugin"
     ],
     "command_prefix": "/",
-    "core_plugin_path": "core_plugins",
     "log_level": "DEBUG",
     "debug_file": "debug.log",
     "logging_format_console": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",

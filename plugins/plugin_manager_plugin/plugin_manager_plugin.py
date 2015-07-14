@@ -61,7 +61,7 @@ class PluginManagerPlugin(SimpleCommandPlugin):
             if self.plugin_manager.plugins[data[0]].active:
                 self.protocol.send_chat_message("That plugin is already active.")
                 return
-        except ValueError: # plugin isn't in loaded plugins, so try and load it
+        except KeyError: # plugin isn't in loaded plugins, so try and load it
             try:
                 self.plugin_manager.load_plugins([data[0]])
             except PluginNotFound:
