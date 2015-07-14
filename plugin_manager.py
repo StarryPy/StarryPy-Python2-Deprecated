@@ -6,8 +6,6 @@ import inspect
 import logging
 import sys
 
-import pdb
-
 from compiler.ast import flatten
 from twisted.internet import reactor
 from twisted.internet.task import deferLater
@@ -140,7 +138,7 @@ class PluginManager(object):
                     self.load_order.append(name)
                     del( dependency_hash[name] )
                 for name, depends in dependency_hash.iteritems():
-                    plugin_set = set(self.plugins).union( set(self.plugins_waiting_to_load.iterkeys()) )
+                    plugin_set = set(self.plugins.iterkeys()).union( set(self.plugins_waiting_to_load.iterkeys()) )
                     dependency_hash[name] = dependency_hash[name].difference(plugin_set)
 
         except UnresolvedOrCircularDependencyError as e:
