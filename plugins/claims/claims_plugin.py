@@ -13,14 +13,8 @@ class ClaimsPlugin(SimpleCommandPlugin):
     commands = ["claim", "unclaim", "claim_list", "unclaimable"]
     depends = ["player_manager_plugin", "command_plugin", "planet_protect"]
 
-    def __init__(self):
-        super(ClaimsPlugin, self).__init__()
-
     def activate(self):
         super(ClaimsPlugin, self).activate()
-
-        #self.protected_planets = self.config.plugin_config.get("protected_planets", [])
-        #self.player_planets = self.config.plugin_config.get("player_planets", {})
         try:
             self.max_claims = self.config.plugin_config['max_claims']
         except KeyError:

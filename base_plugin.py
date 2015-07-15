@@ -18,7 +18,7 @@ class BasePlugin(object):
     name = "Base Plugin"
     description = "The common class for all plugins to inherit from."
     version = ".1"
-    depends = []
+    depends = [] 
 
     def activate(self):
         """

@@ -18,7 +18,6 @@ class WebGuiPlugin(BasePlugin, PlayerManager):
     depends = ['player_manager_plugin']
 
     def __init__(self):
-        super(WebGuiPlugin, self).__init__()
         try:
             self.port = int(self.config.plugin_config['port'])
         except (AttributeError, ValueError):
