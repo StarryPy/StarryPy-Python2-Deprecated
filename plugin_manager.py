@@ -142,18 +142,6 @@ class PluginManager(object):
             self.logger.critical(str(e))
 
 
-    def load_dependencies(self, dependent_name, dependencies):
-        """
-        Loads plugin dependencies onto instance method #plugins of dependent.
-
-        :param dependent_name: Name of dependent plugin.
-        :param dependencies: Dictionary of dependencies.
-        :return: None
-        """
-        for plugin in dependencies:
-            self.plugin_classes[dependent_name].plugins[plugin.name] = plugin
-
-
     def load_plugins(self, plugins_to_load):
         """
         Loads and instantiates plugins that it is asked to.
@@ -183,7 +171,8 @@ class PluginManager(object):
                 self.plugins[plugin.name] = plugin()
                 self.logger.debug("Instantiated plugin '%s'" % plugin.name)
                 if len(plugin.depends) > 0:
-                    self.load_dependencies(plugin.name, [ self.plugins[x] for x in dependencies[plugin.name] ])
+                    for p in [ self.plugins[x] for x in dependencies[plugin.name] ]:
+                        self.plugin_classes[plugin.name].plugins[p.name] = p
                 self.plugins[plugin.name].activate()
             except FatalPluginError as e:
                 self.logger.critical("A plugin reported a fatal error. Error: %s", str(e))
