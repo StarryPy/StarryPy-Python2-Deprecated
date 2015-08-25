@@ -7,7 +7,6 @@
 # http://www.wtfpl.net/ for more details.
 
 from _socket import SHUT_RDWR
-#import gettext
 import locale
 import logging
 import logging.handlers
@@ -29,15 +28,18 @@ import packets
 from plugin_manager import PluginManager, route, FatalPluginError
 from utility_functions import build_packet
 
-VERSION = "1.6"
+VERSION = "1.7"
 
 
 VDEBUG_LVL = 9
 logging.addLevelName(VDEBUG_LVL, "VDEBUG")
+
+
 def vdebug(self, message, *args, **kws):
     if self.isEnabledFor(VDEBUG_LVL):
         self._log(VDEBUG_LVL, message, args, **kws)
 logging.Logger.vdebug = vdebug
+
 
 def port_check(upstream_hostname, upstream_port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -103,7 +105,7 @@ class StarryPyServerProtocol(Protocol):
             packets.Packets.SWAP_IN_CONTAINER_RESULT: self.swap_in_container_result, # 26
             packets.Packets.ENVIRONMENT_UPDATE: self.environment_update, # 27
             packets.Packets.ENTITY_INTERACT_RESULT: self.entity_interact_result, # 28
-            packets.Packets.UPDATE_TILE_PROTECTION: lambda x: True, # 29
+            packets.Packets.UPDATE_TILE_PROTECTION: self.update_tile_protection, # 29
             packets.Packets.MODIFY_TILE_LIST: self.modify_tile_list, # 30
             packets.Packets.DAMAGE_TILE_GROUP: self.damage_tile_group, # 31
             packets.Packets.COLLECT_LIQUID: self.collect_liquid, # 32
@@ -127,9 +129,10 @@ class StarryPyServerProtocol(Protocol):
             packets.Packets.HIT_REQUEST: self.hit_request, # 50
             packets.Packets.DAMAGE_REQUEST: lambda x: True, # 51
             packets.Packets.DAMAGE_NOTIFICATION: self.damage_notification, # 52
-            packets.Packets.CALL_SCRIPTED_ENTITY: lambda x: True, # 53
-            packets.Packets.UPDATE_WORLD_PROPERTIES: self.update_world_properties, # 54
-            packets.Packets.HEARTBEAT: self.heartbeat, # 55
+            packets.Packets.ENTITY_MESSAGE: lambda x: True, #53
+            packets.Packets.ENTITY_MESSAGE_RESPONSE: lambda x: True, #54
+            packets.Packets.UPDATE_WORLD_PROPERTIES: self.update_world_properties, # 55
+            packets.Packets.STEP_UPDATE: self.step_update, # 56
         }
         self.client_protocol = None
         self.packet_stream = PacketStream(self)
@@ -159,9 +162,7 @@ class StarryPyServerProtocol(Protocol):
         Processing of parsed data is handled in handle_starbound_packets()
         :rtype : None
         """
-        if 55 >= packet.id:
-            # if packet.id not in [14, 44, 45, 46, 47, 51, 53]:
-            # logger.info("From Client: %s", packet.id)
+        if 56 >= packet.id:
             if self.handle_starbound_packets(packet):
                 self.client_protocol.transport.write(
                     packet.original_data)
@@ -271,6 +272,10 @@ class StarryPyServerProtocol(Protocol):
         return True
 
     @route
+    def update_tile_protection(self, data):
+        return True
+
+    @route
     def modify_tile_list(self, data):
         return True
 
@@ -367,7 +372,7 @@ class StarryPyServerProtocol(Protocol):
         return True
 
     @route
-    def heartbeat(self, data):
+    def step_update(self, data):
         return True
 
     @route
@@ -468,7 +473,7 @@ class StarryPyServerProtocol(Protocol):
     def handle_starbound_packets(self, p):
         """
         This function is the meat of it all. Every time a full packet with
-        a derived ID <= 55, it is passed through here.
+        a derived ID <= 56, it is passed through here.
         """
         return self.call_mapping[p.id](p)
 
@@ -577,8 +582,6 @@ class ClientProtocol(Protocol):
         :return: None
         """
         try:
-            # if packet.id not in [5, 14, 25, 45, 46, 47, 51, 53]:
-            #     logger.info("From Server: %s", packet.id)
             if self.server_protocol.handle_starbound_packets(
                     packet):
                 self.server_protocol.write(packet.original_data)
@@ -637,6 +640,7 @@ class StarryPyServerFactory(ServerFactory):
         Called when the factory is stopped. Saves the configuration.
         :return: None
         """
+
         self.config.save()
         self.plugin_manager.die()
 
@@ -720,20 +724,13 @@ class StarboundClientFactory(ClientFactory):
         protocol = ClientFactory.buildProtocol(self, address)
         protocol.server_protocol = self.server_protocol
         return protocol
+
+
 def init_localization():
     try:
         locale.setlocale(locale.LC_ALL, '')
     except:
         locale.setlocale(locale.LC_ALL, 'en_US.utf8')
-    #try:
-    #    loc = locale.getlocale()
-    #    filename = "res/messages_%s.mo" % locale.getlocale()[0][0:2]
-    #    print "Opening message file %s for locale %s." % (filename, loc[0])
-    #    trans = gettext.GNUTranslations(open(filename, "rb"))
-    #except (IOError, TypeError, IndexError):
-    #    print "Locale not found. Using default messages."
-    #    trans = gettext.NullTranslations()
-    #trans.install()
 
 
 if __name__ == '__main__':
