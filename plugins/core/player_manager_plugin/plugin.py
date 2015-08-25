@@ -37,6 +37,7 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
     def on_client_connect(self, data):
         client_data = client_connect().parse(data.data)
         try:
+            clone_append = ""
             changed_name = client_data.name
             for regex in self.regexes:  # Replace problematic chars in client name
                 changed_name = re.sub(regex, "", changed_name)
@@ -55,12 +56,12 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
 
             duplicate_player = self.player_manager.get_by_org_name(client_data.name)
             if duplicate_player is not None and duplicate_player.uuid != client_data.uuid:
-                raise NameError(
-                    "The name of this character is already taken on the server!\nPlease, create a new character with a different name or talk to an administrator.")
-                self.logger.info("Got a duplicate original player name, asking player to change character name!")
-                #rnd_append = str(randrange(10, 99))
-                #original_name += rnd_append
-                #client_data.name += rnd_append
+                #raise NameError(
+                #    "The name of this character is already taken on the server!\nPlease, create a new character with a different name or talk to an administrator.")
+                self.logger.info("CLONE WARNING: {} MAY BE TRYING TO IMPERSONATE {}!".format(self.protocol.transport.getPeer().host, client_data.name))
+                #clone_append = " [CLONE]"
+                #changed_name += clone_append
+                #client_data.name += clone_append
 
             if client_data.account == self.adminss:
                 admin_login = True
@@ -77,6 +78,8 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
                 ip=self.protocol.transport.getPeer().host,
                 protocol=self.protocol.id,
             )
+
+            #self.protocol.player.name += clone_append
 
             return True
         except AlreadyLoggedIn:
@@ -98,7 +101,7 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
             packets.Packets.CONNECT_FAILURE,
             packets.connect_failure().build(
                 Container(
-                    reject_reason=False
+                    reject_reason=reason
                 )
             ) + unlocked_sector_magic
         )

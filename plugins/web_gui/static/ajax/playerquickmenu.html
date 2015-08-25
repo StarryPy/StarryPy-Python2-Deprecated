@@ -1,10 +1,10 @@
 {% if handler.edit_player.logged_in %}
-<button class="btn btn-success" onclick="LoadAjaxContent('ajax/playeredit.html?playername={{ handler.edit_player.name }}');">Edit</button>
+<button class="btn btn-success" onclick="LoadAjaxContent('ajax/playeredit.html?playeruuid={{ handler.edit_player.uuid }}');">Edit</button>
 {% end %}
-<button class="btn btn-warning" onclick="kickPlayer('{{ handler.edit_player.name }}')">Kick</button>
+<button class="btn btn-warning" onclick="kickPlayer('{{ handler.edit_player.uuid }}')">Kick</button>
 {% if handler.player_manager.check_bans(handler.edit_player.ip) %}
-<button class="btn btn-success" onclick="unBanPlayer('{{ handler.edit_player.name }}')">Unban</button>
+<button class="btn btn-success" onclick="unBanPlayer('{{ handler.edit_player.uuid }}')">Unban</button>
 {% else %}
-<button class="btn btn-warning" onclick="banPlayer('{{ handler.edit_player.name }}')">Ban</button>
+<button class="btn btn-warning" onclick="banPlayer('{{ handler.edit_player.uuid }}')">Ban</button>
 {% end %}
-<button class="btn btn-danger" onclick="deletePlayer('{{ handler.edit_player.name }}')">Delete</button>
+<button class="btn btn-danger" onclick="deletePlayer('{{ handler.edit_player.uuid }}')">Delete</button>

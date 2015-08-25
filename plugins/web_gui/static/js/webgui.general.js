@@ -95,7 +95,7 @@ function deletePlayer(player) {
 
 function playQuickMenu(player) {
     $.get("ajax/playerquickmenu.html", {
-        playername: player
+        playeruuid: player
     }, function(data) {
         noty({
             text: data,
