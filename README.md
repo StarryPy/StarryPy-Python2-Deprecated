@@ -16,7 +16,7 @@ With the built-in plugins (which are removable):
 
 ## Version 1.7 is here!
 
-With this most recent release, we are compatible with the current release of Starbound (Please Giraffe - Protocol 691). Any bugs found in the process, please open an issue ticket, so we can squash them as quickly as possible.
+With this most recent release, we are compatible with the current release of Starbound (Pleased Giraffe - Protocol 691). Any bugs found in the process, please open an issue ticket, so we can squash them as quickly as possible.
 
 ## Upgrading from older versions of StarryPy
 
