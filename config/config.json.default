@@ -51,7 +51,7 @@
             "max_claims": 5,
             "unclaimable_planets": []
         },
-        "irc": {
+        "irc_plugin": {
             "bot_nickname": "StarryPyBot",
             "channel": "##test",
             "color": "^#e39313;",
