@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 from base_plugin import SimpleCommandPlugin
-from plugins.core.player_manager import permissions, UserLevels
+from plugins.core.player_manager_plugin import permissions, UserLevels
 
 
 class MOTDPlugin(SimpleCommandPlugin):
@@ -10,7 +10,6 @@ class MOTDPlugin(SimpleCommandPlugin):
     """
     name = "motd_plugin"
     commands = ["motd", "motd_set"]
-    auto_activate = True
 
     def activate(self):
         super(MOTDPlugin, self).activate()

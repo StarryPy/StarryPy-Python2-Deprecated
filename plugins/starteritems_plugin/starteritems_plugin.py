@@ -1,6 +1,6 @@
 from base_plugin import SimpleCommandPlugin
 from utility_functions import give_item_to_player
-from plugins.core.player_manager import permissions, UserLevels
+from plugins.core.player_manager_plugin import permissions, UserLevels
 
 
 class StarterItems(SimpleCommandPlugin):
@@ -8,13 +8,12 @@ class StarterItems(SimpleCommandPlugin):
     Welcomes new players by giving them a bunch of items.
     """
     name = "starteritems_plugin"
-    depends = ["command_dispatcher", "player_manager"]
+    depends = ["command_plugin", "player_manager_plugin"]
     commands = ["starteritems"]
-    auto_activate = True
 
     def activate(self):
         super(StarterItems, self).activate()
-        self.player_manager = self.plugins['player_manager'].player_manager
+        self.player_manager = self.plugins['player_manager_plugin'].player_manager
 
     @permissions(UserLevels.GUEST)
     def starteritems(self, data):
