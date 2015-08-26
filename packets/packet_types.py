@@ -63,9 +63,10 @@ class Packets(IntEnum):
     HIT_REQUEST = 50
     DAMAGE_REQUEST = 51
     DAMAGE_NOTIFICATION = 52
-    CALL_SCRIPTED_ENTITY = 53
-    UPDATE_WORLD_PROPERTIES = 54
-    HEARTBEAT = 55
+    ENTITY_MESSAGE = 53
+    ENTITY_MESSAGE_RESPONSE = 54
+    UPDATE_WORLD_PROPERTIES = 55
+    STEP_UPDATE = 56
 
 
 class WarpActionType(IntEnum):
@@ -151,8 +152,8 @@ celestial_coordinate = lambda name="celestial_coordinate": Struct(name,
                                                                   SBInt32("satellite"))
 
 warp_action = lambda name="warp_action": Struct(name,
-                                                Byte("type"),
-                                                Switch("warp_action_type", lambda ctx: ctx["type"],
+                                                Byte("warp_type"),
+                                                Switch("warp_action_type", lambda ctx: ctx["warp_type"],
                                                        {
                                                            1 : LazyBound("next", lambda: warp_world),
                                                            2 : HexAdapter(Field("uuid", 16)),
@@ -205,6 +206,30 @@ warp_world_mission = Struct("mission_world",
                             star_string("mission_world_name"),
                             HexAdapter(Field("instance", 16))
                             )
+
+
+warp_touniqueworld_write = lambda name="warp_touniqueworld_write": Struct(name,
+                                                                          Byte("warp_type"),
+                                                                          Byte("world_type"),
+                                                                          star_string("unique_world_name"),
+                                                                          Byte("has_position"))
+
+warp_toplayerworld_write = lambda name="warp_toplayerworld_write": Struct(name,
+                                                                          Byte("warp_type"),
+                                                                          Byte("world_type"),
+                                                                          HexAdapter(Field("uuid", 16)),
+                                                                          Byte("has_position"))
+
+warp_toplayer_write = lambda name="warp_toplayer_write": Struct(name,
+                                                                Byte("warp_type"),
+                                                                HexAdapter(Field("uuid", 16))
+                                                                )
+
+warp_toalias_write = lambda name="warp_toalias_write": Struct(name,
+                                                              Byte("warp_type"),
+                                                              SBInt32("alias")
+                                                              )
+
 
 projectile = DictVariant("projectile")
 
@@ -299,44 +324,39 @@ chat_sent_write = lambda message, send_mode: chat_sent().build(
             send_mode=send_mode))
 
 # (12) - PlayerWarp
-#player_warp = lambda name="player_warp": Struct(name,
-#                                                  Enum(UBInt8("warp_type"),
-#                                                       WARP_TO=0,
-#                                                       WARP_RETURN=1,
-#                                                       WARP_TO_HOME_WORLD=2,
-#                                                       WARP_TO_ORBITED_WORLD=3,
-#                                                       WARP_TO_OWN_SHIP=4),
-#                                                  WarpVariant("world_id"))
 player_warp = lambda name="player_warp": Struct(name,
                                                 warp_action())
+
+player_warp_touniqueworld_write = lambda destination: warp_touniqueworld_write().build(
+    Container(
+        warp_type=1,
+        world_type=1,
+        unique_world_name=destination,
+        has_position=0
+    ))
+player_warp_toplayerworld_write = lambda destination: warp_toplayerworld_write().build(
+    Container(
+        warp_type=1,
+        world_type=3,
+        uuid=destination,
+        has_position=0
+    ))
+player_warp_toplayer_write = lambda uuid: warp_toplayer_write().build(
+    Container(
+        warp_type=2,
+        uuid=uuid
+    ))
+player_warp_toalias_write = lambda alias: warp_toalias_write().build(
+    Container(
+        warp_type=3,
+        alias=alias
+    ))
 
 # (8) - PlayerWarpResult
 player_warp_result = lambda name="player_warp_result": Struct(name,
                                                               Flag("success"),
                                                               warp_action(),
                                                               Flag("warp_action_invalid"))
-
-#player_warp_write = lambda t, world_id: player_warp().build(
-#    Container(
-#        warp_type=t,
-#        world_id=world_id))
-
-player_warp_toworld_write = lambda world_type, destination: player_warp().build(
-    Container(
-        warp_action_type=1,
-        world_type=world_type,
-        unique_world_name=destination
-    ))
-player_warp_toplayer_write = lambda uuid: player_warp().build(
-    Container(
-        warp_action_type=2,
-        uuid=uuid
-    ))
-player_warp_toalias_write = lambda alias: player_warp().build(
-    Container(
-        warp_action_type=3,
-        alias=alias
-    ))
 
 # (13) - FlyShip
 fly_ship = lambda name="fly_ship": Struct(name,
@@ -368,6 +388,9 @@ client_context_update = lambda name="client_context": Struct(name,
                                                              If(lambda ctx: ctx["a"] == 0,
                                                                 Struct("junk",
                                                                        Padding(1),
+                                                                       Peek(Byte("b")),
+                                                                       If(lambda ctx: ctx["b"] == 0,
+                                                                           Padding(1)),
                                                                        VLQ("extra_length"))),
                                                              If(lambda ctx: ctx["a"] > 8,
                                                                 Struct("junk2",
@@ -435,6 +458,22 @@ swap_in_container_result = lambda name="swap_in_container_result": Struct(name,
                                                                           VLQ("count"),
                                                                           Byte("variant_type"),
                                                                           GreedyRange(StarByteArray("item_description")))
+
+# (29) - UpdateTileProtection
+update_tile_protection = lambda name="update_tile_protection": Struct(name,
+                                                                      GreedyRange(
+                                                                          Struct("dungeon_block",
+                                                                                 UBInt16("dungeon_id"),
+                                                                                 Flag("is_protected"))))
+
+update_tile_protection_writer = lambda name="update_tile_protection_writer": Struct(name,
+                                                                                    UBInt16("dungeon_id"),
+                                                                                    Byte("is_protected"))
+
+update_tile_protection_write = lambda dungeon_id, is_protected: update_tile_protection_writer().build(
+        Container(
+            dungeon_id=dungeon_id,
+            is_protected=is_protected))
 
 # (36) - SpawnEntity
 spawn_entity = lambda name="spawn_entity": Struct(name,
@@ -507,7 +546,7 @@ damage_notification = lambda name="damage_notification": Struct(name,
                                                                 star_string("target_material"),
                                                                 Flag("killed"))
 
-# (54) - UpdateWorldProperties
+# (55) - UpdateWorldProperties
 update_world_properties = lambda name="world_properties": Struct(name,
                                                                  UBInt8("count"),
                                                                  Array(lambda ctx: ctx.count,
@@ -520,6 +559,6 @@ update_world_properties_write = lambda dictionary: update_world_properties().bui
         count=len(dictionary),
         properties=[Container(key=k, value=Container(type="SVLQ", data=v)) for k, v in dictionary.items()]))
 
-# (55) - Heartbeat
-heartbeat = lambda name="heartbeat": Struct(name,
-                                            VLQ("remote_step"))
+# (56) - StepUpdate
+step_update = lambda name="step_update": Struct(name,
+                                                VLQ("remote_step"))

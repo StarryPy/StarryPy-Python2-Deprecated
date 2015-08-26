@@ -101,6 +101,9 @@ class BasePlugin(object):
     def on_entity_interact_result(self, data):
         return True
 
+    def on_update_tile_protection(self, data):
+        return True
+
     def on_modify_tile_list(self, data):
         return True
 
@@ -173,7 +176,7 @@ class BasePlugin(object):
     def on_update_world_properties(self, data):
         return True
 
-    def on_heartbeat(self, data):
+    def on_step_update(self, data):
         return True
 
     def on_connect_success(self, data):
@@ -263,6 +266,9 @@ class BasePlugin(object):
     def after_entity_interact_result(self, data):
         return True
 
+    def after_update_tile_protection(self, data):
+        return True
+
     def after_modify_tile_list(self, data):
         return True
 
@@ -335,7 +341,7 @@ class BasePlugin(object):
     def after_update_world_properties(self, data):
         return True
 
-    def after_heartbeat(self, data):
+    def after_step_update(self, data):
         return True
 
     def after_connect_success(self, data):

@@ -14,7 +14,7 @@ class PlanetVisitorAnnouncer(BasePlugin):
 
     def after_player_warp(self, data):
         w = player_warp().parse(data.data)
-        if w.warp_action["type"] == 1 or (w.warp_action["type"] == 3 and w.warp_action["warp_action_type"] == 1):
+        if w.warp_action["warp_type"] == 1 or (w.warp_action["warp_type"] == 3 and w.warp_action["warp_action_type"] == 1):
             reactor.callLater(1, self.announce_on_planet, self.protocol.player)
 
     def announce_on_planet(self, who_beamed):
