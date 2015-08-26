@@ -30,7 +30,7 @@ class TeleportPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.REGISTERED)
     def teleport(self, data):
-        """Player teleportation system. By default, this system will telepor a player to another player. Use subcommands to modify this behavior. Available subcommands are:\n^cyan;player, ship, home, outpost, ^gray;bookmark, poi"""
+        """Player teleportation system. By default, this system will telepor a player to another player. Use subcommands to modify this behavior. Available subcommands are:\n^cyan;player, ship, home, ^gray;outpost, bookmark, poi"""
         self.logger.vdebug('Teleport command called')
         if not data:
             self.protocol.send_chat_message(self.teleport.__doc__)
@@ -44,12 +44,12 @@ class TeleportPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.REGISTERED)
     def tp(self, data):
-        """Player teleportation system. By default, this system will teleport a player to another player. Use subcommands to modify this behavior. Available subcommands are:\n^cyan;player, ship, bookmark, poi"""
+        """Player teleportation system. By default, this system will teleport a player to another player. Use subcommands to modify this behavior. Available subcommands are:\n^cyan;player, ship, home"""
         self.teleport(data)
 
     @permissions(UserLevels.REGISTERED)
     def teleport_help(self, data):
-        """Player teleportation system. By default, this system will teleport a player to another player. Use subcommands to modify this behavior. Available subcommands are:\n^cyan;player, ship, bookmark, poi"""
+        """Player teleportation system. By default, this system will teleport a player to another player. Use subcommands to modify this behavior. Available subcommands are:\n^cyan;player, ship, home"""
         self.protocol.send_chat_message(self.teleport.__doc__)
         return
 
@@ -178,25 +178,27 @@ class TeleportPlugin(SimpleCommandPlugin):
     def teleport_to_outpost(self, data):
         """Teleports a player to the outpost. If no source player is provided, we assume you mean yourself.\nSyntax: /teleport outpost [source player]"""
         usage = 'Syntax: /teleport outpost [source player]'
-        if not data:
-            source = self.protocol.player.name
-        else:
-            source, rest = extract_name(data)
-            if not self._validate_player(source):
-                self.protocol.send_chat_message(usage)
-                return
-        source = source.lower()
+        #if not data:
+        #    source = self.protocol.player.name
+        #else:
+        #    source, rest = extract_name(data)
+        #    if not self._validate_player(source):
+        #        self.protocol.send_chat_message(usage)
+        #        return
+        #source = source.lower()
 
-        source_player = self.player_manager.get_logged_in_by_name(source)
-        if source_player is None:
-            self.logger.debug("Error: Player %s is not logged in.", source)
-            self.protocol.send_chat_message("Error: Player %s is not logged in." % (source, ))
-            return
+        #source_player = self.player_manager.get_logged_in_by_name(source)
+        #if source_player is None:
+        #    self.logger.debug("Error: Player %s is not logged in.", source)
+        #    self.protocol.send_chat_message("Error: Player %s is not logged in." % (source, ))
+        #    return
 
-        source_protocol = self.factory.protocols[source_player.protocol]
-        teleport_packet = build_packet(Packets.PLAYER_WARP, player_warp_touniqueworld_write(destination='outpost'))
+        #source_protocol = self.factory.protocols[source_player.protocol]
+        #teleport_packet = build_packet(Packets.PLAYER_WARP, player_warp_touniqueworld_write(destination='outpost'))
 
-        source_protocol.client_protocol.transport.write(teleport_packet)
+        #source_protocol.client_protocol.transport.write(teleport_packet)
+        self.protocol.send_chat_message('This is not yet implemented.')
+        return
 
     @permissions(UserLevels.REGISTERED)
     def teleport_to_bookmark(self, data):
