@@ -1,7 +1,8 @@
 # -*- coding: UTF-8 -*-
 from base_plugin import SimpleCommandPlugin
 from utility_functions import build_packet, move_ship_to_coords, extract_name
-from plugins.core.player_manager import permissions, UserLevels
+from plugins.core.player_manager_plugin import permissions, UserLevels
+
 
 from packets import Packets, WarpAliasType, WarpWorldType, WarpActionType, player_warp, player_warp_touniqueworld_write, player_warp_toplayerworld_write, player_warp_toplayer_write, player_warp_toalias_write, fly_ship, fly_ship_write
 
@@ -11,9 +12,8 @@ class TeleportPlugin(SimpleCommandPlugin):
     Rapid transport via teleportation.
     """
     name = "teleport_plugin"
-    depends = ['command_dispatcher', 'player_manager']
+    depends = ['command_plugin', 'player_manager_plugin']
     commands = ["teleport", "tp"]
-    auto_activate = True
 
     def __init__(self):
         self.subcommands = {'help': self.teleport_help,
@@ -26,7 +26,7 @@ class TeleportPlugin(SimpleCommandPlugin):
 
     def activate(self):
         super(TeleportPlugin, self).activate()
-        self.player_manager = self.plugins['player_manager'].player_manager
+        self.player_manager = self.plugins['player_manager_plugin'].player_manager
 
     @permissions(UserLevels.REGISTERED)
     def teleport(self, data):

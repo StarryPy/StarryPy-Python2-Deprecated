@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 from base_plugin import SimpleCommandPlugin
 from utility_functions import path, extract_name, verify_path
-from plugins.core.player_manager import permissions, UserLevels
+from plugins.core.player_manager_plugin import permissions, UserLevels
 from .database import DatabaseManager
 
 import datetime
@@ -16,9 +16,8 @@ class BackupsPlugin(SimpleCommandPlugin):
     StarryPy Planet Backup System
     """
     name = "backups_plugin"
-    depends = ["command_dispatcher", "player_manager"]
+    depends = ['command_plugin', 'player_manager_plugin']
     commands = ["backup"]
-    auto_activate = True
 
     def __init__(self):
         self._prep_path('./backups')
@@ -34,7 +33,7 @@ class BackupsPlugin(SimpleCommandPlugin):
 
     def activate(self):
         super(BackupsPlugin, self).activate()
-        self.player_manager = self.plugins['player_manager'].player_manager
+        self.player_manager = self.plugins['player_manager_plugin'].player_manager
         self.db = DatabaseManager("./backups/backups.db")
 
     @permissions(UserLevels.REGISTERED)
