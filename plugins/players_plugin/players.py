@@ -1,5 +1,5 @@
 from base_plugin import SimpleCommandPlugin
-from plugins.core.player_manager import permissions, UserLevels
+from plugins.core.player_manager_plugin import permissions, UserLevels
 
 
 class PlayersPlugin(SimpleCommandPlugin):
@@ -7,13 +7,12 @@ class PlayersPlugin(SimpleCommandPlugin):
     Very simple plugin that adds /players command alias for /who command in StarryPy.
     """
     name = "players_plugin"
-    depends = ["command_dispatcher", "user_management_commands"]
+    depends = ["command_plugin", "admin_commands_plugin"]
     commands = ["players"]
-    auto_activate = True
 
     def activate(self):
         super(PlayersPlugin, self).activate()
-        self.user_commands = self.plugins['user_management_commands']
+        self.user_commands = self.plugins['admin_commands_plugin']
 
     @permissions(UserLevels.GUEST)
     def players(self, data):

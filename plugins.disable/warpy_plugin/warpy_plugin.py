@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 from base_plugin import SimpleCommandPlugin
-from plugins.core.player_manager import permissions, UserLevels
+from plugins.core.player_manager_plugin import permissions, UserLevels
 from utility_functions import build_packet, move_ship_to_coords, extract_name
 from packets import Packets, WarpAliasType, WarpWorldType, WarpActionType, player_warp, player_warp_toworld_write, player_warp_toplayer_write, player_warp_toalias_write, fly_ship, fly_ship_write
 
@@ -10,13 +10,12 @@ class Warpy(SimpleCommandPlugin):
     Plugin that allows privileged players to warp around as they like.
     """
     name = "warpy_plugin"
-    depends = ['command_dispatcher', 'player_manager']
+    depends = ['command_plugin', 'player_manager_plugin']
     commands = ["warp", "warp_ship", "outpost"]
-    auto_activate = True
 
     def activate(self):
         super(Warpy, self).activate()
-        self.player_manager = self.plugins['player_manager'].player_manager
+        self.player_manager = self.plugins['player_manager_plugin'].player_manager
 
     @permissions(UserLevels.MODERATOR)
     def warp(self, name):

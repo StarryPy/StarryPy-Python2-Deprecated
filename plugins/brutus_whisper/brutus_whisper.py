@@ -6,19 +6,18 @@
 #===========================================================
 
 from base_plugin import SimpleCommandPlugin
-from plugins.core.player_manager import permissions, UserLevels
+from plugins.core.player_manager_plugin import permissions, UserLevels
 from utility_functions import extract_name
 from datetime import datetime
 
 class BRWhisperPlugin(SimpleCommandPlugin):
     name = "brutus_whisper"
-    depends = ['command_dispatcher', 'player_manager']
+    depends = ['command_plugin', 'player_manager_plugin']
     commands = ["whisper", "w", "r", "ss"]
-    auto_activate = True
 
     def activate(self):
         super(BRWhisperPlugin, self).activate()
-        self.player_manager = self.plugins['player_manager'].player_manager
+        self.player_manager = self.plugins['player_manager_plugin'].player_manager
         self.reply_history = dict()
         self.sspy_enabled_dict = dict()
 

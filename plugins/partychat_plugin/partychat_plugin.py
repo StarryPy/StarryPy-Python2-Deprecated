@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 from base_plugin import SimpleCommandPlugin
-from plugins.core.player_manager import permissions, UserLevels
+from plugins.core.player_manager_plugin import permissions, UserLevels
 from packets import client_context_update
 from utility_functions import extract_name
 from datetime import datetime
@@ -12,12 +12,11 @@ class PartyChatPlugin(SimpleCommandPlugin):
     """
     name = "partychat_plugin"
     commands = ["party", "p", "party_check"]
-    depends = ['command_dispatcher', 'player_manager']
-    auto_activate = True
+    depends = ['command_plugin', 'player_manager_plugin']
 
     def activate(self):
         super(PartyChatPlugin, self).activate()
-        self.player_manager = self.plugins['player_manager'].player_manager
+        self.player_manager = self.plugins['player_manager_plugin'].player_manager
 
     @permissions(UserLevels.GUEST)
     def party(self, data):

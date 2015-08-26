@@ -2,7 +2,7 @@ import pprint
 import socket
 from twisted.internet import reactor
 from base_plugin import SimpleCommandPlugin, BasePlugin
-from plugins.core.player_manager import permissions, UserLevels
+from plugins.core.player_manager_plugin import permissions, UserLevels
 from packets import chat_sent
 from utility_functions import give_item_to_player, extract_name
 
@@ -11,15 +11,14 @@ class UserCommandPlugin(SimpleCommandPlugin):
     """
     Provides a simple chat interface to the user manager.
     """
-    name = "user_management_commands"
-    depends = ['command_dispatcher', 'player_manager']
+    name = "admin_commands_plugin"
+    depends = ['command_plugin', 'player_manager_plugin']
     commands = ["who", "whoami", "whois", "promote", "kick", "ban", "ban_list", "unban", "item",
                 "planet", "mute", "unmute", "passthrough", "shutdown", "timestamps"]
-    auto_activate = True
 
     def activate(self):
         super(UserCommandPlugin, self).activate()
-        self.player_manager = self.plugins['player_manager'].player_manager
+        self.player_manager = self.plugins['player_manager_plugin'].player_manager
 
     @permissions(UserLevels.GUEST)
     def who(self, data):

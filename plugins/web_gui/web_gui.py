@@ -7,7 +7,7 @@ import tornado.websocket
 import subprocess
 from datetime import datetime
 from twisted.internet import reactor
-from plugins.core.player_manager import UserLevels
+from plugins.core.player_manager_plugin import UserLevels
 from tornado.ioloop import PeriodicCallback
 
 

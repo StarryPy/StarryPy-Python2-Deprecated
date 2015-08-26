@@ -5,6 +5,7 @@ functionality in StarryPy.
 import inspect
 import logging
 import sys
+
 from twisted.internet import reactor
 from twisted.internet.task import deferLater
 
@@ -50,99 +51,141 @@ class PluginManager(object):
         :param base_class: The base class to use while searching for plugins.
         """
         self.plugins = {}
+        self.plugin_classes = {}
+        self.plugins_waiting_to_load = {}
+
+        self.load_order = []
+
         self.config = ConfigurationManager()
         self.base_class = base_class
         self.factory = factory
-        self.load_order = []
-        #self.plugin_dir = os.path.realpath(self.config.plugin_path)
+
         self.plugin_dir = path.child(self.config.plugin_path)
-        sys.path.append(self.plugin_dir.path)
-        self.load_plugins(self.plugin_dir)
+        sys.path.append( self.plugin_dir.path )
 
-        self.logger.info("Loaded plugins:\n%s" % "\n".join(
-            ["%s, Active: %s" % (plugin.name, plugin.active) for plugin in self.plugins.itervalues()]))
+        self.load_plugins( ['core.admin_commands_plugin','core.colored_names','core.command_plugin','core.player_manager_plugin','core.starbound_config_manager'] )
+        self.load_plugins( self.config.config['initial_plugins'] )
+        self.logger.info( "Loaded plugins:\n\n%s\n" % "\n".join(
+            ["\t%s" % (plugin.name) for plugin in self.plugins.itervalues()]) )
 
-    def load_plugins(self, plugin_dir):
+
+    def installed_plugins(self):
         """
-        Loads and instantiates all classes deriving from `self.base_class`,
-        though not `self.base_class` itself.
+        Get list of all plugins in the plugin_dir.
 
-        :param plugin_dir: The directory to search for plugins.
+        :param name: None
+        :return: Array of plugin names.
+        """
+        installed_plugins = filter(None, [ self.get_plugin_name_from_file(f) for f in  self.plugin_dir.globChildren("*") ])
+        return filter(lambda name: name != 'core', installed_plugins) # don't list core as a plugin
+
+
+    def get_plugin_name_from_file(self, f):
+        if f.isdir():
+            return f.basename()
+        else:
+            return
+
+
+    def import_plugin(self, name):
+        """
+        Import plugin that has the given name, and is a subclass of base_class.
+
+        :param name: The name of the plugin to import.
         :return: None
         """
-        seen_plugins = []
-        for f in plugin_dir.globChildren("*"):
-            if f.splitext()[1] == ".py":
-                name = f.basename()[:-3]
-            elif f.isdir():
-                name = f.basename()
-            else:
-                continue
-            try:
-                mod = __import__(name, globals(), locals(), [], 0)
-                for _, plugin in inspect.getmembers(mod, inspect.isclass):
-                    if issubclass(plugin,
-                                  self.base_class) and plugin is not self.base_class and plugin not in seen_plugins:
-                        plugin.config = self.config
-                        plugin.factory = self.factory
-                        plugin.active = False
-                        plugin.protocol = None
-                        plugin.plugins = {}
-                        plugin.logger = logging.getLogger('starrypy.plugins.%s' % plugin.name)
-                        seen_plugins.append(plugin)
-
-            except ImportError as e:
-                self.logger.critical("Import error for %s: %s", name, e)
         try:
-            dependencies = {x.name: set(x.depends) for x in seen_plugins}
-            classes = {x.name: x for x in seen_plugins}
-            while len(dependencies) > 0:
-                ready = [x for x, d in dependencies.iteritems() if len(d) == 0]
+            mod = __import__(name, globals(), locals(), [], 0)
+            for _, plugin in inspect.getmembers(mod, inspect.isclass):
+                if issubclass(plugin, self.base_class) and (plugin is not self.base_class) and (plugin not in self.plugin_classes.keys()):
+                    plugin.config = self.config
+                    plugin.factory = self.factory
+                    plugin.active = False
+                    plugin.protocol = None
+                    plugin.plugins = {}
+                    plugin.logger = logging.getLogger('starrypy.plugins.%s' % plugin.name)
+                    self.plugin_classes[plugin.name] = plugin
+
+        except ImportError:
+            self.logger.critical("Import error for %s\n" % name)
+
+
+    def resolve_dependencies(self, dependency_hash):
+        """
+        Resolves plugin dependency chain.
+
+        :param dependency_hash: Dictionary of dependencies.
+        :return: None
+        """
+        self.plugins_waiting_to_load = {}
+        self.load_order = []
+
+        try:
+            while len(dependency_hash) > 0:
+                ready = [x for x, d in dependency_hash.iteritems() if len(d) == 0]
                 if len(ready) == 0:
                     ex = []
-                    for n, d in dependencies.iteritems():
+                    for n, d in dependency_hash.iteritems():
                         for dep in d:
-                            ex.append("%s->%s" % (n, dep))
+                            ex.append("Dependency of %s on %s not met\n" % (n, dep))
                     raise UnresolvedOrCircularDependencyError(
                         "Unresolved or circular dependencies found:\n%s" % "\n".join(ex))
                 for name in ready:
-                    self.plugins[name] = classes[name]()
+                    self.plugins_waiting_to_load[name] = self.plugin_classes[name]
                     self.load_order.append(name)
-                    self.logger.debug("Instantiated plugin '%s'" % name)
-                    del (dependencies[name])
-                for name, depends in dependencies.iteritems():
-                    to_load = depends & set(self.plugins.iterkeys())
-                    dependencies[name] = dependencies[name].difference(set(self.plugins.iterkeys()))
-                    for plugin in to_load:
-                        classes[name].plugins[plugin] = self.plugins[plugin]
+                    del( dependency_hash[name] )
+                for name, depends in dependency_hash.iteritems():
+                    plugin_set = set(self.plugins.iterkeys()).union( set(self.plugins_waiting_to_load.iterkeys()) )
+                    dependency_hash[name] = dependency_hash[name].difference(plugin_set)
+
         except UnresolvedOrCircularDependencyError as e:
             self.logger.critical(str(e))
-        self.activate_plugins()
 
-    def reload_plugins(self):
-        self.logger.warning("Reloading plugins.")
-        for x in self.plugins:
-            del x
-        self.plugins = []
-        try:
-            self.load_plugins(self.plugin_dir)
-            self.activate_plugins()
-        except:
-            self.logger.exception("Couldn't reload plugins!")
-            raise
 
-    def activate_plugins(self):
-        for plugin in [self.plugins[x] for x in self.load_order]:
-            if self.config.config['plugin_config'][plugin.name]['auto_activate']:
-                try:
-                    plugin.activate()
-                except FatalPluginError as e:
-                    self.logger.critical("A plugin reported a fatal error. Error: %s", str(e))
-                    raise
+    def load_plugins(self, plugins_to_load):
+        """
+        Loads and instantiates plugins that it is asked to.
+
+        :param plugins_to_load: List of plugin names to import.
+                                Names must match a folder in plugin_dir.
+        :return: None
+        """
+        for plugin in plugins_to_load:
+            self.import_plugin(plugin)
+
+        dependencies = { plugin.name: set(plugin.depends) for plugin in self.plugin_classes.itervalues() }
+
+        self.resolve_dependencies( dependencies.copy() )
+
+        new_plugins = []
+        for plugin_name in self.load_order:
+            if not self.plugins.get(plugin_name, False):
+                new_plugins.append(plugin_name)
+
+        self.activate_plugins( new_plugins, dependencies )
+
+
+    def activate_plugins(self, plugins, dependencies):
+        for plugin in [self.plugins_waiting_to_load[x] for x in plugins]:
+            try:
+                self.plugins[plugin.name] = plugin()
+                self.logger.debug("Instantiated plugin '%s'" % plugin.name)
+                if len(plugin.depends) > 0:
+                    for p in [ self.plugins[x] for x in dependencies[plugin.name] ]:
+                        self.plugin_classes[plugin.name].plugins[p.name] = p
+                self.plugins[plugin.name].activate()
+            except FatalPluginError as e:
+                self.logger.critical("A plugin reported a fatal error. Error: %s", str(e))
+                raise
 
     def deactivate_plugins(self):
         for plugin in [self.plugins[x] for x in reversed(self.load_order)]:
-            plugin.deactivate()
+            try:
+                plugin.deactivate()
+            except FatalPluginError as e:
+                self.logger.critical("A plugin reported a fatal error. Error: %s", str(e))
+                raise
+
 
     def do(self, protocol, command, data):
         """
@@ -171,24 +214,9 @@ class PluginManager(object):
                 self.logger.exception("Error in plugin %s with function %s.", str(plugin), command)
         return all(return_values)
 
-    def get_by_name(self, name):
-        """
-        Gets a plugin by name. Used for dependency checks, though it could
-        be used for other purposes.
-
-        :param name: The name of the plugin, defined in the class as `name`
-        :return : The plugin in question or None.
-        :rtype : BasePlugin subclassed instance.
-        :raises : PluginNotFound
-        """
-        try:
-            return self.plugins[name.lower()]
-        except KeyError:
-            raise PluginNotFound("No plugin with name=%s found." % name.lower())
 
     def die(self):
-        for plugin in self.plugins.itervalues():
-            plugin.deactivate()
+        self.deactivate_plugins()
 
 
 def route(func):

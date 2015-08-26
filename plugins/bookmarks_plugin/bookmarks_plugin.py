@@ -2,7 +2,7 @@ import os
 import errno
 import json
 from base_plugin import SimpleCommandPlugin
-from plugins.core.player_manager import permissions, UserLevels
+from plugins.core.player_manager_plugin import permissions, UserLevels
 from packets import Packets, fly_ship, fly_ship_write
 from utility_functions import build_packet, verify_path
 
@@ -12,15 +12,13 @@ class Bookmarks(SimpleCommandPlugin):
     Plugin that allows defining planets as personal bookmarks you can /goto to.
     """
     name = "bookmarks_plugin"
-    depends = ['command_dispatcher', 'player_manager']
+    depends = ['command_plugin', 'player_manager_plugin']
     commands = ["bookmark_add", "bookmark_del", "goto"]
-    auto_activate = True
 
     def activate(self):
         super(Bookmarks, self).activate()
-        self.player_manager = self.plugins['player_manager'].player_manager
-        verify_path("./config/bookmarks")
-
+        self.player_manager = self.plugins['player_manager_plugin'].player_manager
+        self.verify_path("./config/bookmarks")
     @permissions(UserLevels.GUEST)
     def bookmark_add(self, name):
         """Bookmarks a planet for fast warp routes.\nSyntax: /bookmark_add (name)"""

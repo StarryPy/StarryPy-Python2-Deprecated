@@ -7,7 +7,6 @@ class PlanetVisitorAnnouncer(BasePlugin):
     Broadcasts a message whenever a player beams down to a planet.
     """
     name = "planet_visitor_announcer_plugin"
-    auto_activate = True
 
     def activate(self):
         super(PlanetVisitorAnnouncer, self).activate()

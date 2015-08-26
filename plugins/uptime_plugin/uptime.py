@@ -2,7 +2,7 @@
 from datetime import datetime
 
 from base_plugin import SimpleCommandPlugin
-from plugins.core.player_manager import permissions, UserLevels
+from plugins.core.player_manager_plugin import permissions, UserLevels
 from server import VERSION
 
 
@@ -11,13 +11,12 @@ class UptimePlugin(SimpleCommandPlugin):
     Very simple plugin that responds to /uptime with the time StarryPy is running.
     """
     name = "uptime_plugin"
-    depends = ["command_dispatcher", "player_manager"]
+    depends = ["command_plugin", "player_manager_plugin"]
     commands = ["uptime"]
-    auto_activate = True
 
     def activate(self):
         super(UptimePlugin, self).activate()
-        self.player_manager = self.plugins['player_manager'].player_manager
+        self.player_manager = self.plugins['player_manager_plugin'].player_manager
         self.started_at = datetime.now()
 
     @permissions(UserLevels.GUEST)

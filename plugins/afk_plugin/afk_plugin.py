@@ -5,20 +5,19 @@
 #   Description: Simple AFK command with configurable messages
 #===========================================================
 from base_plugin import SimpleCommandPlugin
-from plugins.core.player_manager import permissions, UserLevels
+from plugins.core.player_manager_plugin import permissions, UserLevels
 from datetime import datetime
 
 
 class AFKCommand(SimpleCommandPlugin):
     name = "afk_plugin"
-    depends = ["command_dispatcher", "player_manager"]
+    depends = ["command_plugin", "player_manager_plugin"]
     commands = ["afk"]
-    auto_activate = True
     afk_list = dict()
 
     def activate(self):
         super(AFKCommand, self).activate()
-        self.player_manager = self.plugins["player_manager"].player_manager
+        self.player_manager = self.plugins["player_manager_plugin"].player_manager
         self.load_config()
 
     def load_config(self):
