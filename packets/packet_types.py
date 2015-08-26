@@ -167,10 +167,9 @@ warp_world = Struct("to_world",
                     Byte("world_id"),
                     Switch("world_type", lambda ctx: ctx["world_id"],
                            {
-                               1: star_string("unique_world_name"),
-                               2: LazyBound("next", lambda: warp_world_celestial),
-                               3: LazyBound("next", lambda: warp_world_player),
-                               4: LazyBound("next", lambda: warp_world_mission)
+                               1: LazyBound("next", lambda: warp_world_celestial),
+                               2: LazyBound("next", lambda: warp_world_player),
+                               3: LazyBound("next", lambda: warp_world_mission)
                            },
                            default = Pass
                            )
@@ -204,7 +203,10 @@ warp_world_player = Struct("player_world",
 
 warp_world_mission = Struct("mission_world",
                             star_string("mission_world_name"),
-                            HexAdapter(Field("instance", 16))
+                            Byte("check"),
+                            If(lambda ctx: ctx["check"] == 1,
+                               HexAdapter(Field("instance", 16))
+                               )
                             )
 
 
