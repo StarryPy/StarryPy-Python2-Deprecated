@@ -54,7 +54,6 @@ class BackupsPlugin(SimpleCommandPlugin):
         action, rest = data[0], data[1:]
         self.subcommands[action](rest)
 
-
     @permissions(UserLevels.REGISTERED)
     def backup_help(self, data):
         """
@@ -181,7 +180,7 @@ class BackupsPlugin(SimpleCommandPlugin):
             message = 'Backups are disabled.'
 
         self.protocol.send_chat_message(
-            'Planet %s. %s' % (planet_name, message)
+            'Planet {}. {}'.format(planet_name, message)
         )
         self.protocol.send_chat_message('Available backups are:')
         message = ''
@@ -431,7 +430,10 @@ class BackupsPlugin(SimpleCommandPlugin):
             )
             return
 
-        sql = 'SELECT planet_name FROM backups WHERE owner = ? AND planet_name = ?'
+        sql = (
+            'SELECT planet_name FROM backups '
+            'WHERE owner = ? AND planet_name = ?'
+        )
         if self.db.select(sql, (player_name, planet_name)):
             self.protocol.send_chat_message(
                 'That planet name is already being backed up for this user.'
@@ -632,7 +634,8 @@ class BackupsPlugin(SimpleCommandPlugin):
         except OSError as exc:
             if exc.errno == errno.EEXIST and os.path.isdir(path):
                 pass
-            else: raise
+            else:
+                raise
 
     def _copy_file(self, src, dst):
         """

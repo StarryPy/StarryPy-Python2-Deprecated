@@ -118,12 +118,12 @@ def prune_backups(db, planet):
         print(backup_times)
 
         # drop the actual backup file
-        #self._drop_tree(dst)
+        # self._drop_tree(dst)
 
         # ... and push the updates to the database
-        #sql = "UPDATE backups set backup_logs = ? WHERE planet_coord = ?"
-        #arg = (json.dumps(backup_times), planet[0])
-        #db.insert(sql, arg)
+        # sql = "UPDATE backups set backup_logs = ? WHERE planet_coord = ?"
+        # arg = (json.dumps(backup_times), planet[0])
+        # db.insert(sql, arg)
 
         logging.debug('... pruning: %s', dst)
 
