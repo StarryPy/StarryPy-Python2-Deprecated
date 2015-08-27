@@ -11,9 +11,9 @@ from packets import (
 
 
 class TeleportPlugin(SimpleCommandPlugin):
-    '''
+    """
     Rapid transport via teleportation.
-    '''
+    """
     name = 'teleport_plugin'
     depends = ['command_plugin', 'player_manager_plugin']
     commands = ['teleport', 'tp']
@@ -37,12 +37,12 @@ class TeleportPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.REGISTERED)
     def teleport(self, data):
-        '''
+        """
         Player teleportation system. By default, this system will teleport a
         player to another player. Use subcommands to modify this behavior.
         Available subcommands are:
         ^cyan;player, ship, home, ^gray;outpost, bookmark, poi
-        '''
+        """
         self.logger.vdebug('Teleport command called')
         if not data:
             self.protocol.send_chat_message(self.teleport.__doc__)
@@ -56,31 +56,31 @@ class TeleportPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.REGISTERED)
     def tp(self, data):
-        '''
+        """
         Player teleportation system. By default, this system will teleport a
         player to another player. Use subcommands to modify this behavior.
         Available subcommands are:
         ^cyan;player, ship, home
-        '''
+        """
         self.teleport(data)
 
     @permissions(UserLevels.REGISTERED)
     def teleport_help(self, data):
-        '''
+        """
         Player teleportation system. By default, this system will teleport a
         player to another player. Use subcommands to modify this behavior.
         Available subcommands are:
         ^cyan;player, ship, home
-        '''
+        """
         self.protocol.send_chat_message(self.teleport.__doc__)
 
     @permissions(UserLevels.REGISTERED)
     def teleport_to_player(self, data):
-        '''
+        """
         Teleports a player to another player's location. If no source player
         is provided, we assume you mean yourself.
         Syntax: /teleport [player] (destination player) [source player]
-        '''
+        """
         usage = (
             'Syntax: /teleport [player] (destination player) [source player]'
         )
@@ -152,11 +152,11 @@ class TeleportPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.REGISTERED)
     def teleport_to_ship(self, data):
-        '''
-        Teleports a player to another player's ship. If no source player is 
+        """
+        Teleports a player to another player's ship. If no source player is
         provided, we assume you mean yourself.
         Syntax: /teleport ship (destination player) [source player]
-        '''
+        """
         usage = 'Syntax: /teleport ship (destination player) [source player]'
         if not data:
             self.protocol.send_chat_message(self.teleport_to_ship.__doc__)
@@ -182,9 +182,13 @@ class TeleportPlugin(SimpleCommandPlugin):
             self.teleport_to_own_ship(None)
             return
 
-        destination_player = self.player_manager.get_logged_in_by_name(destination)
+        destination_player = self.player_manager.get_logged_in_by_name(
+            destination
+        )
         if destination_player is None:
-            self.logger.debug('Error: Player %s is not logged in.', destination)
+            self.logger.debug(
+                'Error: Player %s is not logged in.', destination
+            )
             self.protocol.send_chat_message(
                 'Error: Player {} is not logged in.'.format(destination)
             )
@@ -209,7 +213,7 @@ class TeleportPlugin(SimpleCommandPlugin):
         source_protocol.client_protocol.transport.write(teleport_packet)
 
         self.logger.debug(
-            "'Teleport command called by %s. Teleporting %s to %s's ship",
+            "Teleport command called by %s. Teleporting %s to %s's ship",
             self.protocol.player.name, source, destination
         )
         self.protocol.send_chat_message(
@@ -220,11 +224,11 @@ class TeleportPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.REGISTERED)
     def teleport_to_own_ship(self, data):
-        '''
-        Teleports a player to their own ship. If no source player is provided, 
+        """
+        Teleports a player to their own ship. If no source player is provided,
         we assume you mean yourself.
         Syntax: /teleport home [source player]
-        '''
+        """
         usage = 'Syntax: /teleport home [source player]'
         if not data:
             source = self.protocol.player.name
@@ -252,35 +256,35 @@ class TeleportPlugin(SimpleCommandPlugin):
 
     @permissions(UserLevels.REGISTERED)
     def teleport_to_outpost(self, data):
-        '''
-        Teleports a player to the outpost. If no source player is provided, 
+        """
+        Teleports a player to the outpost. If no source player is provided,
         we assume you mean yourself.
         Syntax: /teleport outpost [source player]
-        '''
+        """
         self.protocol.send_chat_message('This is not yet implemented.')
 
     @permissions(UserLevels.REGISTERED)
     def teleport_to_bookmark(self, data):
-        '''
-        Teleports a player to a bookmarked planet. 
+        """
+        Teleports a player to a bookmarked planet.
         If no source player is provided, we assume you mean yourself.
         Syntax: /teleport bookmark (bookmark) [source player]
-        '''
+        """
         self.protocol.send_chat_message('This is not yet implemented.')
 
     @permissions(UserLevels.REGISTERED)
     def teleport_to_poi(self, data):
-        '''
-        Teleports a player to a point of interest planet. 
+        """
+        Teleports a player to a point of interest planet.
         If no source player is provided, we assume you mean yourself.
         Syntax: /teleport poi (poi) [source player]
-        '''
+        """
         self.protocol.send_chat_message('This is not yet implemented.')
 
     def _validate_player(self, player_name):
-        '''
+        """
         Validate that the player given is a real one.
-        '''
+        """
         self.logger.vdebug('Validating player name')
         valid_player = self.player_manager.get_by_name(player_name)
         if valid_player is None:
