@@ -13,9 +13,9 @@ from utility_functions import extract_name
 
 
 class BRWhisperPlugin(SimpleCommandPlugin):
-    name = "brutus_whisper"
+    name = 'brutus_whisper'
     depends = ['command_plugin', 'player_manager_plugin']
-    commands = ["whisper", "w", "r", "ss"]
+    commands = ['whisper', 'w', 'r', 'ss']
 
     def activate(self):
         super(BRWhisperPlugin, self).activate()
@@ -37,15 +37,15 @@ class BRWhisperPlugin(SimpleCommandPlugin):
         try:
             targetName, message = extract_name(data)
             if not message:
-                self.protocol.send_chat_message("Invalid message!")
+                self.protocol.send_chat_message('Invalid message!')
                 self.protocol.send_chat_message(self.whisper.__doc__)
                 return
             self.logger.info(
-                "Message to %s from %s: %s", (
-                    targetName, self.protocol.player.name, " ".join(message)
+                'Message to %s from %s: %s', (
+                    targetName, self.protocol.player.name, ' '.join(message)
                 )
             )
-            self.sendWhisper(targetName, " ".join(message))
+            self.sendWhisper(targetName, ' '.join(message))
         except (ValueError, TypeError):
             self.protocol.send_chat_message(self.whisper.__doc__)
 
@@ -61,9 +61,9 @@ class BRWhisperPlugin(SimpleCommandPlugin):
         # retrieve your own history, using your name as key
         try:
             target = self.reply_history[self.protocol.player.name]
-            self.sendWhisper(target, " ".join(data))
+            self.sendWhisper(target, ' '.join(data))
         except KeyError:
-            self.protocol.send_chat_message("You have no one to reply to!")
+            self.protocol.send_chat_message('You have no one to reply to!')
 
     @permissions(UserLevels.GUEST)
     def w(self, data):
@@ -84,33 +84,33 @@ class BRWhisperPlugin(SimpleCommandPlugin):
     def sendWhisper(self, target, message):
         now = datetime.now()
         if self.config.chattimestamps:
-            timestamp = "<{}>".format(now.strftime("%H:%M"))
+            timestamp = '<{}>'.format(now.strftime('%H:%M'))
         else:
-            timestamp = ""
+            timestamp = ''
         targetPlayer = self.player_manager.get_logged_in_by_name(target)
         if targetPlayer is None:
             self.protocol.send_chat_message(
-                "Couldn't send a message to {}".format(target)
+                'Couldn\'t send a message to {}'.format(target)
             )
             return
         else:
             # show yourself the message
-            strMsgTo = "^violet;{}<{}^violet;> {}".format(
+            strMsgTo = '^violet;{}<{}^violet;> {}'.format(
                 timestamp,
                 self.protocol.player.colored_name(self.config.colors),
                 message
             )
-            strTo = "%s" % targetPlayer.colored_name(self.config.colors)
+            strTo = '%s' % targetPlayer.colored_name(self.config.colors)
             self.protocol.send_chat_message(strMsgTo)
 
             # show target the message
             protocol = self.factory.protocols[targetPlayer.protocol]
-            strMsgFrom = "^violet;{}<{}^violet;> {}".format(
+            strMsgFrom = '^violet;{}<{}^violet;> {}'.format(
                 timestamp,
                 self.protocol.player.colored_name(self.config.colors),
                 message
             )
-            strFrom = "{}".format(
+            strFrom = '{}'.format(
                 self.protocol.player.colored_name(self.config.colors)
             )
             protocol.send_chat_message(strMsgFrom)
@@ -130,10 +130,10 @@ class BRWhisperPlugin(SimpleCommandPlugin):
                     ):
                         protocol = self.factory.protocols[sspy_player.protocol]
                         protocol.send_chat_message(
-                            "^red;{}{}SS: ^cyan;<{} ^green;-> {}^cyan;> "
-                            "^green;{}".format(
+                            '^red;{}{}SS: ^cyan;<{} ^green;-> {}^cyan;> '
+                            '^green;{}'.format(
                                 timestamp,
-                                self.config.colors["admin"],
+                                self.config.colors['admin'],
                                 strFrom,
                                 strTo,
                                 message
@@ -150,22 +150,22 @@ class BRWhisperPlugin(SimpleCommandPlugin):
             if not self.sspy_enabled_dict[self.protocol.player.name]:
                 self.sspy_enabled_dict[self.protocol.player.name] = True
                 self.protocol.send_chat_message(
-                    "SocialSpy has been ^green;enabled^yellow;!"
+                    'SocialSpy has been ^green;enabled^yellow;!'
                 )
             else:
                 self.sspy_enabled_dict[self.protocol.player.name] = False
                 self.protocol.send_chat_message(
-                    "SocialSpy has been ^red;disabled^yellow;!"
+                    'SocialSpy has been ^red;disabled^yellow;!'
                 )
         except:
-            if data and " ".join(data).lower() in ["on", "true"]:
+            if data and ' '.join(data).lower() in ['on', 'true']:
                 self.sspy_enabled_dict[self.protocol.player.name] = True
                 self.protocol.send_chat_message(
-                    "SocialSpy has been ^green;enabled^yellow;!"
+                    'SocialSpy has been ^green;enabled^yellow;!'
                 )
             else:
                 self.sspy_enabled_dict[self.protocol.player.name] = False
                 self.protocol.send_chat_message(self.ss.__doc__)
                 self.protocol.send_chat_message(
-                    "SocialSpy is ^red;disabled^yellow;!"
+                    'SocialSpy is ^red;disabled^yellow;!'
                 )
