@@ -1,10 +1,12 @@
 # encoding: utf-8
 
+
 class BasePlugin(object):
     """
-    Defines an interface for all plugins to inherit from. Note that the __init__
-    method should generally not be overrode; all setup work should be done in
-    activate() if possible. If you do override __init__, remember to super()!
+    Defines an interface for all plugins to inherit from. Note that the
+    __init__ method should generally not be overrode; all setup work should be
+    done in activate() if possible. If you do override __init__, remember to
+    super()!
 
     Note that only one instance of each plugin will be instantiated for *all*
     connected clients. self.protocol will be changed by the plugin manager to
@@ -20,7 +22,7 @@ class BasePlugin(object):
     name = 'Base Plugin'
     description = 'The common class for all plugins to inherit from.'
     version = '.1'
-    depends = [] 
+    depends = []
 
     def activate(self):
         """
@@ -370,7 +372,9 @@ class BasePlugin(object):
         return True
 
     def __repr__(self):
-        return '<Plugin instance: %s (version %s)>' % (self.name, self.version)
+        return '<Plugin instance: {} (version {})>'.format(
+            self.name, self.version
+        )
 
 
 class CommandNameError(Exception):
