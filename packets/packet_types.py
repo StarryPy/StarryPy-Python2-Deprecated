@@ -31,9 +31,9 @@ from data_types import (
     Variant,
     star_string,
     DictVariant,
-    StarByteArray
+    StarByteArray,
+    ChunkVariant
 )
-from data_types import ChunkVariant
 
 
 class Direction(IntEnum):

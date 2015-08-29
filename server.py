@@ -17,27 +17,35 @@ import datetime
 
 from twisted.internet import reactor
 from twisted.internet.error import CannotListenError
-from twisted.internet.protocol import ClientFactory, ServerFactory, Protocol, connectionDone
+from twisted.internet.protocol import (
+    ClientFactory,
+    ServerFactory,
+    Protocol,
+    connectionDone
+)
 from twisted.internet.task import LoopingCall
 from construct import Container
 import construct.core
 
+from packets import Packets, Direction, chat_received
 from config import ConfigurationManager
 from packet_stream import PacketStream
 import packets
 from plugin_manager import PluginManager, route, FatalPluginError
 from utility_functions import build_packet
 
-VERSION = "1.7"
+VERSION = '1.7'
 
 
 VDEBUG_LVL = 9
-logging.addLevelName(VDEBUG_LVL, "VDEBUG")
+logging.addLevelName(VDEBUG_LVL, 'VDEBUG')
 
 
 def vdebug(self, message, *args, **kws):
     if self.isEnabledFor(VDEBUG_LVL):
         self._log(VDEBUG_LVL, message, args, **kws)
+
+
 logging.Logger.vdebug = vdebug
 
 
@@ -62,81 +70,97 @@ class StarryPyServerProtocol(Protocol):
     """
 
     def __init__(self):
-        """
-        """
         self.id = str(uuid4().hex)
-        logger.vdebug("Creating protocol with ID %s.", self.id)
+        logger.vdebug('Creating protocol with ID %s.', self.id)
         self.factory.protocols[self.id] = self
         self.player = None
         self.state = None
-        logger.debug("Trying to initialize configuration manager.")
+        logger.debug('Trying to initialize configuration manager.')
         self.config = ConfigurationManager()
         self.parsing = False
         self.buffering_packet = None
         self.after_write_callback = None
         self.plugin_manager = None
         self.call_mapping = {
-            packets.Packets.PROTOCOL_VERSION: self.protocol_version, # 0
-            packets.Packets.SERVER_DISCONNECT: self.server_disconnect, # 1
-            packets.Packets.CONNECT_SUCCESS: self.connect_success, # 2
-            packets.Packets.CONNECT_FAILURE: self.connect_failure, # 3
-            packets.Packets.HANDSHAKE_CHALLENGE: self.handshake_challenge, # 4
-            packets.Packets.CHAT_RECEIVED: self.chat_received, # 5
-            packets.Packets.UNIVERSE_TIME_UPDATE: self.universe_time_update, # 6
-            packets.Packets.CELESTIAL_RESPONSE: lambda x: True, # 7
-            packets.Packets.PLAYER_WARP_RESULT: self.player_warp_result, #8
-            packets.Packets.CLIENT_CONNECT: self.client_connect, # 9
-            packets.Packets.CLIENT_DISCONNECT_REQUEST: self.client_disconnect_request, # 10
-            packets.Packets.HANDSHAKE_RESPONSE: self.handshake_response, # 11
-            packets.Packets.PLAYER_WARP: self.player_warp, # 12
-            packets.Packets.FLY_SHIP: self.fly_ship, # 13
-            packets.Packets.CHAT_SENT: self.chat_sent, # 14
-            packets.Packets.CELESTIAL_REQUEST: self.celestial_request, # 15
-            packets.Packets.CLIENT_CONTEXT_UPDATE: self.client_context_update, # 16
-            packets.Packets.WORLD_START: self.world_start, # 17
-            packets.Packets.WORLD_STOP: self.world_stop, # 18
-            packets.Packets.CENTRAL_STRUCTURE_UPDATE: self.central_structure_update, # 19
-            packets.Packets.TILE_ARRAY_UPDATE: self.tile_array_update, # 20
-            packets.Packets.TILE_UPDATE: self.tile_update, # 21
-            packets.Packets.TILE_LIQUID_UPDATE: self.tile_liquid_update, # 22
-            packets.Packets.TILE_DAMAGE_UPDATE: self.tile_damage_update, # 23
-            packets.Packets.TILE_MODIFICATION_FAILURE: self.tile_modification_failure, #24
-            packets.Packets.GIVE_ITEM: self.give_item, # 25
-            packets.Packets.SWAP_IN_CONTAINER_RESULT: self.swap_in_container_result, # 26
-            packets.Packets.ENVIRONMENT_UPDATE: self.environment_update, # 27
-            packets.Packets.ENTITY_INTERACT_RESULT: self.entity_interact_result, # 28
-            packets.Packets.UPDATE_TILE_PROTECTION: self.update_tile_protection, # 29
-            packets.Packets.MODIFY_TILE_LIST: self.modify_tile_list, # 30
-            packets.Packets.DAMAGE_TILE_GROUP: self.damage_tile_group, # 31
-            packets.Packets.COLLECT_LIQUID: self.collect_liquid, # 32
-            packets.Packets.REQUEST_DROP: self.request_drop, # 33
-            packets.Packets.SPAWN_ENTITY: self.spawn_entity, # 34
-            packets.Packets.ENTITY_INTERACT: self.entity_interact, # 35
-            packets.Packets.CONNECT_WIRE: self.connect_wire, # 36
-            packets.Packets.DISCONNECT_ALL_WIRES: self.disconnect_all_wires, # 37
-            packets.Packets.OPEN_CONTAINER: self.open_container, # 38
-            packets.Packets.CLOSE_CONTAINER: self.close_container, # 39
-            packets.Packets.SWAP_IN_CONTAINER: self.swap_in_container, # 40
-            packets.Packets.ITEM_APPLY_IN_CONTAINER: self.item_apply_in_container, # 41
-            packets.Packets.START_CRAFTING_IN_CONTAINER: self.start_crafting_in_container, # 42
-            packets.Packets.STOP_CRAFTING_IN_CONTAINER: self.stop_crafting_in_container, # 43
-            packets.Packets.BURN_CONTAINER: self.burn_container, # 44
-            packets.Packets.CLEAR_CONTAINER: self.clear_container, # 45
-            packets.Packets.WORLD_CLIENT_STATE_UPDATE: self.world_client_state_update, # 46
-            packets.Packets.ENTITY_CREATE: self.entity_create, # 47
-            packets.Packets.ENTITY_UPDATE: self.entity_update, # 48
-            packets.Packets.ENTITY_DESTROY: self.entity_destroy, # 49
-            packets.Packets.HIT_REQUEST: self.hit_request, # 50
-            packets.Packets.DAMAGE_REQUEST: lambda x: True, # 51
-            packets.Packets.DAMAGE_NOTIFICATION: self.damage_notification, # 52
-            packets.Packets.ENTITY_MESSAGE: lambda x: True, #53
-            packets.Packets.ENTITY_MESSAGE_RESPONSE: lambda x: True, #54
-            packets.Packets.UPDATE_WORLD_PROPERTIES: self.update_world_properties, # 55
-            packets.Packets.STEP_UPDATE: self.step_update, # 56
+            Packets.PROTOCOL_VERSION: self.protocol_version,
+            Packets.SERVER_DISCONNECT: self.server_disconnect,  # 1
+            Packets.CONNECT_SUCCESS: self.connect_success,  # 2
+            Packets.CONNECT_FAILURE: self.connect_failure,  # 3
+            Packets.HANDSHAKE_CHALLENGE: self.handshake_challenge,  # 4
+            Packets.CHAT_RECEIVED: self.chat_received,  # 5
+            Packets.UNIVERSE_TIME_UPDATE: self.universe_time_update,  # 6
+            Packets.CELESTIAL_RESPONSE: lambda x: True,  # 7
+            Packets.PLAYER_WARP_RESULT: self.player_warp_result,  # 8
+            Packets.CLIENT_CONNECT: self.client_connect,  # 9
+            Packets.CLIENT_DISCONNECT_REQUEST: (
+                self.client_disconnect_request  # 10
+            ),
+            Packets.HANDSHAKE_RESPONSE: self.handshake_response,  # 11
+            Packets.PLAYER_WARP: self.player_warp,  # 12
+            Packets.FLY_SHIP: self.fly_ship,  # 13
+            Packets.CHAT_SENT: self.chat_sent,  # 14
+            Packets.CELESTIAL_REQUEST: self.celestial_request,  # 15
+            Packets.CLIENT_CONTEXT_UPDATE: self.client_context_update,  # 16
+            Packets.WORLD_START: self.world_start,  # 17
+            Packets.WORLD_STOP: self.world_stop,  # 18
+            Packets.CENTRAL_STRUCTURE_UPDATE: (
+                self.central_structure_update  # 19
+            ),
+            Packets.TILE_ARRAY_UPDATE: self.tile_array_update,  # 20
+            Packets.TILE_UPDATE: self.tile_update,  # 21
+            Packets.TILE_LIQUID_UPDATE: self.tile_liquid_update,  # 22
+            Packets.TILE_DAMAGE_UPDATE: self.tile_damage_update,  # 23
+            Packets.TILE_MODIFICATION_FAILURE: (
+                self.tile_modification_failure  # 24
+            ),
+            Packets.GIVE_ITEM: self.give_item,  # 25
+            Packets.SWAP_IN_CONTAINER_RESULT: (
+                self.swap_in_container_result  # 26
+            ),
+            Packets.ENVIRONMENT_UPDATE: self.environment_update,  # 27
+            Packets.ENTITY_INTERACT_RESULT: self.entity_interact_result,  # 28
+            Packets.UPDATE_TILE_PROTECTION: self.update_tile_protection,  # 29
+            Packets.MODIFY_TILE_LIST: self.modify_tile_list,  # 30
+            Packets.DAMAGE_TILE_GROUP: self.damage_tile_group,  # 31
+            Packets.COLLECT_LIQUID: self.collect_liquid,  # 32
+            Packets.REQUEST_DROP: self.request_drop,  # 33
+            Packets.SPAWN_ENTITY: self.spawn_entity,  # 34
+            Packets.ENTITY_INTERACT: self.entity_interact,  # 35
+            Packets.CONNECT_WIRE: self.connect_wire,  # 36
+            Packets.DISCONNECT_ALL_WIRES: self.disconnect_all_wires,  # 37
+            Packets.OPEN_CONTAINER: self.open_container,  # 38
+            Packets.CLOSE_CONTAINER: self.close_container,  # 39
+            Packets.SWAP_IN_CONTAINER: self.swap_in_container,  # 40
+            Packets.ITEM_APPLY_IN_CONTAINER: (
+                self.item_apply_in_container  # 41
+            ),
+            Packets.START_CRAFTING_IN_CONTAINER: (
+                self.start_crafting_in_container  # 42
+            ),
+            Packets.STOP_CRAFTING_IN_CONTAINER: (
+                self.stop_crafting_in_container  # 43
+            ),
+            Packets.BURN_CONTAINER: self.burn_container,  # 44
+            Packets.CLEAR_CONTAINER: self.clear_container,  # 45
+            Packets.WORLD_CLIENT_STATE_UPDATE: (
+                self.world_client_state_update  # 46
+            ),
+            Packets.ENTITY_CREATE: self.entity_create,  # 47
+            Packets.ENTITY_UPDATE: self.entity_update,  # 48
+            Packets.ENTITY_DESTROY: self.entity_destroy,  # 49
+            Packets.HIT_REQUEST: self.hit_request,  # 50
+            Packets.DAMAGE_REQUEST: lambda x: True,  # 51
+            Packets.DAMAGE_NOTIFICATION: self.damage_notification,  # 52
+            Packets.ENTITY_MESSAGE: lambda x: True,  # 53
+            Packets.ENTITY_MESSAGE_RESPONSE: lambda x: True,  # 54
+            Packets.UPDATE_WORLD_PROPERTIES: (
+                self.update_world_properties  # 55
+            ),
+            Packets.STEP_UPDATE: self.step_update,  # 56
         }
         self.client_protocol = None
         self.packet_stream = PacketStream(self)
-        self.packet_stream.direction = packets.Direction.CLIENT
+        self.packet_stream.direction = Direction.CLIENT
         self.plugin_manager = self.factory.plugin_manager
 
     def connectionMade(self):
@@ -148,9 +172,16 @@ class StarryPyServerProtocol(Protocol):
         actual starbound server using StarboundClientFactory()
         :rtype : None
         """
-        logger.info("Connection established from IP: %s", self.transport.getPeer().host)
-        reactor.connectTCP(self.config.upstream_hostname, self.config.upstream_port,
-                           StarboundClientFactory(self), timeout=self.config.server_connect_timeout)
+        logger.info(
+            'Connection established from IP: %s',
+            self.transport.getPeer().host
+        )
+        reactor.connectTCP(
+            self.config.upstream_hostname,
+            self.config.upstream_port,
+            StarboundClientFactory(self),
+            timeout=self.config.server_connect_timeout
+        )
 
     def string_received(self, packet):
         """
@@ -171,8 +202,8 @@ class StarryPyServerProtocol(Protocol):
         else:
             # We received an unknown packet; send it along.
             logger.warning(
-                "Received unknown message ID (%d) from client." %
-                packet.id)
+                'Received unknown message ID (%d) from client.', packet.id
+            )
             self.client_protocol.transport.write(
                 packet.original_data)
 
@@ -433,7 +464,8 @@ class StarryPyServerProtocol(Protocol):
     @route
     def client_disconnect_request(self, player):
         """
-        Called when the client signals that it is about to disconnect from the Starbound server.
+        Called when the client signals that it is about to disconnect from
+        the Starbound server.
 
         :param player: The Player.
         :rtype : bool
@@ -479,10 +511,10 @@ class StarryPyServerProtocol(Protocol):
 
     def send_chat_message(self, text, mode='BROADCAST', channel='', name=''):
         """
-        Convenience function to send chat messages to the client. Note that this
-        does *not* send messages to the server at large; broadcast should be
-        used for messages to all clients, or manually constructed chat messages
-        otherwise.
+        Convenience function to send chat messages to the client. Note that
+        this does *not* send messages to the server at large; broadcast should
+        be used for messages to all clients, or manually constructed chat
+        messages otherwise.
 
         :param text: Message text, may contain multiple lines.
         :param channel: The chat channel/context.
@@ -496,20 +528,32 @@ class StarryPyServerProtocol(Protocol):
                 self.send_chat_message(line)
             return
         if self.player is not None:
-            logger.vdebug(('Calling send_chat_message from player %s on channel'
-                          ' %s with mode %s with reported username of %s with'
-                          ' message: %s'), self.player.name, channel, mode, name, text)
-        chat_data = packets.chat_received().build(Container(mode=mode,
-                                                            channel=channel,
-                                                            client_id=0,
-                                                            name=name,
-                                                            message=text.encode("utf-8")))
-        logger.vdebug("Built chat payload. Data: %s", chat_data.encode("hex"))
-        chat_packet = build_packet(packets.Packets.CHAT_RECEIVED,
-                                   chat_data)
-        logger.vdebug("Built chat packet. Data: %s", chat_packet.encode("hex"))
+            logger.vdebug(
+                'Calling send_chat_message from player %s on channel'
+                ' %s with mode %s with reported username of %s with'
+                ' message: %s',
+                self.player.name,
+                channel,
+                mode,
+                name,
+                text
+            )
+        chat_data = chat_received().build(
+            Container(
+                mode=mode,
+                channel=channel,
+                client_id=0,
+                name=name,
+                message=text.encode('utf-8')
+            )
+        )
+        logger.vdebug('Built chat payload. Data: %s', chat_data.encode('hex'))
+        chat_packet = build_packet(
+            packets.Packets.CHAT_RECEIVED, chat_data
+        )
+        logger.vdebug('Built chat packet. Data: %s', chat_packet.encode('hex'))
         self.transport.write(chat_packet)
-        logger.vdebug("Sent chat message with text: %s", text)
+        logger.vdebug('Sent chat message with text: %s', text)
 
     def write(self, data):
         """
@@ -527,22 +571,31 @@ class StarryPyServerProtocol(Protocol):
         """
         try:
             if self.client_protocol is not None:
-                x = build_packet(packets.Packets.CLIENT_DISCONNECT_REQUEST,
-                                 packets.client_disconnect_request().build(Container(data=0)))
+                x = build_packet(
+                    packets.Packets.CLIENT_DISCONNECT_REQUEST,
+                    packets.client_disconnect_request().build(
+                        Container(data=0)
+                    )
+                )
                 if self.player is not None and self.player.logged_in:
                     self.client_disconnect_request(x)
                 self.client_protocol.transport.write(x)
                 self.client_protocol.transport.abortConnection()
         except:
-            logger.error("Couldn't disconnect protocol.")
+            logger.error('Couldn\'t disconnect protocol.')
         finally:
             try:
                 self.factory.protocols.pop(self.id)
             except:
-                logger.info("Protocol was not in factory list. This should not happen.")
-                logger.info("protocol id: %s" % self.id)
+                logger.info(
+                    'Protocol was not in factory list. This should not happen.'
+                )
+                logger.info('protocol id: %s' % self.id)
             finally:
-                logger.info("Lost connection from IP: %s", self.transport.getPeer().host)
+                logger.info(
+                    'Lost connection from IP: %s',
+                    self.transport.getPeer().host
+                )
                 self.transport.abortConnection()
 
     def die(self):
@@ -557,7 +610,7 @@ class ClientProtocol(Protocol):
     def __init__(self):
         self.packet_stream = PacketStream(self)
         self.packet_stream.direction = packets.Direction.SERVER
-        logger.debug("Client protocol instantiated.")
+        logger.debug('Client protocol instantiated.')
 
     def connectionMade(self):
         """
@@ -586,7 +639,7 @@ class ClientProtocol(Protocol):
                     packet):
                 self.server_protocol.write(packet.original_data)
         except construct.core.FieldError:
-            logger.exception("Construct field error in string_received.")
+            logger.exception('Construct field error in string_received.')
             self.server_protocol.write(
                 packet.original_data)
 
@@ -607,7 +660,10 @@ class ClientProtocol(Protocol):
             self.packet_stream += data
 
     def disconnect(self):
-        x = build_packet(packets.Packets.CLIENT_DISCONNECT_REQUEST, packets.client_disconnect_request().build(Container(data=0)))
+        x = build_packet(
+            packets.Packets.CLIENT_DISCONNECT_REQUEST,
+            packets.client_disconnect_request().build(Container(data=0))
+        )
         self.transport.write(x)
         self.transport.abortConnection()
 
@@ -629,11 +685,13 @@ class StarryPyServerFactory(ServerFactory):
         try:
             self.plugin_manager = PluginManager(factory=self)
         except FatalPluginError:
-            logger.critical("Shutting Down.")
+            logger.critical('Shutting Down.')
             sys.exit()
         self.reaper = LoopingCall(self.reap_dead_protocols)
         self.reaper.start(self.config.reap_time)
-        logger.debug("Factory created, endpoint of port %d" % self.config.bind_port)
+        logger.debug(
+            'Factory created, endpoint of port %d', self.config.bind_port
+        )
 
     def stopFactory(self):
         """
@@ -658,7 +716,7 @@ class StarryPyServerFactory(ServerFactory):
             try:
                 p.send_chat_message(text)
             except:
-                logger.exception("Exception in broadcast.")
+                logger.exception('Exception in broadcast.')
 
     def broadcast_planet(self, text, planet, name=''):
         """
@@ -667,7 +725,8 @@ class StarryPyServerFactory(ServerFactory):
 
         :param text: Message text
         :param planet: The planet to send the message to
-        :param name: The name to prepend before the message, format is <name>, not prepanded when empty
+        :param name: The name to prepend before the message, format is <name>,
+         not prepended when empty
         :return: None
         """
         for p in self.protocols.itervalues():
@@ -675,7 +734,7 @@ class StarryPyServerFactory(ServerFactory):
                 try:
                     p.send_chat_message(text)
                 except:
-                    logger.exception("Exception in broadcast.")
+                    logger.exception('Exception in broadcast.')
 
     def buildProtocol(self, address):
         """
@@ -683,30 +742,46 @@ class StarryPyServerFactory(ServerFactory):
 
         :rtype : Protocol
         """
-        logger.vdebug("Building protocol to address %s", address)
+        logger.vdebug('Building protocol to address %s', address)
         p = ServerFactory.buildProtocol(self, address)
         return p
 
     def reap_dead_protocols(self):
-        logger.vdebug("Reaping dead connections.")
+        logger.vdebug('Reaping dead connections.')
         count = 0
         start_time = datetime.datetime.now()
         for protocol in self.protocols.itervalues():
-            if (protocol.packet_stream.last_received_timestamp - start_time).total_seconds() > self.config.reap_time:
-                logger.debug("Reaping protocol %s. Reason: Server protocol timeout.", protocol.id)
+            total_seconds = (
+                protocol
+                .client_protocol
+                .packet_stream
+                .last_received_timestamp -
+                start_time
+            ).total_seconds()
+            if total_seconds > self.config.reap_time:
+                logger.debug(
+                    'Reaping protocol %s. Reason: Server protocol timeout.',
+                    protocol.id
+                )
                 protocol.connectionLost()
                 count += 1
                 continue
-            if protocol.client_protocol is not None and (protocol.client_protocol.packet_stream.last_received_timestamp - start_time).total_seconds() > self.config.reap_time:
+            if (
+                    protocol.client_protocol is not None and
+                    total_seconds > self.config.reap_time
+            ):
                 protocol.connectionLost()
-                logger.debug("Reaping protocol %s. Reason: Client protocol timeout.", protocol.id)
+                logger.debug(
+                    'Reaping protocol %s. Reason: Client protocol timeout.',
+                    protocol.id
+                )
                 count += 1
         if count == 1:
-            logger.info("1 connection reaped.")
+            logger.info('1 connection reaped.')
         elif count > 1:
-            logger.info("%d connections reaped.")
+            logger.info('%d connections reaped.')
         else:
-            logger.vdebug("No connections reaped.")
+            logger.vdebug('No connections reaped.')
 
 
 class StarboundClientFactory(ClientFactory):
@@ -716,11 +791,14 @@ class StarboundClientFactory(ClientFactory):
     protocol = ClientProtocol
 
     def __init__(self, server_protocol):
-        logger.vdebug("Client protocol instantiated.")
+        logger.vdebug('Client protocol instantiated.')
         self.server_protocol = server_protocol
 
     def buildProtocol(self, address):
-        logger.vdebug("Building protocol in StarboundClientFactory to address %s", address)
+        logger.vdebug(
+            'Building protocol in StarboundClientFactory to address %s',
+            address
+        )
         protocol = ClientFactory.buildProtocol(self, address)
         protocol.server_protocol = self.server_protocol
         return protocol
@@ -741,11 +819,13 @@ if __name__ == '__main__':
 
     logger = logging.getLogger('starrypy')
     logger.setLevel(9)
-    log_format = logging.Formatter('%(asctime)s - %(levelname)s - %(name)s # %(message)s')
+    log_format = logging.Formatter(
+        '%(asctime)s - %(levelname)s - %(name)s # %(message)s'
+    )
     if config.log_level == 'DEBUG':
         log_level = logging.DEBUG
     elif config.log_level == 'VDEBUG':
-        log_level = "VDEBUG"
+        log_level = 'VDEBUG'
     else:
         log_level = logging.INFO
 
@@ -756,33 +836,51 @@ if __name__ == '__main__':
     console_handle.setFormatter(log_format)
 
     print('Setup file-based logging...')
-    logfile_handle = logging.handlers.TimedRotatingFileHandler("server.log", when='midnight', interval=5, backupCount=4)
+    logfile_handle = logging.handlers.TimedRotatingFileHandler(
+        'server.log', when='midnight', interval=5, backupCount=4
+    )
     logfile_handle.setLevel(log_level)
     logger.addHandler(logfile_handle)
     logfile_handle.setFormatter(log_format)
 
     if config.port_check:
-        logger.debug("Port check enabled. Performing port check to %s:%d", config.upstream_hostname,
-                     config.upstream_port)
+        logger.debug(
+            'Port check enabled. Performing port check to %s:%d',
+            config.upstream_hostname,
+            config.upstream_port
+        )
 
         if not port_check(config.upstream_hostname, config.upstream_port):
-            logger.critical("The starbound server is not connectable at the address %s:%d." % (
-                config.upstream_hostname, config.upstream_port))
             logger.critical(
-                "Please ensure that you are running starbound_server on the correct port and that is reflected in the StarryPy configuration.")
+                'The starbound server is not connectable at the address'
+                ' %s:%d.', config.upstream_hostname, config.upstream_port
+            )
+            logger.critical(
+                'Please ensure that you are running starbound_server on the '
+                'correct port and that is reflected in the StarryPy '
+                'configuration.'
+            )
             sys.exit()
 
-        logger.debug("Port check succeeded. Continuing.")
+        logger.debug('Port check succeeded. Continuing.')
 
-    logger.info("Started StarryPy server version %s" % VERSION)
+    logger.info('Started StarryPy server version %s', VERSION)
     factory = StarryPyServerFactory()
-    logger.debug("Attempting to listen on TCP port %d", factory.config.bind_port)
+    logger.debug(
+        'Attempting to listen on TCP port %d', factory.config.bind_port
+    )
 
     try:
-        reactor.listenTCP(factory.config.bind_port, factory, interface=factory.config.bind_address)
+        reactor.listenTCP(
+            factory.config.bind_port,
+            factory,
+            interface=factory.config.bind_address
+        )
     except CannotListenError:
-        logger.critical("Cannot listen on TCP port %d. Exiting.", factory.config.bind_port)
+        logger.critical(
+            'Cannot listen on TCP port %d. Exiting.', factory.config.bind_port
+        )
         sys.exit()
 
-    logger.info("Listening on port %s" % factory.config.bind_port)
+    logger.info('Listening on port %s', factory.config.bind_port)
     reactor.run()
