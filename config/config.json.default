@@ -1,5 +1,5 @@
 {
-    "backup_db": ["backups", "backups.db"],
+    "backup_db": "backups/backups.db",
     "bind_address": "",
     "bind_port": 21025,
     "chat_prefix": "#",

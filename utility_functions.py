@@ -1,33 +1,24 @@
 import collections
 import logging
 import os
-import errno
 
 from construct import Container
 from twisted.python.filepath import FilePath
 
 import packets
+import errno
 
 
 path = FilePath(os.path.dirname(os.path.abspath(__file__)))
-logger = logging.getLogger('starrypy.utility_functions')
+logger = logging.getLogger("starrypy.utility_functions")
 
 
 def give_item_to_player(player_protocol, item, count=1):
-    logger.debug(
-        'Attempting to give item %s (count: %s) to %s',
-        item,
-        count,
-        player_protocol.player.name
-    )
+    logger.debug("Attempting to give item %s (count: %s) to %s", item, count, player_protocol.player.name)
     item_count = int(count)
     hard_max = 90000
     if item_count > hard_max:
-        logger.warn(
-            'Attempted to give more items than the max allowed (%s). '
-            'Capping amount.',
-            hard_max
-        )
+        logger.warn("Attempted to give more items than the max allowed (%s). Capping amount.", hard_max)
         item_count = hard_max
     maximum = 1000
     given = 0
@@ -35,9 +26,7 @@ def give_item_to_player(player_protocol, item, count=1):
         x = item_count
         if x > maximum:
             x = maximum
-        item_packet = build_packet(
-            packets.Packets.GIVE_ITEM, packets.give_item_write(item, x + 1)
-        )
+        item_packet = build_packet(packets.Packets.GIVE_ITEM, packets.give_item_write(item, x + 1))
         player_protocol.transport.write(item_packet)
         item_count -= x
         given += x
@@ -64,12 +53,7 @@ def build_packet(packet_type, data):
     """
     length = len(data)
     return packets.packet().build(
-        Container(
-            id=packet_type,
-            payload_size=length,
-            data=data
-        )
-    )
+        Container(id=packet_type, payload_size=length, data=data))
 
 
 class Planet(object):
@@ -81,28 +65,16 @@ class Planet(object):
         self.satellite = satellite
 
     def __str__(self):
-        return '{}:{}:{}:{}:{}'.format(
-            self.x, self.y, self.z, self.planet, self.satellite
-        )
+        return "%d:%d:%d:%d:%d" % (self.x, self.y, self.z, self.planet, self.satellite)
 
 
 def move_ship_to_coords(protocol, x, y, z, planet, satellite):
-    logger.info(
-        'Moving %s\'s ship to coordinates: %s',
-        protocol.player.name,
-        ':'.join(map(str, (x, y, z, planet, satellite)))
-    )
+    logger.info("Moving %s's ship to coordinates: %s", protocol.player.name,
+                ":".join((str(x), str(y), str(z), str(planet), str(satellite))))
     x, y, z, planet, satellite = map(int, (x, y, z, planet, satellite))
-    warp_packet = build_packet(
-        packets.Packets.FLY_SHIP,
-        packets.fly_ship_write(
-            x=x,
-            y=y,
-            z=z,
-            planet=planet,
-            satellite=satellite
-        )
-    )
+    warp_packet = build_packet(packets.Packets.FLY_SHIP,
+                               packets.fly_ship_write(x=x, y=y, z=z, planet=planet,
+                                                      satellite=satellite))
     protocol.client_protocol.transport.write(warp_packet)
 
 
@@ -116,15 +88,13 @@ def extract_name(l):
         if s[-1] == terminator:
             name.append(s[:-1])
             if idx + 2 != len(l):
-                return ' '.join(name), l[idx + 2:]
+                return " ".join(name), l[idx + 2:]
             else:
-                return ' '.join(name), None
+                return " ".join(name), None
         else:
             name.append(s)
-    raise ValueError(
-        'Final terminator character of <%s> not found'.format(terminator)
-    )
-
+    raise ValueError("Final terminator character of <%s> not found" %
+                     terminator)
 
 def verify_path(path):
     """

@@ -3,7 +3,7 @@ from packets import chat_sent
 
 
 class CommandDispatchPlugin(BasePlugin):
-    name = 'command_plugin'
+    name = "command_plugin"
 
     def activate(self):
         super(CommandDispatchPlugin, self).activate()
@@ -12,7 +12,7 @@ class CommandDispatchPlugin(BasePlugin):
 
     def on_chat_sent(self, data):
         data = chat_sent().parse(data.data)
-        data.message = data.message.decode('utf-8')
+        data.message = data.message.decode("utf-8")
         if data.message[0] == self.command_prefix:
             split_command = data.message[1:].split()
             command = split_command[0]
@@ -24,12 +24,12 @@ class CommandDispatchPlugin(BasePlugin):
                     return True
                 return False
             except:
-                self.logger.exception('Error in on_chat_sent.')
+                self.logger.exception("Error in on_chat_sent.")
                 raise
 
     def register(self, f, names):
         if not callable(f):
-            raise TypeError('The first argument to register must be callable.')
+            raise TypeError("The first argument to register must be callable.")
         if isinstance(names, basestring):
             names = [names.lower()]
         elif isinstance(names, list):
@@ -37,9 +37,8 @@ class CommandDispatchPlugin(BasePlugin):
         for name in names:
             if name in self.commands:
                 raise KeyError(
-                    'A command named %s is already registered with '
-                    'CommandDispatchPlugin'.format(name)
-                )
+                    "A command named %s is already registered with "
+                    "CommandDispatchPlugin" % name)
             else:
                 self.commands[name] = f
 
