@@ -1,1 +1,1 @@
-from partychat_plugin import PartyChatPlugin
+from partychat_plugin import PartyChatPlugin 
