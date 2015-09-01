@@ -152,7 +152,7 @@ class PluginManager(object):
                 ready = [
                     x for x, d in dependency_hash.iteritems() if len(d) == 0
                 ]
-                if ready:
+                if not ready:
                     ex = []
                     for n, d in dependency_hash.iteritems():
                         for dep in d:
