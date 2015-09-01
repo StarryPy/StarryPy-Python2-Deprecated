@@ -46,7 +46,7 @@ class LoginHandler(BaseHandler):
             )
             self.factory.broadcast(
                 'An admin has joined the server through Web-GUI.',
-                0, self.get_argument('name', strip=False)
+                self.get_argument('name', strip=False)
             )
             self.failed_login = False
             self.redirect(self.get_argument('next', '/'))
@@ -353,9 +353,7 @@ class WebSocketChatHandler(tornado.websocket.WebSocketHandler):
                 time=datetime.now().strftime('%H:%M'),
                 user_name=self.web_gui_user.name,
                 message=messagejson['message']
-            ),
-            0,
-            ''
+            )
         )
 
     def update_chat(self):

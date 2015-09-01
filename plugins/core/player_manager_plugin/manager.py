@@ -282,7 +282,7 @@ class PlayerManager(object):
         logger.info('Loading player database.')
         try:
             self.engine = create_engine(
-                'sqlite:///'.format(
+                'sqlite:///{}'.format(
                     path.preauthChild(self.config.player_db).path
                 )
             )
