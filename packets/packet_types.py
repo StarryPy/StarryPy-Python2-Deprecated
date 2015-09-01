@@ -577,7 +577,7 @@ def collect_liquid(name='collect_liquid'):
 
 # (25) - GiveItem
 def give_item(name='give_item'):
-    Struct(
+    return Struct(
         name,
         star_string('name'),
         VLQ('count'),
