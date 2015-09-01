@@ -682,8 +682,9 @@ class StarryPyServerFactory(ServerFactory):
         self.config = ConfigurationManager()
         self.protocol.factory = self
         self.protocols = {}
+        self.plugin_manager = PluginManager(factory=self)
         try:
-            self.plugin_manager = PluginManager(factory=self)
+            self.plugin_manager.prepare()
         except FatalPluginError:
             logger.critical('Shutting Down.')
             sys.exit()
