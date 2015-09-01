@@ -702,13 +702,12 @@ class StarryPyServerFactory(ServerFactory):
         self.config.save()
         self.plugin_manager.die()
 
-    def broadcast(self, text, mode=1, name=''):
+    def broadcast(self, text, name=''):
         """
         Convenience method to send a broadcasted message to all clients on the
         server.
 
         :param text: Message text
-        :param mode: Channel to broadcast on. 0 is global, 1 is planet.
         :param name: The name to prepend before the message, format is <name>
         :return: None
         """

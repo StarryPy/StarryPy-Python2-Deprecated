@@ -246,7 +246,8 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
             self.factory.broadcast(
                 '{}^green;\'s name has been changed to {}'.format(
                     old_name,
-                    self.protocol.player.colored_name(self.config.colors))
+                    self.protocol.player.colored_name(self.config.colors)
+                )
             )
 
     @permissions(UserLevels.ADMIN)

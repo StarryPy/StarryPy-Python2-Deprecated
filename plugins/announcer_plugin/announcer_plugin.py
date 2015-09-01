@@ -14,19 +14,15 @@ class Announcer(BasePlugin):
         self.factory.broadcast(
             '{} logged in.'.format(
                 self.protocol.player.colored_name(self.config.colors),
-                0,
-                'Announcer'
-            )
+            ),
+            'Announcer'
         )
 
     def on_client_disconnect_request(self, data):
         if self.protocol.player is not None:
             self.factory.broadcast(
-                self.factory.broadcast(
-                    '{} logged out.'.format(
-                        self.protocol.player.colored_name(self.config.colors),
-                        0,
-                        'Announcer'
-                    )
-                )
+                '{} logged out.'.format(
+                    self.protocol.player.colored_name(self.config.colors),
+                ),
+                'Announcer'
             )
