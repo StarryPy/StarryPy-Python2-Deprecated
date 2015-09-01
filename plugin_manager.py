@@ -65,6 +65,7 @@ class PluginManager(object):
         self.plugin_dir = path.child(self.config.plugin_path)
         sys.path.append(self.plugin_dir.path)
 
+    def prepare(self):
         self.load_plugins(
             [
                 'core.admin_commands_plugin',
@@ -87,23 +88,18 @@ class PluginManager(object):
 
     def installed_plugins(self):
         """
-        Get list of all plugins in the plugin_dir.
-
-        :param name: None
-        :return: Array of plugin names.
+        Returns list of all plugins in the plugin_dir.
         """
-        installed_plugins = filter(
-            None,
+        return filter(
+            lambda name: not (name is None or name == 'core'),
             (
-                self.get_plugin_name_from_file(f)
-                for f in self.plugin_dir.globChildren('*')
+                self.get_plugin_name_from_file(plugin_file)
+                for plugin_file in self.plugin_dir.globChildren('*')
             )
         )
 
-        # don't list core as a plugin
-        return filter(lambda name: name != 'core', installed_plugins)
-
-    def get_plugin_name_from_file(self, f):
+    @staticmethod
+    def get_plugin_name_from_file(f):
         if f.isdir():
             return f.basename()
         else:
@@ -114,7 +110,6 @@ class PluginManager(object):
         Import plugin that has the given name, and is a subclass of base_class.
 
         :param name: The name of the plugin to import.
-        :return: None
         """
         try:
             mod = __import__(name, globals(), locals(), [], 0)
@@ -152,7 +147,7 @@ class PluginManager(object):
                 ready = [
                     x for x, d in dependency_hash.iteritems() if len(d) == 0
                 ]
-                if ready:
+                if not ready:
                     ex = []
                     for n, d in dependency_hash.iteritems():
                         for dep in d:
@@ -248,13 +243,16 @@ class PluginManager(object):
         :return: Whether or not all plugins returned True or None.
         :rtype: bool
         """
-        return_values = []
         if protocol is None:
             return True
-        for plugin in self.plugins.itervalues():
+
+        return_values = []
+        plugins = (
+            plugin for plugin in self.plugins.itervalues()
+            if plugin.active and data.id in plugin.override_packets
+        )
+        for plugin in plugins:
             try:
-                if not plugin.active:
-                    continue
                 plugin.protocol = protocol
                 res = getattr(plugin, command, lambda _: True)(data)
                 if res is None:

@@ -1,4 +1,33 @@
 # encoding: utf-8
+import re
+
+from packets import Packets
+
+
+packet_name_regex = re.compile(r'(on|after)_(?P<packet_name>\w+)')
+
+
+class MapOverridePacketsMethods(type):
+    ignored_methods = ('activate', 'deactivate')
+
+    def __new__(cls, name, bases, cls_dict):
+        if name != 'BasePlugin':
+            cls_dict['override_packets'] = []
+            methods = (
+                key for key, value in cls_dict.iteritems()
+                if key not in cls.ignored_methods and callable(value)
+            )
+            for packet_method_name in methods:
+                packet = packet_name_regex.match(packet_method_name)
+                if packet:
+                    packet_name = packet.group('packet_name').upper()
+                    enum = getattr(Packets, packet_name, None)
+                    if enum and enum.value not in cls_dict['override_packets']:
+                        cls_dict['override_packets'].append(enum.value)
+
+        return super(MapOverridePacketsMethods, cls).__new__(
+            cls, name, bases, cls_dict
+        )
 
 
 class BasePlugin(object):
@@ -19,10 +48,13 @@ class BasePlugin(object):
     complain quite thoroughly.
     """
 
+    __metaclass__ = MapOverridePacketsMethods
+
     name = 'Base Plugin'
     description = 'The common class for all plugins to inherit from.'
     version = '.1'
     depends = []
+    active = True
 
     def activate(self):
         """
