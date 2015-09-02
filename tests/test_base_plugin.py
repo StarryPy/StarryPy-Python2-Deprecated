@@ -21,7 +21,28 @@ class BasePluginTestCase(TestCase):
             def on_burn_container(self, data):
                 pass
 
+            def after_burn_container(self, data):
+                pass
+
         test_plugin2 = TestPlugin2()
         test_plugin = TestPlugin()
-        self.assertListEqual(test_plugin.override_packets, [5, 14])
-        self.assertListEqual(test_plugin2.override_packets, [44])
+        self.assertDictEqual(
+            test_plugin.override_packets,
+            {
+                5: {
+                    'on': test_plugin.on_chat_received
+                },
+                14: {
+                    'on': test_plugin.on_chat_sent
+                }
+            }
+        )
+        self.assertDictEqual(
+            test_plugin2.override_packets,
+            {
+                44: {
+                    'on': test_plugin2.on_burn_container,
+                    'after': test_plugin2.after_burn_container
+                }
+            }
+        )

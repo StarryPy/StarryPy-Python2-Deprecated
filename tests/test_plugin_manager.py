@@ -101,19 +101,3 @@ class PluginManagetTestCase(TestCase):
         result = pm.installed_plugins()
 
         self.assertListEqual(result, ['plugin'])
-
-    @patch('plugin_manager.__import__')
-    @patch('plugin_manager.inspect.getmembers')
-    @patch('plugin_manager.sys')
-    @patch('plugin_manager.path')
-    @patch('plugin_manager.ConfigurationManager')
-    def test_import_plugin(
-        self,
-        mock_config,
-        mock_path,
-        mock_sys,
-        mock_getmembers,
-        mock_import
-    ):
-        mock_factory = Mock()
-        mock_import.return_value = ''

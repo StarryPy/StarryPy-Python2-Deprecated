@@ -4,7 +4,7 @@ import re
 from packets import Packets
 
 
-packet_name_regex = re.compile(r'(on|after)_(?P<packet_name>\w+)')
+packet_name_regex = re.compile(r'(?P<when>on|after)_(?P<packet_name>\w+)')
 
 
 class MapOverridePacketsMethods(type):
@@ -12,7 +12,7 @@ class MapOverridePacketsMethods(type):
 
     def __new__(cls, name, bases, cls_dict):
         if name != 'BasePlugin':
-            cls_dict['override_packets'] = []
+            cls_dict['override_packets'] = {}
             methods = (
                 key for key, value in cls_dict.iteritems()
                 if key not in cls.ignored_methods and callable(value)
@@ -22,8 +22,10 @@ class MapOverridePacketsMethods(type):
                 if packet:
                     packet_name = packet.group('packet_name').upper()
                     enum = getattr(Packets, packet_name, None)
-                    if enum and enum.value not in cls_dict['override_packets']:
-                        cls_dict['override_packets'].append(enum.value)
+                    if enum:
+                        cls_dict['override_packets'].setdefault(
+                            enum.value, {}
+                        )[packet.group('when')] = packet_method_name
 
         return super(MapOverridePacketsMethods, cls).__new__(
             cls, name, bases, cls_dict
@@ -55,6 +57,15 @@ class BasePlugin(object):
     version = '.1'
     depends = []
     active = True
+
+    def __init__(self, *args, **kwargs):
+        super(BasePlugin, self).__init__(*args, **kwargs)
+        if self.__class__.__name__ != 'BasePlugin':
+            for packet, when_dict in self.override_packets.iteritems():
+                for when, packet_name in when_dict.iteritems():
+                    self.override_packets[packet][when] = getattr(
+                        self, packet_name
+                    )
 
     def activate(self):
         """
@@ -403,10 +414,13 @@ class BasePlugin(object):
     def after_central_structure_update(self, data):
         return True
 
-    def __repr__(self):
-        return '<Plugin instance: {} (version {})>'.format(
+    def __unicode__(self):
+        return u'<Plugin instance: {} (version {})>'.format(
             self.name, self.version
         )
+
+    def __str__(self):
+        return self.__unicode__()
 
 
 class CommandNameError(Exception):
