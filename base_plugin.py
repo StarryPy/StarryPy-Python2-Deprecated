@@ -12,7 +12,7 @@ class MapOverridePacketsMethods(type):
 
     def __new__(cls, name, bases, cls_dict):
         if name != 'BasePlugin':
-            cls_dict['override_packets'] = {}
+            cls_dict['overridden_packets'] = {}
             methods = (
                 key for key, value in cls_dict.iteritems()
                 if key not in cls.ignored_methods and callable(value)
@@ -23,7 +23,7 @@ class MapOverridePacketsMethods(type):
                     packet_name = packet.group('packet_name').upper()
                     enum = getattr(Packets, packet_name, None)
                     if enum:
-                        cls_dict['override_packets'].setdefault(
+                        cls_dict['overridden_packets'].setdefault(
                             enum.value, {}
                         )[packet.group('when')] = packet_method_name
 
@@ -61,9 +61,9 @@ class BasePlugin(object):
     def __init__(self, *args, **kwargs):
         super(BasePlugin, self).__init__(*args, **kwargs)
         if self.__class__.__name__ != 'BasePlugin':
-            for packet, when_dict in self.override_packets.iteritems():
+            for packet, when_dict in self.overridden_packets.iteritems():
                 for when, packet_name in when_dict.iteritems():
-                    self.override_packets[packet][when] = getattr(
+                    self.overridden_packets[packet][when] = getattr(
                         self, packet_name
                     )
 

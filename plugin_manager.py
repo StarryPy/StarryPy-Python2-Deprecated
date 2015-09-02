@@ -272,7 +272,7 @@ class PluginManager(object):
         """
         Maps plugin overridden packets ready to use in do method.
         """
-        for packet_id, when_dict in plugin.override_packets.iteritems():
+        for packet_id, when_dict in plugin.overridden_packets.iteritems():
             for when, packet_method in when_dict.iteritems():
                 self.packets.setdefault(
                     packet_id, {}
