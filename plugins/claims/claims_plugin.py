@@ -1,5 +1,5 @@
 from base_plugin import SimpleCommandPlugin
-from plugins.core.player_manager import UserLevels, permissions
+from plugins.core.player_manager_plugin import UserLevels, permissions
 from utility_functions import extract_name
 
 
@@ -11,16 +11,10 @@ class ClaimsPlugin(SimpleCommandPlugin):
     name = "claims"
     description = "Claims planets."
     commands = ["claim", "unclaim", "claim_list", "unclaimable"]
-    depends = ["player_manager", "command_dispatcher", "planet_protect"]
-
-    def __init__(self):
-        super(ClaimsPlugin, self).__init__()
+    depends = ["player_manager_plugin", "command_plugin", "planet_protect"]
 
     def activate(self):
         super(ClaimsPlugin, self).activate()
-
-        #self.protected_planets = self.config.plugin_config.get("protected_planets", [])
-        #self.player_planets = self.config.plugin_config.get("player_planets", {})
         try:
             self.max_claims = self.config.plugin_config['max_claims']
         except KeyError:
@@ -28,7 +22,7 @@ class ClaimsPlugin(SimpleCommandPlugin):
         self.unclaimable_planets = self.config.plugin_config.get("unclaimable_planets", [])
         self.protected_planets = self.config.config['plugin_config']['planet_protect']['protected_planets']
         self.player_planets = self.config.config['plugin_config']['planet_protect']['player_planets']
-        self.player_manager = self.plugins["player_manager"].player_manager
+        self.player_manager = self.plugins["player_manager_plugin"].player_manager
 
     @permissions(UserLevels.ADMIN)
     def unclaimable(self, data):

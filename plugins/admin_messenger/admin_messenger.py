@@ -1,5 +1,5 @@
 from base_plugin import BasePlugin
-from plugins.core.player_manager import permissions, UserLevels
+from plugins.core.player_manager_plugin import permissions, UserLevels
 import packets
 from datetime import datetime
 
@@ -7,8 +7,7 @@ from datetime import datetime
 class AdminMessenger(BasePlugin):
     """Adds support to message moderators/admins/owner with a @@ prefixed message."""
     name = "admin_messenger"
-    depends = ['player_manager']
-    auto_activate = True
+    depends = ['player_manager_plugin']
 
     def activate(self):
         super(AdminMessenger, self).activate()

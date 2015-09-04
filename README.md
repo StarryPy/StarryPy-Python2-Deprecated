@@ -1,7 +1,6 @@
 # StarryPy
 
-StarryPy is Twisted-based plugin-driven Starbound server wrapper. It is currently
-in beta.
+StarryPy is Twisted-based plugin-driven Starbound server wrapper. It is currently in beta.
 
 ## Features
 
@@ -15,13 +14,13 @@ With the built-in plugins (which are removable):
 * Join/quit announcements.
 * And more.
 
-## Version 1.5 is here!
+## Version 1.7 is here!
 
-With this most recent release, we are compatible with the current release of Starbound (Upbeat Giraffe). Any bugs found in the process, please open an issue ticket, so we can squash them as quickly as possible.
+With this most recent release, we are compatible with the current release of Starbound (Pleased Giraffe - Protocol 691). Any bugs found in the process, please open an issue ticket, so we can squash them as quickly as possible.
 
 ## Upgrading from older versions of StarryPy
 
-StarryPy 1.5 is **NOT** backwards compatible with older versions. As unfortunate as it is, we suggest wiping your database, and starting fresh. It will save a lot of headaches in the long run.
+This version of StarryPy should be completely compatible with all version back to 1.5. If you run into any problems, please let us know.
 
 ## Installation
 

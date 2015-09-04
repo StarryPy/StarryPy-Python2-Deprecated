@@ -8,7 +8,6 @@ class NewPlayerGreeter(BasePlugin):
     Welcomes new players by giving them a bunch of items.
     """
     name = "new_player_greeter_plugin"
-    auto_activate = True
 
     def activate(self):
         super(NewPlayerGreeter, self).activate()

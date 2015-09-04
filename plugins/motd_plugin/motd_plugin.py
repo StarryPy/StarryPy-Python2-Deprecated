@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 from base_plugin import SimpleCommandPlugin
-from plugins.core.player_manager import permissions, UserLevels
+from plugins.core.player_manager_plugin import permissions, UserLevels
 
 
 class MOTDPlugin(SimpleCommandPlugin):
@@ -10,7 +10,6 @@ class MOTDPlugin(SimpleCommandPlugin):
     """
     name = "motd_plugin"
     commands = ["motd", "motd_set"]
-    auto_activate = True
 
     def activate(self):
         super(MOTDPlugin, self).activate()
@@ -21,7 +20,7 @@ class MOTDPlugin(SimpleCommandPlugin):
             self._motd = "Welcome to the server! Play nice."
             self.config.plugin_config['motd'] = self._motd
 
-    def after_connect_response(self, data):
+    def after_connect_success(self, data):
         self.send_motd()
 
     def send_motd(self):

@@ -8,7 +8,7 @@ from irc_manager import StarryPyIrcBotFactory
 
 
 class IrcPlugin(BasePlugin):
-    name = "irc"
+    name = "irc_plugin"
 
     def __init__(self, *args, **kwargs):
         super(IrcPlugin, self).__init__(*args, **kwargs)

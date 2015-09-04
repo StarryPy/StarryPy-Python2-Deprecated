@@ -7,13 +7,13 @@ from twisted.words.ewords import AlreadyLoggedIn
 
 from base_plugin import SimpleCommandPlugin
 from manager import PlayerManager, Banned, Player, permissions, UserLevels
-from packets import client_connect, connect_response
+from packets import client_connect, connect_success
 import packets
 from utility_functions import extract_name, build_packet, Planet
 
 
 class PlayerManagerPlugin(SimpleCommandPlugin):
-    name = "player_manager"
+    name = "player_manager_plugin"
     commands = ["player_list", "player_delete", "nick", "nick_set"]
 
     def activate(self):
@@ -37,6 +37,7 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
     def on_client_connect(self, data):
         client_data = client_connect().parse(data.data)
         try:
+            clone_append = ""
             changed_name = client_data.name
             for regex in self.regexes:  # Replace problematic chars in client name
                 changed_name = re.sub(regex, "", changed_name)
@@ -55,12 +56,12 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
 
             duplicate_player = self.player_manager.get_by_org_name(client_data.name)
             if duplicate_player is not None and duplicate_player.uuid != client_data.uuid:
-                raise NameError(
-                    "The name of this character is already taken on the server!\nPlease, create a new character with a different name or talk to an administrator.")
-                self.logger.info("Got a duplicate original player name, asking player to change character name!")
-                #rnd_append = str(randrange(10, 99))
-                #original_name += rnd_append
-                #client_data.name += rnd_append
+                #raise NameError(
+                #    "The name of this character is already taken on the server!\nPlease, create a new character with a different name or talk to an administrator.")
+                self.logger.info("CLONE WARNING: {} MAY BE TRYING TO IMPERSONATE {}!".format(self.protocol.transport.getPeer().host, client_data.name))
+                #clone_append = " [CLONE]"
+                #changed_name += clone_append
+                #client_data.name += clone_append
 
             if client_data.account == self.adminss:
                 admin_login = True
@@ -77,6 +78,8 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
                 ip=self.protocol.transport.getPeer().host,
                 protocol=self.protocol.id,
             )
+
+            #self.protocol.player.name += clone_append
 
             return True
         except AlreadyLoggedIn:
@@ -95,34 +98,33 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
         magic_sector = "AQAAAAwAAAAy+gofAAX14QD/Z2mAAJiWgAUFYWxwaGEMQWxwaGEgU2VjdG9yAAAAELIfhbMFQWxwaGEHAgt0aHJlYXRMZXZlbAYCBAIEAg51bmxvY2tlZEJpb21lcwYHBQRhcmlkBQZkZXNlcnQFBmZvcmVzdAUEc25vdwUEbW9vbgUGYmFycmVuBQ1hc3Rlcm9pZGZpZWxkBwcCaWQFBWFscGhhBG5hbWUFDEFscGhhIFNlY3RvcgpzZWN0b3JTZWVkBISWofyWZgxzZWN0b3JTeW1ib2wFFy9jZWxlc3RpYWwvc2VjdG9yLzEucG5nCGh1ZVNoaWZ0BDsGcHJlZml4BQVBbHBoYQ93b3JsZFBhcmFtZXRlcnMHAgt0aHJlYXRMZXZlbAYCBAIEAg51bmxvY2tlZEJpb21lcwYHBQRhcmlkBQZkZXNlcnQFBmZvcmVzdAUEc25vdwUEbW9vbgUGYmFycmVuBQ1hc3Rlcm9pZGZpZWxkBGJldGELQmV0YSBTZWN0b3IAAADUWh1fvwRCZXRhBwILdGhyZWF0TGV2ZWwGAgQEBAQOdW5sb2NrZWRCaW9tZXMGCQUEYXJpZAUGZGVzZXJ0BQhzYXZhbm5haAUGZm9yZXN0BQRzbm93BQRtb29uBQZqdW5nbGUFBmJhcnJlbgUNYXN0ZXJvaWRmaWVsZAcHAmlkBQRiZXRhBG5hbWUFC0JldGEgU2VjdG9yCnNlY3RvclNlZWQEtYuh6v5+DHNlY3RvclN5bWJvbAUXL2NlbGVzdGlhbC9zZWN0b3IvMi5wbmcIaHVlU2hpZnQEAAZwcmVmaXgFBEJldGEPd29ybGRQYXJhbWV0ZXJzBwILdGhyZWF0TGV2ZWwGAgQEBAQOdW5sb2NrZWRCaW9tZXMGCQUEYXJpZAUGZGVzZXJ0BQhzYXZhbm5haAUGZm9yZXN0BQRzbm93BQRtb29uBQZqdW5nbGUFBmJhcnJlbgUNYXN0ZXJvaWRmaWVsZAVnYW1tYQxHYW1tYSBTZWN0b3IAAADMTMw79wVHYW1tYQcCC3RocmVhdExldmVsBgIEBgQGDnVubG9ja2VkQmlvbWVzBgoFBGFyaWQFBmRlc2VydAUIc2F2YW5uYWgFBmZvcmVzdAUEc25vdwUEbW9vbgUGanVuZ2xlBQpncmFzc2xhbmRzBQZiYXJyZW4FDWFzdGVyb2lkZmllbGQHBwJpZAUFZ2FtbWEEbmFtZQUMR2FtbWEgU2VjdG9yCnNlY3RvclNlZWQEs4nM4e9uDHNlY3RvclN5bWJvbAUXL2NlbGVzdGlhbC9zZWN0b3IvMy5wbmcIaHVlU2hpZnQEPAZwcmVmaXgFBUdhbW1hD3dvcmxkUGFyYW1ldGVycwcCC3RocmVhdExldmVsBgIEBgQGDnVubG9ja2VkQmlvbWVzBgoFBGFyaWQFBmRlc2VydAUIc2F2YW5uYWgFBmZvcmVzdAUEc25vdwUEbW9vbgUGanVuZ2xlBQpncmFzc2xhbmRzBQZiYXJyZW4FDWFzdGVyb2lkZmllbGQFZGVsdGEMRGVsdGEgU2VjdG9yAAAA1Ooj2GcFRGVsdGEHAgt0aHJlYXRMZXZlbAYCBAgECA51bmxvY2tlZEJpb21lcwYOBQRhcmlkBQZkZXNlcnQFCHNhdmFubmFoBQZmb3Jlc3QFBHNub3cFBG1vb24FBmp1bmdsZQUKZ3Jhc3NsYW5kcwUFbWFnbWEFCXRlbnRhY2xlcwUGdHVuZHJhBQh2b2xjYW5pYwUGYmFycmVuBQ1hc3Rlcm9pZGZpZWxkBwcCaWQFBWRlbHRhBG5hbWUFDERlbHRhIFNlY3RvcgpzZWN0b3JTZWVkBLWdop7hTgxzZWN0b3JTeW1ib2wFFy9jZWxlc3RpYWwvc2VjdG9yLzQucG5nCGh1ZVNoaWZ0BHgGcHJlZml4BQVEZWx0YQ93b3JsZFBhcmFtZXRlcnMHAgt0aHJlYXRMZXZlbAYCBAgECA51bmxvY2tlZEJpb21lcwYOBQRhcmlkBQZkZXNlcnQFCHNhdmFubmFoBQZmb3Jlc3QFBHNub3cFBG1vb24FBmp1bmdsZQUKZ3Jhc3NsYW5kcwUFbWFnbWEFCXRlbnRhY2xlcwUGdHVuZHJhBQh2b2xjYW5pYwUGYmFycmVuBQ1hc3Rlcm9pZGZpZWxkB3NlY3RvcngIWCBTZWN0b3IAAABjhzJHNwFYBwILdGhyZWF0TGV2ZWwGAgQKBBQOdW5sb2NrZWRCaW9tZXMGDgUEYXJpZAUGZGVzZXJ0BQhzYXZhbm5haAUGZm9yZXN0BQRzbm93BQRtb29uBQZqdW5nbGUFCmdyYXNzbGFuZHMFBW1hZ21hBQl0ZW50YWNsZXMFBnR1bmRyYQUIdm9sY2FuaWMFBmJhcnJlbgUNYXN0ZXJvaWRmaWVsZAcIAmlkBQdzZWN0b3J4BG5hbWUFCFggU2VjdG9yCnNlY3RvclNlZWQEmPDzkpxuDHNlY3RvclN5bWJvbAUXL2NlbGVzdGlhbC9zZWN0b3IveC5wbmcIaHVlU2hpZnQEgTQIcHZwRm9yY2UDAQZwcmVmaXgFAVgPd29ybGRQYXJhbWV0ZXJzBwILdGhyZWF0TGV2ZWwGAgQKBBQOdW5sb2NrZWRCaW9tZXMGDgUEYXJpZAUGZGVzZXJ0BQhzYXZhbm5haAUGZm9yZXN0BQRzbm93BQRtb29uBQZqdW5nbGUFCmdyYXNzbGFuZHMFBW1hZ21hBQl0ZW50YWNsZXMFBnR1bmRyYQUIdm9sY2FuaWMFBmJhcnJlbgUNYXN0ZXJvaWRmaWVsZA=="
         unlocked_sector_magic = base64.decodestring(magic_sector.encode("ascii"))
         rejection = build_packet(
-            packets.Packets.CONNECT_RESPONSE,
-            packets.connect_response().build(
+            packets.Packets.CONNECT_FAILURE,
+            packets.connect_failure().build(
                 Container(
-                    success=False,
-                    client_id=0,
-                    reject_reason=reason,
-                    celestial_info_exists=False,
-                    celestial_data=None
+                    reject_reason=reason
                 )
             ) + unlocked_sector_magic
         )
         self.protocol.transport.write(rejection)
         self.protocol.transport.loseConnection()
 
-    def on_connect_response(self, data):
+    def on_connect_failure(self,data):
+        self.protocol.transport.loseConnection()
+
+    def on_connect_success(self, data):
         try:
-            connection_parameters = connect_response().parse(data.data)
-            if not connection_parameters.success:
-                self.protocol.transport.loseConnection()
-            else:
-                self.protocol.player.client_id = connection_parameters.client_id
-                self.protocol.player.logged_in = True
-                self.protocol.player.party_id = ""
-                self.logger.info("Player %s (UUID: %s, IP: %s) logged in" % (
-                    self.protocol.player.name, self.protocol.player.uuid,
-                    self.protocol.transport.getPeer().host))
+            connection_parameters = connect_success().parse(data.data)
+            #if not connection_parameters.success:
+            #    self.protocol.transport.loseConnection()
+            #else:
+            self.protocol.player.client_id = connection_parameters.client_id
+            self.protocol.player.logged_in = True
+            self.protocol.player.party_id = ""
+            self.logger.info("Player %s (UUID: %s, IP: %s) logged in" % (
+                self.protocol.player.name, self.protocol.player.uuid,
+                self.protocol.transport.getPeer().host))
         except:
-            self.logger.exception("Exception in on_connect_response, player info may not have been logged.")
+            self.logger.exception("Exception in on_connect_success, player info may not have been logged.")
         finally:
             return True
 

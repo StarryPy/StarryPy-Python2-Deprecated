@@ -18,14 +18,7 @@ class BasePlugin(object):
     name = "Base Plugin"
     description = "The common class for all plugins to inherit from."
     version = ".1"
-    depends = []
-    auto_activate = True
-
-    def __init__(self):
-        plugin_config = self.config.plugin_config
-        if 'auto_activate' not in plugin_config:
-            plugin_config['auto_activate'] = self.auto_activate
-        self.config.plugin_config = plugin_config
+    depends = [] 
 
     def activate(self):
         """
@@ -101,6 +94,9 @@ class BasePlugin(object):
     def on_entity_interact_result(self, data):
         return True
 
+    def on_update_tile_protection(self, data):
+        return True
+
     def on_modify_tile_list(self, data):
         return True
 
@@ -173,10 +169,13 @@ class BasePlugin(object):
     def on_update_world_properties(self, data):
         return True
 
-    def on_heartbeat(self, data):
+    def on_step_update(self, data):
         return True
 
-    def on_connect_response(self, data):
+    def on_connect_success(self, data):
+        return True
+
+    def on_connect_failure(self, data):
         return True
 
     def on_chat_sent(self, data):
@@ -192,6 +191,9 @@ class BasePlugin(object):
         return True
 
     def on_player_warp(self, data):
+        return True
+
+    def on_player_warp_result(self, data):
         return True
 
     def on_fly_ship(self, data):
@@ -255,6 +257,9 @@ class BasePlugin(object):
         return True
 
     def after_entity_interact_result(self, data):
+        return True
+
+    def after_update_tile_protection(self, data):
         return True
 
     def after_modify_tile_list(self, data):
@@ -329,10 +334,13 @@ class BasePlugin(object):
     def after_update_world_properties(self, data):
         return True
 
-    def after_heartbeat(self, data):
+    def after_step_update(self, data):
         return True
 
-    def after_connect_response(self, data):
+    def after_connect_success(self, data):
+        return True
+
+    def after_connect_failure(self, data):
         return True
 
     def after_chat_sent(self, data):
@@ -348,6 +356,9 @@ class BasePlugin(object):
         return True
 
     def after_player_warp(self, data):
+        return True
+
+    def after_player_warp_result(self, data):
         return True
 
     def after_fly_ship(self, data):
@@ -371,10 +382,9 @@ class SimpleCommandPlugin(BasePlugin):
     name = "simple_command_plugin"
     description = "Provides a simple parent class to define chat commands."
     version = "0.1"
-    depends = ["command_dispatcher"]
+    depends = ["command_plugin"]
     commands = []
     command_aliases = {}
-    auto_activate = True
 
     def activate(self):
         super(SimpleCommandPlugin, self).activate()
@@ -382,12 +392,12 @@ class SimpleCommandPlugin(BasePlugin):
             f = getattr(self, command)
             if not callable(f):
                 raise CommandNameError("Could not find a method called %s" % command)
-            self.plugins['command_dispatcher'].register(f, command)
+            self.plugins['command_plugin'].register(f, command)
         for command, alias_list in self.command_aliases.iteritems():
             for alias in alias_list:
-                self.plugins['command_dispatcher'].register(alias, command)
+                self.plugins['command_plugin'].register(alias, command)
 
     def deactivate(self):
         super(SimpleCommandPlugin, self).deactivate()
         for command in self.commands:
-            self.plugins['command_dispatcher'].unregister(command)
+            self.plugins['command_plugin'].unregister(command)

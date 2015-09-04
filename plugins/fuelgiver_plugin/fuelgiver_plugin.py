@@ -1,7 +1,7 @@
 #Kamilion's Fuel Giver plugin (https://gist.github.com/kamilion/9150547)
 from base_plugin import SimpleCommandPlugin
 from utility_functions import give_item_to_player
-from plugins.core.player_manager import permissions, UserLevels
+from plugins.core.player_manager_plugin import permissions, UserLevels
 from time import time
 
 
@@ -10,13 +10,12 @@ class FuelGiver(SimpleCommandPlugin):
     Courteously give players fuel once a day (for those who ask for it).
     """
     name = "fuelgiver_plugin"
-    depends = ["command_dispatcher", "player_manager"]
+    depends = ["command_plugin", "player_manager_plugin"]
     commands = ["fuel"]
-    auto_activate = True
 
     def activate(self):
         super(FuelGiver, self).activate()
-        self.player_manager = self.plugins['player_manager'].player_manager
+        self.player_manager = self.plugins['player_manager_plugin'].player_manager
 
     @permissions(UserLevels.GUEST)
     def fuel(self, data):
