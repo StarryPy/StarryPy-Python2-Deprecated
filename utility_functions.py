@@ -21,12 +21,13 @@ def give_item_to_player(player_protocol, item, count=1):
         logger.warn("Attempted to give more items than the max allowed (%s). Capping amount.", item_maximum_stacks * item_stack_maximum)
         item_count = item_maximum_stacks * item_stack_maximum
     
-    for item_count / item_stack_maximum:
+    stacks, leftovers = divmod(item_count, item_stack_maximum)
+    for i in range(stacks):
         item_packet = build_packet(packets.Packets.GIVE_ITEM, packets.give_item_write(item, item_stack_maximum))
         player_protocol.transport.write(item_packet)
-    item_leftovers = build_packet(packets.Packets.GIVE_ITEM, packets.give_item_write(item, item_count%item_stack_maximum))
-    player_protocol.transport.write(item_packet)
-    
+    if leftovers:
+        item_packet = build_packet(packets.Packets.GIVE_ITEM, packets.give_item_write(item, leftovers))
+        player_protocol.transport.write(item_packet)
     return item_count
 
 def recursive_dictionary_update(d, u):
