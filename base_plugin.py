@@ -56,7 +56,7 @@ class BasePlugin(object):
     description = 'The common class for all plugins to inherit from.'
     version = '.1'
     depends = []
-    active = True
+    active = False
 
     def __init__(self, *args, **kwargs):
         super(BasePlugin, self).__init__(*args, **kwargs)
@@ -72,7 +72,6 @@ class BasePlugin(object):
         Called when the plugins are activated, do any setup work here.
         """
         self.active = True
-        self.logger.debug('%s plugin object activated.', self.name)
         return True
 
     def deactivate(self):
@@ -81,7 +80,6 @@ class BasePlugin(object):
         as it is likely that the plugin will soon be destroyed.
         """
         self.active = False
-        self.logger.debug('%s plugin object deactivated', self.name)
         return True
 
     def on_protocol_version(self, data):

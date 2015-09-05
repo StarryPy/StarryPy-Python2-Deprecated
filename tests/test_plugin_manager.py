@@ -2,7 +2,7 @@ from unittest import TestCase
 
 from mock import Mock, patch, call
 
-from plugin_manager import PluginManager
+from plugin_manager import PluginManager, route
 
 
 class PluginManagetTestCase(TestCase):
@@ -62,6 +62,7 @@ class PluginManagetTestCase(TestCase):
         self.assertTrue(mock_f.isdir.called)
         self.assertFalse(mock_f.basename.called)
 
+    @patch.object(PluginManager, 'de_map_plugin_packets')
     @patch('plugin_manager.reversed')
     @patch('plugin_manager.sys')
     @patch('plugin_manager.path')
@@ -71,7 +72,8 @@ class PluginManagetTestCase(TestCase):
         mock_config,
         mock_path,
         mock_sys,
-        mock_reversed
+        mock_reversed,
+        mock_de_map
     ):
         mock_reversed.side_effect = reversed
         pm = PluginManager(Mock())
@@ -84,6 +86,7 @@ class PluginManagetTestCase(TestCase):
 
         mock_reversed.assert_called_with([1])
         self.assertTrue(pm.plugins[1].deactivate.called)
+        mock_de_map.assert_called_with(pm.plugins[1])
 
     @patch('plugin_manager.sys')
     @patch('plugin_manager.path')
@@ -101,3 +104,51 @@ class PluginManagetTestCase(TestCase):
         result = pm.installed_plugins()
 
         self.assertListEqual(result, ['plugin'])
+
+
+class RouteTestCase(TestCase):
+    @patch('plugin_manager.reactor')
+    @patch('plugin_manager.deferLater')
+    @patch('plugin_manager.logging')
+    def test_route_response_true(self, mock_logging, mock_defer, mock_reactor):
+        test_func = Mock()
+        mock_pm = Mock()
+        mock_self = Mock()
+        mock_self.plugin_manager = mock_pm
+        add_err_back = Mock()
+        mock_defer.return_value = add_err_back
+        logger = Mock()
+        mock_logging.getLogger.return_value = logger
+
+        test_f = route(test_func)
+        test_f(mock_self, 'data')
+
+        mock_pm.do.assert_called_with(mock_self, 'on', 'data')
+        mock_defer.assert_called_with(
+            mock_reactor, .01, mock_pm.do, mock_self, 'after', 'data'
+        )
+        self.assertTrue(add_err_back.addErrback.called)
+        self.assertTrue(mock_logging.getLogger.called)
+
+        error_callback = add_err_back.addErrback.call_args[0][0]
+        self.assertFalse(logger.error.called)
+        error_callback('test')
+        self.assertTrue(logger.error.called)
+
+    @patch('plugin_manager.reactor')
+    @patch('plugin_manager.deferLater')
+    @patch('plugin_manager.logging')
+    def test_route_response_false(
+        self, mock_logging, mock_defer, mock_reactor
+    ):
+        test_func = Mock()
+        mock_pm = Mock()
+        mock_pm.do.return_value = False
+        mock_self = Mock()
+        mock_self.plugin_manager = mock_pm
+
+        test_f = route(test_func)
+        test_f(mock_self, 'data')
+
+        mock_pm.do.assert_called_with(mock_self, 'on', 'data')
+        self.assertFalse(mock_defer.called)

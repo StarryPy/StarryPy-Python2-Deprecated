@@ -50,3 +50,5 @@ nosetests.xml
 
 # Mac cleanup
 .DS_Store
+
+cover
