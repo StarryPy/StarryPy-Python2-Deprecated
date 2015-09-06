@@ -255,8 +255,11 @@ class PluginManager(object):
             try:
                 plugin.protocol = protocol
                 res = packet_method(data)
-                if res is None:
+                if res is False:
+                    return False
+                elif res is None:
                     res = True
+
                 return_values.append(res)
             except:
                 self.logger.exception(
