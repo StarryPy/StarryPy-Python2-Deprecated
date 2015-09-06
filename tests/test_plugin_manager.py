@@ -105,6 +105,101 @@ class PluginManagetTestCase(TestCase):
 
         self.assertListEqual(result, ['plugin'])
 
+    @patch('plugin_manager.sys')
+    @patch('plugin_manager.path')
+    @patch('plugin_manager.ConfigurationManager')
+    def test_de_map_plugin_packets(self, mock_config, mock_path, mock_sys):
+        mock_plugin = Mock()
+        mock_plugin.name = 'Test'
+
+        pm = PluginManager(Mock())
+        pm.packets = {
+            1: {
+                'on': {
+                    'Test': 'remove me'
+                },
+                'after': {'Test2': 'test'}
+            },
+            2: {
+                'on': {
+                    'Test': 'remove me',
+                    'Test3': 'test'
+                },
+                'after': {
+                    'Test': 'remove me'
+                },
+            }
+        }
+        pm.de_map_plugin_packets(mock_plugin)
+        self.assertDictEqual(
+            pm.packets,
+            {
+                1: {
+                    'on': {},
+                    'after': {'Test2': 'test'}
+                },
+                2: {
+                    'on': {
+                        'Test3': 'test'
+                    },
+                    'after': {},
+                }
+            }
+        )
+
+    @patch('plugin_manager.sys')
+    @patch('plugin_manager.path')
+    @patch('plugin_manager.ConfigurationManager')
+    def test_map_plugin_packets(self, mock_config, mock_path, mock_sys):
+        mock_plugin = Mock()
+        mock_plugin.name = 'Test'
+        mock_plugin.overridden_packets = {
+            1: {
+                'on': 'add me on 1',
+                'after': 'add me after 1'
+            }
+        }
+        mock_plugin2 = Mock()
+        mock_plugin2.name = 'Test2'
+        mock_plugin2.overridden_packets = {
+            2: {
+                'on': 'add me on 2'
+            },
+            3: {
+                'after': 'add me after 2'
+            }
+        }
+
+        pm = PluginManager(Mock())
+        pm.map_plugin_packets(mock_plugin)
+
+        self.assertDictEqual(
+            pm.packets,
+            {
+                1: {
+                    'on': {'Test': (mock_plugin, 'add me on 1')},
+                    'after': {'Test': (mock_plugin, 'add me after 1')}
+                }
+            }
+        )
+
+        pm.map_plugin_packets(mock_plugin2)
+        self.assertDictEqual(
+            pm.packets,
+            {
+                1: {
+                    'on': {'Test': (mock_plugin, 'add me on 1')},
+                    'after': {'Test': (mock_plugin, 'add me after 1')}
+                },
+                2: {
+                    'on': {'Test2': (mock_plugin2, 'add me on 2')}
+                },
+                3: {
+                    'after': {'Test2': (mock_plugin2, 'add me after 2')}
+                }
+            }
+        )
+
 
 class RouteTestCase(TestCase):
     @patch('plugin_manager.reactor')
