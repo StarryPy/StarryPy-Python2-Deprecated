@@ -22,7 +22,7 @@ def give_item_to_player(player_protocol, item, count=1):
         item_count = item_maximum_stacks * item_stack_maximum
     
     stacks, leftovers = divmod(item_count, item_stack_maximum)
-    for i in range(stacks):
+    for i in xrange(stacks):
         item_packet = build_packet(packets.Packets.GIVE_ITEM, packets.give_item_write(item, item_stack_maximum))
         player_protocol.transport.write(item_packet)
     if leftovers:
