@@ -12,26 +12,23 @@ import errno
 path = FilePath(os.path.dirname(os.path.abspath(__file__)))
 logger = logging.getLogger("starrypy.utility_functions")
 
-
 def give_item_to_player(player_protocol, item, count=1):
     logger.debug("Attempting to give item %s (count: %s) to %s", item, count, player_protocol.player.name)
     item_count = int(count)
-    hard_max = 90000
-    if item_count > hard_max:
-        logger.warn("Attempted to give more items than the max allowed (%s). Capping amount.", hard_max)
-        item_count = hard_max
-    maximum = 1000
-    given = 0
-    while item_count > 0:
-        x = item_count
-        if x > maximum:
-            x = maximum
-        item_packet = build_packet(packets.Packets.GIVE_ITEM, packets.give_item_write(item, x + 1))
+    item_maximum_stacks = 120
+    item_stack_maximum = 1000
+    if item_count > item_maximum_stacks * item_stack_maximum:
+        logger.warn("Attempted to give more items than the max allowed (%s). Capping amount.", item_maximum_stacks * item_stack_maximum)
+        item_count = item_maximum_stacks * item_stack_maximum
+    
+    stacks, leftovers = divmod(item_count, item_stack_maximum)
+    for i in xrange(stacks):
+        item_packet = build_packet(packets.Packets.GIVE_ITEM, packets.give_item_write(item, item_stack_maximum))
         player_protocol.transport.write(item_packet)
-        item_count -= x
-        given += x
-    return given
-
+    if leftovers:
+        item_packet = build_packet(packets.Packets.GIVE_ITEM, packets.give_item_write(item, leftovers))
+        player_protocol.transport.write(item_packet)
+    return item_count
 
 def recursive_dictionary_update(d, u):
     for k, v in u.iteritems():
