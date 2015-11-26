@@ -52,3 +52,4 @@ nosetests.xml
 .DS_Store
 
 cover
+.noseids
