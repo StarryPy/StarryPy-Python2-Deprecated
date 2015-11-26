@@ -9,7 +9,7 @@ class BasePluginTestCase(TestCase):
         with self.assertRaises(AttributeError):
             base_plugin.overridden_packets
 
-    def test_activation_defactivation(self):
+    def test_activation_deactivation(self):
         class TestPlugin(BasePlugin):
             pass
 
