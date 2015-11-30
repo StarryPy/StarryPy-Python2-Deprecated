@@ -7,9 +7,6 @@ class Announcer(BasePlugin):
     """
     name = 'announcer_plugin'
 
-    def activate(self):
-        super(Announcer, self).activate()
-
     def after_connect_success(self, data):
         self.factory.broadcast(
             '{} logged in.'.format(
