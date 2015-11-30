@@ -9,7 +9,7 @@ class AdminMessenger(BasePlugin):
     """
     Adds support to message moderators/admins/owner with a @@ prefixed message.
     """
-    name = "admin_messenger"
+    name = 'admin_messenger'
     depends = ['player_manager_plugin']
 
     def activate(self):
@@ -26,48 +26,56 @@ class AdminMessenger(BasePlugin):
             return False
         return True
 
-    def message_admins(self, message):
-        now = datetime.now()
+    def add_timestamp(self, add_normalizer=False):
         if self.config.chattimestamps:
-            timestamp = "^red;<{}> ^yellow;".format(now.strftime("%H:%M"))
+            now = datetime.now()
+            timestamp = '^red;<{}> '.format(now.strftime('%H:%M'))
+            if add_normalizer:
+                return '{}^yellow;'.format(timestamp)
+            return timestamp
         else:
-            timestamp = ""
+            return ''
+
+    def message_admins(self, message):
+        timestamp = self.add_timestamp(add_normalizer=True)
+        message = message.message[2:].decode('utf-8')
+
         for protocol in self.factory.protocols.itervalues():
             if protocol.player.access_level >= UserLevels.MODERATOR:
                 protocol.send_chat_message(
-                    "{}{}ADMIN: ^yellow;<{}^yellow;> {}{}".format(
-                        timestamp,
-                        self.config.colors["moderator"],
-                        self.protocol.player.colored_name(self.config.colors),
-                        self.config.colors["moderator"],
-                        message.message[2:].decode("utf-8")
+                    '{timestamp}{moderator_colors}'
+                    'ADMIN: ^yellow;<{player_colors}^yellow;> '
+                    '{moderator_colors}{message}'.format(
+                        timestamp=timestamp,
+                        moderator_colors=self.config.colors['moderator'],
+                        player_colors=(
+                            self.protocol.player.colored_name(
+                                self.config.colors
+                            )
+                        ),
+                        message=message
                     )
                 )
                 self.logger.info(
-                    "Received an admin message from %s. Message: %s",
-                    self.protocol.player.name,
-                    message.message[2:].decode("utf-8")
+                    'Received an admin message from %s. Message: %s',
+                    self.protocol.player.name, message
                 )
 
     @permissions(UserLevels.ADMIN)
     def broadcast_message(self, message):
-        now = datetime.now()
-        if self.config.chattimestamps:
-            timestamp = "^red;<{}> ".format(now.strftime("%H:%M"))
-        else:
-            timestamp = ""
+        timestamp = self.add_timestamp()
 
         for protocol in self.factory.protocols.itervalues():
             protocol.send_chat_message(
-                "{}{}BROADCAST: ^red;{}{}".format(
+                '{}{}BROADCAST: ^red;{}{}'.format(
                     timestamp,
-                    self.config.colors["admin"],
-                    message.message[3:].decode("utf-8").upper(),
-                    self.config.colors["default"]
+                    self.config.colors['admin'],
+                    message.message[3:].decode('utf-8').upper(),
+                    self.config.colors['default']
                 )
             )
             self.logger.info(
-                "Broadcast from %s. Message: %s",
+                'Broadcast from %s. Message: %s',
                 self.protocol.player.name,
-                message.message[3:].decode("utf-8").upper()
+                message.message[3:].decode('utf-8').upper()
             )
