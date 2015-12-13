@@ -247,3 +247,10 @@ class RouteTestCase(TestCase):
 
         mock_pm.do.assert_called_with(mock_self, 'on', 'data')
         self.assertFalse(mock_defer.called)
+
+    @patch.object(PluginManager, 'deactivate_plugins')
+    def test_die(self, mock_deactivate):
+        plugin_manager = PluginManager(Mock())
+
+        plugin_manager.die()
+        self.assertTrue(mock_deactivate.called)
