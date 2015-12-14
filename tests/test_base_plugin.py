@@ -9,7 +9,7 @@ class BasePluginTestCase(TestCase):
         with self.assertRaises(AttributeError):
             base_plugin.overridden_packets
 
-    def test_activation_deactivation(self):
+    def test_activation_defactivation(self):
         class TestPlugin(BasePlugin):
             pass
 
@@ -38,9 +38,8 @@ class BasePluginTestCase(TestCase):
 
         test_plugin2 = TestPlugin2()
         test_plugin = TestPlugin()
-        self.maxDiff = None
         self.assertDictEqual(
-            test_plugin.overridden_methods,
+            test_plugin.overridden_packets,
             {
                 5: {
                     'on': test_plugin.on_chat_received
@@ -51,7 +50,7 @@ class BasePluginTestCase(TestCase):
             }
         )
         self.assertDictEqual(
-            test_plugin2.overridden_methods,
+            test_plugin2.overridden_packets,
             {
                 44: {
                     'on': test_plugin2.on_burn_container,
