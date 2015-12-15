@@ -42,7 +42,7 @@ class TeleportPlugin(SimpleCommandPlugin):
         Player teleportation system. By default, this system will teleport a
         player to another player. Use subcommands to modify this behavior.
         Available subcommands are:
-        ^cyan;player, ship, home, ^gray;outpost, bookmark, poi
+        ^cyan;player, home, ^gray;ship, outpost, bookmark, poi
         """
         self.logger.vdebug('Teleport command called')
         if not data:
@@ -61,7 +61,7 @@ class TeleportPlugin(SimpleCommandPlugin):
         Player teleportation system. By default, this system will teleport a
         player to another player. Use subcommands to modify this behavior.
         Available subcommands are:
-        ^cyan;player, ship, home
+        ^cyan;player, home
         """
         self.teleport(data)
 
@@ -71,7 +71,7 @@ class TeleportPlugin(SimpleCommandPlugin):
         Player teleportation system. By default, this system will teleport a
         player to another player. Use subcommands to modify this behavior.
         Available subcommands are:
-        ^cyan;player, ship, home
+        ^cyan;player, home
         """
         self.protocol.send_chat_message(self.teleport.__doc__)
 
@@ -159,69 +159,71 @@ class TeleportPlugin(SimpleCommandPlugin):
         Syntax: /teleport ship (destination player) [source player]
         """
         usage = 'Syntax: /teleport ship (destination player) [source player]'
-        if not data:
-            self.protocol.send_chat_message(self.teleport_to_ship.__doc__)
-            return
+        self.protocol.send_chat_message('This is not yet implemented.')
 
-        destination, rest = extract_name(data)
-        if not self._validate_player(destination):
-            self.protocol.send_chat_message(usage)
-            return
-        destination = destination.lower()
+        # if not data:
+        #     self.protocol.send_chat_message(self.teleport_to_ship.__doc__)
+        #     return
 
-        if not rest:
-            source = self.protocol.player.name
-            source = source.lower()
-        else:
-            source, rest = extract_name(rest)
-            if not self._validate_player(source):
-                self.protocol.send_chat_message(usage)
-                return
-            source = source.lower()
+        # destination, rest = extract_name(data)
+        # if not self._validate_player(destination):
+        #     self.protocol.send_chat_message(usage)
+        #     return
+        # destination = destination.lower()
 
-        if source == destination:
-            self.teleport_to_own_ship(None)
-            return
+        # if not rest:
+        #     source = self.protocol.player.name
+        #     source = source.lower()
+        # else:
+        #     source, rest = extract_name(rest)
+        #     if not self._validate_player(source):
+        #         self.protocol.send_chat_message(usage)
+        #         return
+        #     source = source.lower()
 
-        destination_player = self.player_manager.get_logged_in_by_name(
-            destination
-        )
-        if destination_player is None:
-            self.logger.debug(
-                'Error: Player %s is not logged in.', destination
-            )
-            self.protocol.send_chat_message(
-                'Error: Player {} is not logged in.'.format(destination)
-            )
-            return
+        # if source == destination:
+        #     self.teleport_to_own_ship(None)
+        #     return
 
-        source_player = self.player_manager.get_logged_in_by_name(source)
-        if source_player is None:
-            self.logger.debug('Error: Player %s is not logged in.', source)
-            self.protocol.send_chat_message(
-                'Error: Player {} is not logged in.'.format(source)
-            )
-            return
+        # destination_player = self.player_manager.get_logged_in_by_name(
+        #     destination
+        # )
+        # if destination_player is None:
+        #     self.logger.debug(
+        #         'Error: Player %s is not logged in.', destination
+        #     )
+        #     self.protocol.send_chat_message(
+        #         'Error: Player {} is not logged in.'.format(destination)
+        #     )
+        #     return
 
-        source_protocol = self.factory.protocols[source_player.protocol]
-        teleport_packet = build_packet(
-            Packets.PLAYER_WARP,
-            player_warp_toplayerworld_write(
-                destination=destination_player.uuid
-            )
-        )
+        # source_player = self.player_manager.get_logged_in_by_name(source)
+        # if source_player is None:
+        #     self.logger.debug('Error: Player %s is not logged in.', source)
+        #     self.protocol.send_chat_message(
+        #         'Error: Player {} is not logged in.'.format(source)
+        #     )
+        #     return
 
-        source_protocol.client_protocol.transport.write(teleport_packet)
+        # source_protocol = self.factory.protocols[source_player.protocol]
+        # teleport_packet = build_packet(
+        #     Packets.PLAYER_WARP,
+        #     player_warp_toplayerworld_write(
+        #         destination=destination_player.uuid
+        #     )
+        # )
 
-        self.logger.debug(
-            "Teleport command called by %s. Teleporting %s to %s's ship",
-            self.protocol.player.name, source, destination
-        )
-        self.protocol.send_chat_message(
-            "Teleported ^green;{}^yellow; to ^green;{}^yellow;'s ship.".format(
-                source, destination
-            )
-        )
+        # source_protocol.client_protocol.transport.write(teleport_packet)
+
+        # self.logger.debug(
+        #     "Teleport command called by %s. Teleporting %s to %s's ship",
+        #     self.protocol.player.name, source, destination
+        # )
+        # self.protocol.send_chat_message(
+        #     "Teleported ^green;{}^yellow; to ^green;{}^yellow;'s ship.".format(
+        #         source, destination
+        #     )
+        # )
 
     @permissions(UserLevels.REGISTERED)
     def teleport_to_own_ship(self, data):
