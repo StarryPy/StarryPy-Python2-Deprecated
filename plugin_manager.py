@@ -208,7 +208,8 @@ class PluginManager(object):
     def activate_plugins(self, plugins, dependencies):
         for plugin in (self.plugins_waiting_to_load[x] for x in plugins):
             try:
-                self.plugins[plugin.name] = plugin()
+                instance = plugin()
+                self.plugins[plugin.name] = instance
                 self.logger.debug('Instantiated plugin "%s"', plugin.name)
                 if len(plugin.depends) > 0:
                     plugin_deps = (
@@ -217,7 +218,7 @@ class PluginManager(object):
                     for p in plugin_deps:
                         self.plugin_classes[plugin.name].plugins[p.name] = p
                 self.plugins[plugin.name].activate()
-                self.map_plugin_packets(plugin)
+                self.map_plugin_packets(instance)
             except FatalPluginError as e:
                 self.logger.critical(
                     'A plugin reported a fatal error. Error: %s', str(e)
@@ -275,7 +276,7 @@ class PluginManager(object):
         """
         Maps plugin overridden packets ready to use in do method.
         """
-        for packet_id, when_dict in plugin.overridden_packets.iteritems():
+        for packet_id, when_dict in plugin.overridden_methods.iteritems():
             for when, packet_method in when_dict.iteritems():
                 self.packets.setdefault(
                     packet_id, {}

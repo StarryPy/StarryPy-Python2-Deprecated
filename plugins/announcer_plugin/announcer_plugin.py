@@ -2,13 +2,10 @@ from base_plugin import BasePlugin
 
 
 class Announcer(BasePlugin):
-    '''
+    """
     Broadcasts a message whenever a player joins or leaves the server.
-    '''
+    """
     name = 'announcer_plugin'
-
-    def activate(self):
-        super(Announcer, self).activate()
 
     def after_connect_success(self, data):
         self.factory.broadcast(
