@@ -19,6 +19,7 @@ class TeleportPlugin(SimpleCommandPlugin):
     commands = ['teleport', 'tp']
 
     def __init__(self):
+        super(TeleportPlugin, self).__init__()
         self.subcommands = {
             'help': self.teleport_help,
             'player': self.teleport_to_player,

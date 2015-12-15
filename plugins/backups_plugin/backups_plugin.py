@@ -20,6 +20,7 @@ class BackupsPlugin(SimpleCommandPlugin):
     commands = ['backup']
 
     def __init__(self):
+        super(BackupsPlugin, self).__init__()
         self._prep_path('backups')
         self.subcommands = {
             'help': self.backup_help,
