@@ -27,8 +27,8 @@ class PluginManagerPlugin(SimpleCommandPlugin):
         ]
 
         self.protocol.send_chat_message(
-            'Currently loaded plugins: ^yellow;%s'.format(
-                '^green;, ^yellow;'.join(
+            'Currently loaded plugins: ^green; {}'.format(
+                '^yellow;, ^green;'.join(
                     [
                         plugin
                         for plugin in self.plugin_manager.plugins.iterkeys()
@@ -39,8 +39,8 @@ class PluginManagerPlugin(SimpleCommandPlugin):
 
         if len(inactive_plugins) > 0:
             self.protocol.send_chat_message(
-                'Inactive plugins: ^red;%s'.format(
-                    '^green;, ^red;'.join(inactive_plugins)
+                'Inactive plugins: ^red; {}'.format(
+                    '^yellow;, ^red;'.join(inactive_plugins)
                 )
             )
 
