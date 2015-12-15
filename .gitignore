@@ -1,4 +1,3 @@
-.cache
 *.py[cod]
 
 # C extensions
@@ -53,4 +52,3 @@ nosetests.xml
 .DS_Store
 
 cover
-.noseids

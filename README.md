@@ -2,8 +2,6 @@
 
 StarryPy is Twisted-based plugin-driven Starbound server wrapper. It is currently in beta.
 
-# The build is currently broken while we are applying a PEP8 pull request.
-
 ## Features
 
 With the built-in plugins (which are removable):
