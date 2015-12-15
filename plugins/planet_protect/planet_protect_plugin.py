@@ -173,14 +173,10 @@ class PlanetProtectPlugin(SimpleCommandPlugin):
             return
         if planet in self.player_planets:
             self.protocol.send_chat_message(
-                'Players registered to this planet: ^yellow;{}'.format(
-                    '^green;, ^yellow;'.join(
-                        (
-                            self.player_planets[planet]
-                            .replace('[', '')
-                            .replace(']', '')
-                        )
-                    )
+                'Players registered to this planet: ^green;{}'.format(
+                    '^yellow;, ^green;'.join(self.player_planets[planet])
+                    .replace('[', '')
+                    .replace(']', '')
                 )
             )
         else:
