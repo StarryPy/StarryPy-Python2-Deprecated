@@ -8,11 +8,31 @@ import sqlite3
 
 from sqlalchemy.ext.mutable import Mutable
 from sqlalchemy.orm import sessionmaker, relationship, backref
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey, Boolean, func, exc
-from sqlalchemy.ext.declarative import declarative_base as sqla_declarative_base
+from sqlalchemy import (
+    create_engine,
+    Column,
+    Integer,
+    String,
+    DateTime,
+    ForeignKey,
+    Boolean,
+    func,
+    exc
+)
+from sqlalchemy.ext.declarative import (
+    declarative_base as sqla_declarative_base
+)
 from twisted.words.ewords import AlreadyLoggedIn
 from sqlalchemy.types import TypeDecorator, VARCHAR
+
 from utility_functions import path
+
+
+logger = logging.getLogger('starrypy.player_manager.manager')
+
+
+def declarative_base(cls):
+    return sqla_declarative_base(cls=cls)
 
 
 @contextmanager
@@ -45,21 +65,21 @@ def migrate_db(config):
     dbcon = sqlite3.connect(path.preauthChild(config.player_db).path)
     dbcur = dbcon.cursor()
 
-    res = dbcur.execute("PRAGMA user_version;")
+    res = dbcur.execute('PRAGMA user_version;')
     db_version = res.fetchone()[0]
     try:
         if db_version is 0:
             dbcur.execute('DROP TABLE `ips`;')
-            dbcur.execute("PRAGMA user_version = 1;")
-            logger.info("Migrating DB from version 0 to version 1.")
+            dbcur.execute('PRAGMA user_version = 1;')
+            logger.info('Migrating DB from version 0 to version 1.')
     except sqlite3.OperationalError, e:
-        logger.info("No DB exists. Will create a new one.")
+        logger.info('No DB exists. Will create a new one.')
 
     try:
         dbcur.execute('SELECT org_name FROM players;')
     except sqlite3.OperationalError, e:
-        if "column" in str(e):
-            logger.info("Updating DB to include org_name column.")
+        if 'column' in str(e):
+            logger.info('Updating DB to include org_name column.')
             dbcur.execute('ALTER TABLE `players` ADD COLUMN `org_name`;')
             dbcur.execute('UPDATE `players` SET `org_name`=`name`;')
             dbcon.commit()
@@ -67,26 +87,24 @@ def migrate_db(config):
     try:
         dbcur.execute('SELECT party_id FROM players;')
     except sqlite3.OperationalError, e:
-        if "column" in str(e):
-            logger.info("Updating DB to include party_id column.")
+        if 'column' in str(e):
+            logger.info('Updating DB to include party_id column.')
             dbcur.execute('ALTER TABLE `players` ADD COLUMN `party_id`;')
-            dbcur.execute('UPDATE `players` SET `party_id`="";')
+            dbcur.execute('UPDATE `players` SET `party_id`='';')
             dbcon.commit()
 
     try:
         dbcur.execute('SELECT admin_logged_in FROM players;')
     except sqlite3.OperationalError, e:
-        if "column" in str(e):
-            logger.info("Updating DB to include admin_logged_in column.")
-            dbcur.execute('ALTER TABLE `players` ADD COLUMN `admin_logged_in`;')
+        if 'column' in str(e):
+            logger.info('Updating DB to include admin_logged_in column.')
+            dbcur.execute(
+                'ALTER TABLE `players` ADD COLUMN `admin_logged_in`;'
+            )
             dbcur.execute('UPDATE `players` SET `admin_logged_in`=0;')
             dbcon.commit()
 
     dbcon.close()
-
-logger = logging.getLogger("starrypy.player_manager.manager")
-
-declarative_base = lambda cls: sqla_declarative_base(cls=cls)
 
 
 @declarative_base
@@ -116,11 +134,12 @@ class Banned(Exception):
 
 class _UserLevels(object):
     ranks = dict(
-    GUEST = 0,
-    REGISTERED = 1,
-    MODERATOR = 10,
-    ADMIN = 100,
-    OWNER = 1000)
+        GUEST=0,
+        REGISTERED=1,
+        MODERATOR=10,
+        ADMIN=100,
+        OWNER=1000
+    )
     ranks_reverse = dict(zip(ranks.values(), ranks.keys()))
 
     def __call__(self, lvl, *args, **kwargs):
@@ -203,21 +222,25 @@ class Player(Base):
     on_ship = Column(Boolean)
     muted = Column(Boolean)
 
-    ips = relationship("IPAddress", order_by="IPAddress.id", backref="players")
+    ips = relationship('IPAddress', order_by='IPAddress.id', backref='players')
 
     def colored_name(self, colors):
-        logger.vdebug("Building colored name.")
+        logger.vdebug('Building colored name.')
         color = colors[UserLevels(self.access_level).lower()]
-        logger.vdebug("Color is %s", color)
+        logger.vdebug('Color is %s', color)
         name = self.name
-        logger.vdebug("Name is %s", name)
-        logger.vdebug("Returning the following data for colored name. %s:%s:%s",
-                     color, name, colors['default'])
-        return color + name + colors["default"]
+        logger.vdebug('Name is %s', name)
+        logger.vdebug(
+            'Returning the following data for colored name. %s:%s:%s',
+            color,
+            name,
+            colors['default']
+        )
+        return '{}{}{}'.format(color, name, colors['default'])
 
     @property
     def storage(self):
-        caller = inspect.stack()[2][0].f_locals["self"].__class__.name
+        caller = inspect.stack()[2][0].f_locals['self'].__class__.name
         if self.plugin_storage is None:
             self.plugin_storage = {}
         try:
@@ -228,7 +251,7 @@ class Player(Base):
 
     @storage.setter
     def storage(self, store):
-        caller = inspect.stack()[2][0].f_locals["self"].__class__.name
+        caller = inspect.stack()[2][0].f_locals['self'].__class__.name
         self.plugin_storage[caller] = store
 
     def as_dict(self):
@@ -242,7 +265,7 @@ class IPAddress(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     ip = Column(String(16))
     uuid = Column(String, ForeignKey('players.uuid'))
-    player = relationship("Player", backref=backref('players', order_by=id))
+    player = relationship('Player', backref=backref('players', order_by=id))
 
 
 class Ban(Base):
@@ -256,22 +279,32 @@ class PlayerManager(object):
     def __init__(self, config):
         self.config = config
         migrate_db(self.config)
-        logger.info("Loading player database.")
+        logger.info('Loading player database.')
         try:
-            self.engine = create_engine('sqlite:///%s' % path.preauthChild(self.config.player_db).path)
+            self.engine = create_engine(
+                'sqlite:///{}'.format(
+                    path.preauthChild(self.config.player_db).path
+                )
+            )
         except exc.SQLAlchemyError as e:
-            logger.warning("SQL Errror: %s", e)
+            logger.warning('SQL Errror: %s', e)
         Base.metadata.create_all(self.engine)
         self.sessionmaker = sessionmaker(bind=self.engine, autoflush=True)
         with _autoclosing_session(self.sessionmaker) as session:
-            for player in session.query(Player).filter_by(logged_in=True).all():
+            query = session.query(Player).filter_by(logged_in=True).all()
+            for player in query:
                 player.logged_in = False
                 player.admin_logged_in = False
-                player.party_id = ""
+                player.party_id = ''
                 player.protocol = None
                 session.commit()
 
-    def _cache_and_return_from_session(self, session, record, collection=False):
+    def _cache_and_return_from_session(
+        self,
+        session,
+        record,
+        collection=False
+    ):
         to_return = record
 
         if not isinstance(record, Base):
@@ -280,50 +313,66 @@ class PlayerManager(object):
         if collection:
             to_return = []
             for r in record:
-                to_return.append(RecordWithAttachedSession(r, self.sessionmaker))
+                to_return.append(
+                    RecordWithAttachedSession(r, self.sessionmaker)
+                )
         else:
             to_return = RecordWithAttachedSession(record, self.sessionmaker)
 
         return to_return
 
-    def fetch_or_create(self, uuid, name, org_name, admin_logged_in, ip, protocol=None):
+    def fetch_or_create(
+        self,
+        uuid,
+        name,
+        org_name,
+        admin_logged_in,
+        ip,
+        protocol=None
+    ):
         with _autoclosing_session(self.sessionmaker) as session:
-            if session.query(Player).filter_by(uuid=uuid, logged_in=True).first():
+            query = session.query(Player).filter_by(uuid=uuid, logged_in=True)
+            if query.first():
                 raise AlreadyLoggedIn
             if self.check_bans(ip):
                 raise Banned
             if self.check_bans(org_name):
                 raise Banned
-            #while (self.get_by_name(name) and not self.get_by_org_name(org_name)) or (
-            #                self.get_by_name(name) and self.get_by_org_name(org_name) and self.get_by_name(
-            #                name).uuid != self.get_by_org_name(org_name).uuid):
-            #    logger.info("Got a duplicate nickname, SOMEONE MAY BE TRYING TO IMPERSONATE OTHERS!")
-            #    name += "_"
+
             player = session.query(Player).filter_by(uuid=uuid).first()
+
             if player:
+                query = session.query(IPAddress).filter_by(uuid=uuid, ip=ip)
                 if player.name != name:
-                    logger.info("Detected username change.")
+                    logger.info('Detected username change.')
                     player.name = name
-                if not session.query(IPAddress).filter_by(uuid=uuid, ip=ip).first():
-                    logger.debug("New ip address detected for user. Adding to database.")
+                if not query.first():
+                    logger.debug(
+                        'New ip address detected for user. Adding to database.'
+                    )
                     player.ips.append(IPAddress(ip=ip))
                     player.ip = ip
+
                 player.protocol = protocol
                 player.last_seen = datetime.datetime.now()
                 player.admin_logged_in = admin_logged_in
             else:
-                logger.info("Adding new player with name: %s" % name)
-                player = Player(uuid=uuid, name=name, org_name=org_name,
-                                last_seen=datetime.datetime.now(),
-                                access_level=int(UserLevels.GUEST),
-                                logged_in=False,
-                                admin_logged_in=False,
-                                protocol=protocol,
-                                client_id=-1,
-                                party_id="",
-                                ip=ip,
-                                planet="",
-                                on_ship=True)
+                logger.info('Adding new player with name: %s', name)
+                player = Player(
+                    uuid=uuid,
+                    name=name,
+                    org_name=org_name,
+                    last_seen=datetime.datetime.now(),
+                    access_level=int(UserLevels.GUEST),
+                    logged_in=False,
+                    admin_logged_in=False,
+                    protocol=protocol,
+                    client_id=-1,
+                    party_id='',
+                    ip=ip,
+                    planet='',
+                    on_ship=True
+                )
                 player.ips = [IPAddress(ip=ip)]
                 session.add(player)
             if uuid == self.config.owner_uuid:
@@ -364,7 +413,10 @@ class PlayerManager(object):
 
     def whois(self, name):
         with _autoclosing_session(self.sessionmaker) as session:
-            return session.query(Player).filter(func.lower(Player.name) == func.lower(name)).first()
+            query = session.query(Player).filter(
+                func.lower(Player.name) == func.lower(name)
+            )
+            return (query).first()
 
     def list_bans(self):
         with _autoclosing_session(self.sessionmaker) as session:
@@ -377,8 +429,7 @@ class PlayerManager(object):
     def unban(self, ip):
         with _autoclosing_session(self.sessionmaker) as session:
             res = session.query(Ban).filter_by(ip=ip).first()
-            if res == None:
-                #self.protocol.send_chat_message(self.user_management_commands.unban.__doc__)
+            if res is None:
                 return
             session.delete(res)
             session.commit()
@@ -405,21 +456,27 @@ class PlayerManager(object):
         with _autoclosing_session(self.sessionmaker) as session:
             return self._cache_and_return_from_session(
                 session,
-                session.query(Player).filter(func.lower(Player.name) == func.lower(name)).first(),
+                session.query(Player).filter(
+                    func.lower(Player.name) == func.lower(name)
+                ).first(),
             )
 
     def get_by_org_name(self, org_name):
         with _autoclosing_session(self.sessionmaker) as session:
             return self._cache_and_return_from_session(
                 session,
-                session.query(Player).filter(func.lower(Player.org_name) == func.lower(org_name)).first(),
+                session.query(Player).filter(
+                    func.lower(Player.org_name) == func.lower(org_name)
+                ).first(),
             )
 
     def get_by_uuid(self, uuid):
         with _autoclosing_session(self.sessionmaker) as session:
             return self._cache_and_return_from_session(
                 session,
-                session.query(Player).filter(func.lower(Player.uuid) == func.lower(uuid)).first(),
+                session.query(Player).filter(
+                    func.lower(Player.uuid) == func.lower(uuid)
+                ).first(),
             )
 
     def get_logged_in_by_name(self, name):
@@ -434,7 +491,9 @@ class PlayerManager(object):
 
 
 def permissions(level=UserLevels.OWNER):
-    """Provides a decorator to enable/disable permissions based on user level."""
+    """
+    Provides a decorator to enable/disable permissions based on user level.
+    """
 
     def wrapper(f):
         f.level = level
@@ -444,13 +503,18 @@ def permissions(level=UserLevels.OWNER):
             if self.protocol.player.access_level >= level:
                 if level >= UserLevels.MODERATOR:
                     if self.protocol.player.admin_logged_in == 0:
-                        self.protocol.send_chat_message("^red;You're not logged in, so I can't let you do that.^yellow;")
+                        self.protocol.send_chat_message(
+                            '^red;You\'re not logged in, so I can\'t '
+                            'let you do that.^yellow;'
+                        )
                     else:
                         return f(self, *args, **kwargs)
                 else:
                     return f(self, *args, **kwargs)
             else:
-                self.protocol.send_chat_message("You are not authorized to do this.")
+                self.protocol.send_chat_message(
+                    'You are not authorized to do this.'
+                )
                 return False
 
         return wrapped_function

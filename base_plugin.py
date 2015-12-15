@@ -1,31 +1,35 @@
+# encoding: utf-8
+
+
 class BasePlugin(object):
     """
-    Defines an interface for all plugins to inherit from. Note that the __init__
-    method should generally not be overrode; all setup work should be done in
-    activate() if possible. If you do override __init__, remember to super()!
+    Defines an interface for all plugins to inherit from. Note that the
+    __init__ method should generally not be overrode; all setup work should be
+    done in activate() if possible. If you do override __init__, remember to
+    super()!
 
     Note that only one instance of each plugin will be instantiated for *all*
     connected clients. self.protocol will be changed by the plugin manager to
     the current protocol.
 
     You may access the factory if necessary via self.factory.protocols
-    to access other clients, but this "Is Not A Very Good Idea" (tm)
+    to access other clients, but this 'Is Not A Very Good Idea' (tm)
 
     `name` *must* be defined in child classes or else the plugin manager will
     complain quite thoroughly.
     """
 
-    name = "Base Plugin"
-    description = "The common class for all plugins to inherit from."
-    version = ".1"
-    depends = [] 
+    name = 'Base Plugin'
+    description = 'The common class for all plugins to inherit from.'
+    version = '.1'
+    depends = []
 
     def activate(self):
         """
         Called when the plugins are activated, do any setup work here.
         """
         self.active = True
-        self.logger.debug("%s plugin object activated.", self.name)
+        self.logger.debug('%s plugin object activated.', self.name)
         return True
 
     def deactivate(self):
@@ -34,7 +38,7 @@ class BasePlugin(object):
         as it is likely that the plugin will soon be destroyed.
         """
         self.active = False
-        self.logger.debug("%s plugin object deactivated", self.name)
+        self.logger.debug('%s plugin object deactivated', self.name)
         return True
 
     def on_protocol_version(self, data):
@@ -368,7 +372,9 @@ class BasePlugin(object):
         return True
 
     def __repr__(self):
-        return "<Plugin instance: %s (version %s)>" % (self.name, self.version)
+        return '<Plugin instance: {} (version {})>'.format(
+            self.name, self.version
+        )
 
 
 class CommandNameError(Exception):
@@ -379,10 +385,10 @@ class CommandNameError(Exception):
 
 
 class SimpleCommandPlugin(BasePlugin):
-    name = "simple_command_plugin"
-    description = "Provides a simple parent class to define chat commands."
-    version = "0.1"
-    depends = ["command_plugin"]
+    name = 'simple_command_plugin'
+    description = 'Provides a simple parent class to define chat commands.'
+    version = '0.1'
+    depends = ['command_plugin']
     commands = []
     command_aliases = {}
 
@@ -391,7 +397,9 @@ class SimpleCommandPlugin(BasePlugin):
         for command in self.commands:
             f = getattr(self, command)
             if not callable(f):
-                raise CommandNameError("Could not find a method called %s" % command)
+                raise CommandNameError(
+                    'Could not find a method called {}'.format(command)
+                )
             self.plugins['command_plugin'].register(f, command)
         for command, alias_list in self.command_aliases.iteritems():
             for alias in alias_list:
