@@ -4,4 +4,3 @@ enum34
 construct
 tornado
 nose
-mock

@@ -59,13 +59,11 @@ class BasePlugin(object):
     active = False
 
     def __init__(self, *args, **kwargs):
-        self.overridden_methods = {}
         super(BasePlugin, self).__init__(*args, **kwargs)
         if self.__class__.__name__ != 'BasePlugin':
             for packet, when_dict in self.overridden_packets.iteritems():
-                self.overridden_methods.setdefault(packet, {})
                 for when, packet_name in when_dict.iteritems():
-                    self.overridden_methods[packet][when] = getattr(
+                    self.overridden_packets[packet][when] = getattr(
                         self, packet_name
                     )
 
