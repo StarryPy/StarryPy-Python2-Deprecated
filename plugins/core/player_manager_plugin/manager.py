@@ -502,7 +502,7 @@ def permissions(level=UserLevels.OWNER):
         def wrapped_function(self, *args, **kwargs):
             if self.protocol.player.access_level >= level:
                 if level >= UserLevels.MODERATOR:
-                    if self.protocol.player.admin_logged_in == 0:
+                    if not self.protocol.player.admin_logged_in:
                         self.protocol.send_chat_message(
                             '^red;You\'re not logged in, so I can\'t '
                             'let you do that.^yellow;'
