@@ -500,6 +500,9 @@ def permissions(level=UserLevels.OWNER):
 
         @wraps(f)
         def wrapped_function(self, *args, **kwargs):
+            if self.protocol is None:
+                return False
+
             if self.protocol.player.access_level >= level:
                 if level >= UserLevels.MODERATOR:
                     if not self.protocol.player.admin_logged_in:
