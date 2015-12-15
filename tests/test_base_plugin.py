@@ -7,7 +7,7 @@ class BasePluginTestCase(TestCase):
     def test_mapping_override_packets_dont_include_base_plugin(self):
         base_plugin = BasePlugin()
         with self.assertRaises(AttributeError):
-            base_plugin.overridden_packets
+            base_plugin.overridden_methods
 
     def test_activation_deactivation(self):
         class TestPlugin(BasePlugin):
@@ -40,7 +40,7 @@ class BasePluginTestCase(TestCase):
         test_plugin = TestPlugin()
         self.maxDiff = None
         self.assertDictEqual(
-            test_plugin.overridden_methods,
+            test_plugin.overridden_packets,
             {
                 5: {
                     'on': test_plugin.on_chat_received
@@ -51,7 +51,7 @@ class BasePluginTestCase(TestCase):
             }
         )
         self.assertDictEqual(
-            test_plugin2.overridden_methods,
+            test_plugin2.overridden_packets,
             {
                 44: {
                     'on': test_plugin2.on_burn_container,

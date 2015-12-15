@@ -153,7 +153,7 @@ class PluginManagetTestCase(TestCase):
     def test_map_plugin_packets(self, mock_config, mock_path, mock_sys):
         mock_plugin = Mock()
         mock_plugin.name = 'Test'
-        mock_plugin.overridden_methods = {
+        mock_plugin.overridden_packets = {
             1: {
                 'on': 'add me on 1',
                 'after': 'add me after 1'
@@ -161,7 +161,7 @@ class PluginManagetTestCase(TestCase):
         }
         mock_plugin2 = Mock()
         mock_plugin2.name = 'Test2'
-        mock_plugin2.overridden_methods = {
+        mock_plugin2.overridden_packets = {
             2: {
                 'on': 'add me on 2'
             },
