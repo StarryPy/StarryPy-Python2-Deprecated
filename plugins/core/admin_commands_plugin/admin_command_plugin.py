@@ -16,7 +16,7 @@ class UserCommandPlugin(SimpleCommandPlugin):
     name = 'admin_commands_plugin'
     depends = ['command_plugin', 'player_manager_plugin']
     commands = [
-        'who', 'whoami', 'whois', 'promote', 'kick', 'ban', 'ban_list',
+        'who', 'whois', 'promote', 'kick', 'ban', 'ban_list',
         'unban', 'item', 'planet', 'mute', 'unmute', 'passthrough', 'shutdown',
         'timestamps'
     ]
@@ -61,27 +61,27 @@ class UserCommandPlugin(SimpleCommandPlugin):
             )
         )
 
-    @permissions(UserLevels.GUEST)
-    def whoami(self, data):
-        """
-        Displays client data about yourself.
-        Syntax: /whoami
-        """
-        info = self.protocol.player
-        self.protocol.send_chat_message(
-            'Name: {} ^green;: ^gray;{}\nUserlevel: ^yellow;{}^green; '
-            '(^gray;{}^green;)\nUUID: ^yellow;{}^green;\nIP address: '
-            '^cyan;{}^green;\nCurrent planet: ^yellow;{}^green;'.format(
-                info.colored_name(self.config.colors),
-                info.org_name,
-                UserLevels(info.access_level),
-                info.last_seen.strftime('%c'),
-                info.uuid,
-                info.ip,
-                info.planet
-            )
-        )
-        return False
+    # @permissions(UserLevels.GUEST)
+    # def whoami(self, data):
+    #     """
+    #     Displays client data about yourself.
+    #     Syntax: /whoami
+    #     """
+    #     info = self.protocol.player
+    #     self.protocol.send_chat_message(
+    #         'Name: {} ^green;: ^gray;{}\nUserlevel: ^yellow;{}^green; '
+    #         '(^gray;{}^green;)\nUUID: ^yellow;{}^green;\nIP address: '
+    #         '^cyan;{}^green;\nCurrent planet: ^yellow;{}^green;'.format(
+    #             info.colored_name(self.config.colors),
+    #             info.org_name,
+    #             UserLevels(info.access_level),
+    #             info.last_seen.strftime('%c'),
+    #             info.uuid,
+    #             info.ip,
+    #             info.planet
+    #         )
+    #     )
+    #     return False
 
     @permissions(UserLevels.REGISTERED)
     def whois(self, data):
