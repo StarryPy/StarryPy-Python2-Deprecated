@@ -1,4 +1,35 @@
 # encoding: utf-8
+import re
+
+from packets import Packets
+
+
+packet_name_regex = re.compile(r'(?P<when>on|after)_(?P<packet_name>\w+)')
+
+
+class MapOverridePacketsMethods(type):
+    ignored_methods = ('activate', 'deactivate')
+
+    def __new__(cls, name, bases, cls_dict):
+        if name != 'BasePlugin':
+            cls_dict['overridden_packets'] = {}
+            methods = (
+                key for key, value in cls_dict.iteritems()
+                if key not in cls.ignored_methods and callable(value)
+            )
+            for packet_method_name in methods:
+                packet = packet_name_regex.match(packet_method_name)
+                if packet:
+                    packet_name = packet.group('packet_name').upper()
+                    enum = getattr(Packets, packet_name, None)
+                    if enum:
+                        cls_dict['overridden_packets'].setdefault(
+                            enum.value, {}
+                        )[packet.group('when')] = packet_method_name
+
+        return super(MapOverridePacketsMethods, cls).__new__(
+            cls, name, bases, cls_dict
+        )
 
 
 class BasePlugin(object):
@@ -19,17 +50,30 @@ class BasePlugin(object):
     complain quite thoroughly.
     """
 
+    __metaclass__ = MapOverridePacketsMethods
+
     name = 'Base Plugin'
     description = 'The common class for all plugins to inherit from.'
     version = '.1'
     depends = []
+    active = False
+
+    def __init__(self, *args, **kwargs):
+        self.overridden_methods = {}
+        super(BasePlugin, self).__init__(*args, **kwargs)
+        if self.__class__.__name__ != 'BasePlugin':
+            for packet, when_dict in self.overridden_packets.iteritems():
+                self.overridden_methods.setdefault(packet, {})
+                for when, packet_name in when_dict.iteritems():
+                    self.overridden_methods[packet][when] = getattr(
+                        self, packet_name
+                    )
 
     def activate(self):
         """
         Called when the plugins are activated, do any setup work here.
         """
         self.active = True
-        self.logger.debug('%s plugin object activated.', self.name)
         return True
 
     def deactivate(self):
@@ -38,7 +82,6 @@ class BasePlugin(object):
         as it is likely that the plugin will soon be destroyed.
         """
         self.active = False
-        self.logger.debug('%s plugin object deactivated', self.name)
         return True
 
     def on_protocol_version(self, data):
@@ -371,10 +414,13 @@ class BasePlugin(object):
     def after_central_structure_update(self, data):
         return True
 
-    def __repr__(self):
-        return '<Plugin instance: {} (version {})>'.format(
+    def __unicode__(self):
+        return u'<Plugin instance: {} (version {})>'.format(
             self.name, self.version
         )
+
+    def __str__(self):
+        return self.__unicode__()
 
 
 class CommandNameError(Exception):

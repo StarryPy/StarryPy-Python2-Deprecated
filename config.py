@@ -5,22 +5,16 @@ import inspect
 import sys
 import os
 
-from utility_functions import recursive_dictionary_update, path
-
-
-class Singleton(type):
-    _instances = {}
-
-    def __call__(cls, *args, **kwargs):
-        if cls not in cls._instances:
-            cls._instances[cls] = super(Singleton, cls).__call__(
-                *args, **kwargs
-            )
-        return cls._instances[cls]
+from utility_functions import (
+    recursive_dictionary_update,
+    path,
+    Singleton
+)
 
 
 class ConfigurationManager(object):
     __metaclass__ = Singleton
+
     logger = logging.getLogger('starrypy.config.ConfigurationManager')
     log_format = logging.Formatter(
         '%(asctime)s - %(levelname)s - %(name)s # %(message)s'

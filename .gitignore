@@ -1,3 +1,4 @@
+.cache
 *.py[cod]
 
 # C extensions
@@ -50,3 +51,6 @@ nosetests.xml
 
 # Mac cleanup
 .DS_Store
+
+cover
+.noseids

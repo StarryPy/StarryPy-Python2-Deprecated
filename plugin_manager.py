@@ -52,6 +52,7 @@ class PluginManager(object):
 
         :param base_class: The base class to use while searching for plugins.
         """
+        self.packets = {}
         self.plugins = {}
         self.plugin_classes = {}
         self.plugins_waiting_to_load = {}
@@ -65,6 +66,7 @@ class PluginManager(object):
         self.plugin_dir = path.child(self.config.plugin_path)
         sys.path.append(self.plugin_dir.path)
 
+    def prepare(self):
         self.load_plugins(
             [
                 'core.admin_commands_plugin',
@@ -87,23 +89,18 @@ class PluginManager(object):
 
     def installed_plugins(self):
         """
-        Get list of all plugins in the plugin_dir.
-
-        :param name: None
-        :return: Array of plugin names.
+        Returns list of all plugins in the plugin_dir.
         """
-        installed_plugins = filter(
-            None,
+        return filter(
+            lambda name: not (name is None or name == 'core'),
             (
-                self.get_plugin_name_from_file(f)
-                for f in self.plugin_dir.globChildren('*')
+                self.get_plugin_name_from_file(plugin_file)
+                for plugin_file in self.plugin_dir.globChildren('*')
             )
         )
 
-        # don't list core as a plugin
-        return filter(lambda name: name != 'core', installed_plugins)
-
-    def get_plugin_name_from_file(self, f):
+    @staticmethod
+    def get_plugin_name_from_file(f):
         if f.isdir():
             return f.basename()
         else:
@@ -114,7 +111,6 @@ class PluginManager(object):
         Import plugin that has the given name, and is a subclass of base_class.
 
         :param name: The name of the plugin to import.
-        :return: None
         """
         try:
             mod = __import__(name, globals(), locals(), [], 0)
@@ -221,6 +217,7 @@ class PluginManager(object):
                     for p in plugin_deps:
                         self.plugin_classes[plugin.name].plugins[p.name] = p
                 self.plugins[plugin.name].activate()
+                self.map_plugin_packets(plugin)
             except FatalPluginError as e:
                 self.logger.critical(
                     'A plugin reported a fatal error. Error: %s', str(e)
@@ -236,8 +233,9 @@ class PluginManager(object):
                     'A plugin reported a fatal error. Error: %s', str(e)
                 )
                 raise
+            self.de_map_plugin_packets(plugin)
 
-    def do(self, protocol, command, data):
+    def do(self, protocol, when, data):
         """
         Runs a command across all currently loaded plugins.
 
@@ -248,27 +246,51 @@ class PluginManager(object):
         :return: Whether or not all plugins returned True or None.
         :rtype: bool
         """
-        return_values = []
         if protocol is None:
             return True
-        for plugin in self.plugins.itervalues():
+
+        return_values = []
+        packets = self.packets.get(data.id, {}).get(when, {}).itervalues()
+        for plugin, packet_method in packets:
             try:
-                if not plugin.active:
-                    continue
                 plugin.protocol = protocol
-                res = getattr(plugin, command, lambda _: True)(data)
-                if res is None:
+                res = packet_method(data)
+                if res is False:
+                    return False
+                elif res is None:
                     res = True
+
                 return_values.append(res)
             except:
                 self.logger.exception(
                     'Error in plugin %s with function %s.',
-                    str(plugin), command
+                    str(plugin), packet_method.__name__
                 )
         return all(return_values)
 
     def die(self):
         self.deactivate_plugins()
+
+    def map_plugin_packets(self, plugin):
+        """
+        Maps plugin overridden packets ready to use in do method.
+        """
+        for packet_id, when_dict in plugin.overridden_methods.iteritems():
+            for when, packet_method in when_dict.iteritems():
+                self.packets.setdefault(
+                    packet_id, {}
+                ).setdefault(
+                    when, {}
+                )[plugin.name] = (plugin, packet_method)
+
+    def de_map_plugin_packets(self, plugin):
+        """
+        Removes plugin overridden packets method from packets dictionary.
+        """
+        for packet_id, when_dict in self.packets.iteritems():
+            for when, plugins in when_dict.iteritems():
+                if plugin.name in plugins:
+                    plugins.pop(plugin.name)
 
 
 def route(func):
@@ -278,10 +300,7 @@ def route(func):
     logger = logging.getLogger('starrypy.plugin_manager.route')
 
     def wrapped_function(self, data):
-        name = func.__name__
-        on = 'on_%s' % name
-        after = 'after_%s' % name
-        res = self.plugin_manager.do(self, on, data)
+        res = self.plugin_manager.do(self, 'on', data)
         if res:
             res = func(self, data)
             d = deferLater(
@@ -289,7 +308,7 @@ def route(func):
                 .01,
                 self.plugin_manager.do,
                 self,
-                after,
+                'after',
                 data
             )
             d.addErrback(print_this_defered_failure)
