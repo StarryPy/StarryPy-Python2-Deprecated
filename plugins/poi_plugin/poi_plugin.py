@@ -22,7 +22,7 @@ class PointsofInterest(SimpleCommandPlugin):
             'player_manager_plugin'
         ].player_manager
         try:
-            with open(os.path.join('config', 'pois.json')) as f:
+            with open(os.path.join('config', 'pois.json'), 'r') as f:
                 self.pois = json.load(f)
         except:
             self.pois = []
@@ -93,10 +93,7 @@ class PointsofInterest(SimpleCommandPlugin):
         """
         name = ' '.join(name).strip().strip('\t')
         if not name:
-            warps = []
-            for warp in self.pois:
-                if warps:
-                    warps.append(warp[1])
+            warps = [warp[1] for warp in self.pois]
             warpnames = '^green;, ^yellow;'.join(warps)
             if not warpnames:
                 warpnames = '^gray;(none)^green;'
@@ -173,7 +170,7 @@ class PointsofInterest(SimpleCommandPlugin):
 
     def savepois(self):
         try:
-            with open(os.path.join('config' 'pois.json', 'wb')) as f:
+            with open(os.path.join('config', 'pois.json'), 'wb') as f:
                 json.dump(self.pois, f)
         except:
             self.logger.exception('Couldn\'t save PoI\'s.')
