@@ -222,13 +222,9 @@ class ClaimsPlugin(SimpleCommandPlugin):
             )
             self.protocol.send_chat_message(
                 'Players registered to this planet: ^yellow;{}'.format(
-                    '^green;, ^yellow;'.join(
-                        (
-                            self.player_planets[planet]
-                            .replace('[', '')
-                            .replace(']', '')
-                        )
-                    )
+                    '^green;, ^yellow;'.join(self.player_planets[planet])
+                    .replace('[', '')
+                    .replace(']', '')
                 )
             )
         elif planet in self.unclaimable_planets:

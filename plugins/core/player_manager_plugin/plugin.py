@@ -256,9 +256,10 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
         Changes player nickname.
         Syntax: /nick_set (name) (new name)
         """
-        if data:
+        if not data:
             self.protocol.send_chat_message(self.nick_set.__doc__)
             return
+
         try:
             first_name, rest = extract_name(data)
 
@@ -271,8 +272,10 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
                 'please surround it by quotes!'
             )
             return
+
         if not rest:
             self.protocol.send_chat_message(self.nick_set.__doc__)
+            return
         else:
             try:
                 second_name = extract_name(rest)[0]
@@ -286,10 +289,12 @@ class PlayerManagerPlugin(SimpleCommandPlugin):
                     'please surround it by quotes!'
                 )
                 return
+
         player = self.player_manager.get_by_name(str(first_name))
         player2 = self.player_manager.get_by_name(str(second_name))
         org_player = self.player_manager.get_by_org_name(str(first_name))
         org_player2 = self.player_manager.get_by_org_name(str(second_name))
+
         if player:
             first_uuid = player.uuid
         elif org_player:

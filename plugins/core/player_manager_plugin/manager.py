@@ -505,7 +505,7 @@ def permissions(level=UserLevels.OWNER):
 
             if self.protocol.player.access_level >= level:
                 if level >= UserLevels.MODERATOR:
-                    if not self.protocol.player.admin_logged_in:
+                    if self.protocol.player.admin_logged_in == 0:
                         self.protocol.send_chat_message(
                             '^red;You\'re not logged in, so I can\'t '
                             'let you do that.^yellow;'
