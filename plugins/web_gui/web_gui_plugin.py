@@ -17,11 +17,12 @@ from . import web_gui
 TwistedIOLoop().install()
 
 
-class WebGuiPlugin(BasePlugin, PlayerManager):
+class WebGuiPlugin(BasePlugin):
     name = 'web_gui'
     depends = ['player_manager_plugin']
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
+        super(WebGuiPlugin, self).__init__(*args, **kwargs)
         try:
             self.port = int(self.config.plugin_config['port'])
         except (AttributeError, ValueError):
