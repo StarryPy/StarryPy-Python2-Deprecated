@@ -23,12 +23,10 @@ class WebGuiPlugin(BasePlugin):
 
     def __init__(self, *args, **kwargs):
         super(WebGuiPlugin, self).__init__(*args, **kwargs)
-        self.logger.info(' == 2 == ')
         try:
             self.port = int(self.config.plugin_config['port'])
         except (AttributeError, ValueError):
             self.port = 8083
-        self.logger.info(' == 3 == ')
         self.ownerpassword = self.config.plugin_config['ownerpassword']
         self.restart_script = self.config.plugin_config['restart_script']
         if (
@@ -43,7 +41,6 @@ class WebGuiPlugin(BasePlugin):
             self.cookie_token = self.config.plugin_config['cookie_token']
         self.messages = []
         self.messages_log = []
-        self.logger.info(' == 4 == ')
 
     def activate(self):
         super(WebGuiPlugin, self).activate()
@@ -62,9 +59,7 @@ class WebGuiPlugin(BasePlugin):
             restart_script=self.restart_script
         )
         self.logger.info('WebGUI listening on port %s', self.port)
-        self.logger.info(' == 1 == ')
         self.gui_instance = tornado.ioloop.IOLoop.instance()
-        self.logger.info(' == 5 == ')
 
     def deactivate(self):
         super(WebGuiPlugin, self).deactivate()
@@ -91,7 +86,6 @@ class WebGuiPlugin(BasePlugin):
         return True
 
     def on_client_connect(self, data):
-        self.logger.info(' == 6 == ')
         parsed = client_connect().parse(data.data)
         msgdate = datetime.now().strftime('[%H:%M:%S]')
         connect_player = self.player_manager.get_by_org_name(
