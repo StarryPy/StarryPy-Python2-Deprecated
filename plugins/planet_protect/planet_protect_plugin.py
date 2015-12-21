@@ -22,9 +22,10 @@ class PlanetProtectPlugin(SimpleCommandPlugin):
 
     def activate(self):
         super(PlanetProtectPlugin, self).activate()
-        bad_packets = self.config.plugin_config.get('bad_packets', [])
-        for n in ['on_' + n.lower() for n in bad_packets]:
-            setattr(self, n, (lambda x: self.planet_check()))
+        # bad_packets = self.config.plugin_config.get('bad_packets', [])
+        # self.logger.vdebug("bad packets: %s", bad_packets)
+        # for n in ['on_' + n.lower() for n in bad_packets]:
+        #     setattr(self, n, (lambda x: self.planet_check()))
 
         self.protected_planets = self.config.plugin_config.get(
             'protected_planets', []
@@ -41,25 +42,25 @@ class PlanetProtectPlugin(SimpleCommandPlugin):
         )
         self.block_all = False
 
-    def planet_check(self):
-        if self.protocol.player.on_ship:
-            return True
-        elif (
-                self.protocol.player.planet in self.protected_planets and
-                self.protocol.player.access_level < UserLevels.ADMIN
-        ):
-            name = self.protocol.player.org_name
-            if name in self.player_planets[self.protocol.player.planet]:
-                return True
-            else:
-                return False
-        elif (
-                self.protect_everything and
-                self.protocol.player.access_level < UserLevels.REGISTERED
-        ):
-            return False
-        else:
-            return True
+    # def planet_check(self):
+    #     if self.protocol.player.on_ship:
+    #         return True
+    #     elif (
+    #             self.protocol.player.planet in self.protected_planets and
+    #             self.protocol.player.access_level < UserLevels.ADMIN
+    #     ):
+    #         name = self.protocol.player.org_name
+    #         if name in self.player_planets[self.protocol.player.planet]:
+    #             return True
+    #         else:
+    #             return False
+    #     elif (
+    #             self.protect_everything and
+    #             self.protocol.player.access_level < UserLevels.REGISTERED
+    #     ):
+    #         return False
+    #     else:
+    #         return True
 
     @permissions(UserLevels.MODERATOR)
     def protect(self, data):
@@ -75,18 +76,18 @@ class PlanetProtectPlugin(SimpleCommandPlugin):
                 self.config.colors
             )
         else:
-            self.logger.info('stream: %s', data)
+            self.logger.debug('stream: %s', data)
             addplayer = data[0]
             try:
                 addplayer, rest = extract_name(data)
-                self.logger.info('name: %s', str(addplayer))
+                self.logger.debug('name: %s', str(addplayer))
                 addplayer = self.player_manager.get_by_name(addplayer).org_name
                 first_name_color = self.player_manager.get_by_org_name(
                     addplayer
                 ).colored_name(self.config.colors)
             except:
                 self.protocol.send_chat_message(
-                    'There\'s no player named: ^yellow;{}'.format(addplayer)
+                    'There\'s no player named: ^green;{}'.format(addplayer)
                 )
                 return
 
@@ -95,8 +96,8 @@ class PlanetProtectPlugin(SimpleCommandPlugin):
         try:
             if first_name in self.player_planets[self.protocol.player.planet]:
                 self.protocol.send_chat_message(
-                    'Player ^yellow;{}^green; is already in planet protect'
-                    ' list.'.format(first_name_color)
+                    'Player {} is already in planet protect list.'
+                    .format(first_name_color)
                 )
                 return
         except:
@@ -109,9 +110,12 @@ class PlanetProtectPlugin(SimpleCommandPlugin):
                 'Can\'t protect ships (at the moment)'
             )
             return
+
         if planet not in self.protected_planets:
             self.protected_planets.append(planet)
-            self.protocol.send_chat_message('Planet successfully protected.')
+            self.protocol.send_chat_message(
+                'Planet successfully ^green;protected^yellow;.'
+            )
             self.logger.info('Protected planet %s', planet)
             if first_name:
                 if planet not in self.player_planets:
@@ -121,12 +125,12 @@ class PlanetProtectPlugin(SimpleCommandPlugin):
                         self.player_planets[planet] + [first_name]
                     )
                 self.protocol.send_chat_message(
-                    'Adding ^yellow;%s^green; to planet list'.format(
+                    'Adding {} to planet list'.format(
                         first_name_color
                     )
                 )
         else:
-            if first_name:
+            if not first_name:
                 self.protocol.send_chat_message('Planet is already protected!')
             else:
                 if planet not in self.player_planets:
@@ -136,9 +140,7 @@ class PlanetProtectPlugin(SimpleCommandPlugin):
                         self.player_planets[planet] + [first_name]
                     )
                 self.protocol.send_chat_message(
-                    'Adding ^yellow;%s^green; to planet list'.format(
-                        first_name_color
-                    )
+                    'Adding {} to planet list'.format(first_name_color)
                 )
         self.save()
 
@@ -151,11 +153,11 @@ class PlanetProtectPlugin(SimpleCommandPlugin):
         if self.protect_everything:
             self.protect_everything = False
             self.factory.broadcast(
-                'Planetary protection is now ^yellow;DISABLED'
+                'Planetary protection is now ^red;DISABLED'
             )
         else:
             self.protect_everything = True
-            self.factory.broadcast('Planetary protection is now ^red;ENABLED')
+            self.factory.broadcast('Planetary protection is now ^green;ENABLED')
         self.save()
 
     @permissions(UserLevels.MODERATOR)
@@ -203,7 +205,7 @@ class PlanetProtectPlugin(SimpleCommandPlugin):
         first_name = str(addplayer)
         if on_ship:
             self.protocol.send_chat_message(
-                'Can\'t protect ships (at the moment)'
+                'Can\'t protect ships.'
             )
             return
 
@@ -212,7 +214,7 @@ class PlanetProtectPlugin(SimpleCommandPlugin):
                 del self.player_planets[planet]
                 self.protected_planets.remove(planet)
                 self.protocol.send_chat_message(
-                    'Planet successfully unprotected.'
+                    'Planet successfully ^red;unprotected^yellow;.'
                 )
                 self.logger.info('Unprotected planet %s', planet)
             else:
@@ -221,13 +223,13 @@ class PlanetProtectPlugin(SimpleCommandPlugin):
             if first_name in self.player_planets[planet]:
                 self.player_planets[planet].remove(first_name)
                 self.protocol.send_chat_message(
-                    'Removed ^yellow;{}^green; from planet list'.format(
+                    'Removed {} from planet list'.format(
                         first_name_color
                     )
                 )
             else:
                 self.protocol.send_chat_message(
-                    'Cannot remove ^yellow;{}^green; from planet list '
+                    'Cannot remove {} from planet list '
                     '(not in list)'.format(first_name_color)
                 )
         self.save()
@@ -257,7 +259,7 @@ class PlanetProtectPlugin(SimpleCommandPlugin):
             else:
                 entities = entity_create().parse(data.data)
                 for entity in entities.entity:
-                    self.logger.vdebug('Entity Type: %s', entity.entity_type)
+                    # self.logger.vdebug('Entity Type: %s', entity.entity_type)
                     if entity.entity_type == EntityType.PROJECTILE:
                         self.logger.vdebug('projectile detected')
                         if self.block_all:
@@ -287,10 +289,6 @@ class PlanetProtectPlugin(SimpleCommandPlugin):
                 self.protocol.player.planet in self.protected_planets and
                 self.protocol.player.access_level < UserLevels.ADMIN
         ):
-            self.logger.vdebug(
-                'User %s attmepted to interact on a protected planet.',
-                self.protocol.player.name
-            )
             name = self.protocol.player.org_name
             if name in self.player_planets[self.protocol.player.planet]:
                 return True
@@ -298,8 +296,97 @@ class PlanetProtectPlugin(SimpleCommandPlugin):
                 entity = entity_interact_result().parse(data.data)
                 if entity.interaction_type == InteractionType.OPEN_CONTAINER:
                     self.logger.vdebug(
-                        'User %s attmepted to open container ID %s',
-                        self.protocol.player.name, entity.target_entity_id
+                        'Player %s attmepted to open a protected container.',
+                        self.protocol.player.name
                     )
-                    self.logger.vdebug('This is not permitted.')
                     return False
+
+    def on_modify_tile_list(self, data):
+        """
+        Block Change protection (paint, hoe, etc...)
+        """
+        if (
+                self.protocol.player.planet in self.protected_planets and
+                self.protocol.player.access_level < UserLevels.ADMIN
+        ):
+            name = self.protocol.player.org_name
+            if name in self.player_planets[self.protocol.player.planet]:
+                return True
+            else:
+                self.logger.warning(
+                    'Player %s tried to modify blocks on a protected planet',
+                    self.protocol.player.name
+                )
+                return False
+
+    def on_damage_tile_group(self, data):
+        """
+        Block Damage protection
+        """
+        if (
+                self.protocol.player.planet in self.protected_planets and
+                self.protocol.player.access_level < UserLevels.ADMIN
+        ):
+            name = self.protocol.player.org_name
+            if name in self.player_planets[self.protocol.player.planet]:
+                return True
+            else:
+                self.logger.warning(
+                    'Player %s tried to destroy blocks on a protected planet',
+                    self.protocol.player.name
+                )
+                return False
+
+    def on_collect_liquid(self, data):
+        """
+        Liquid protection
+        """
+        if (
+                self.protocol.player.planet in self.protected_planets and
+                self.protocol.player.access_level < UserLevels.ADMIN
+        ):
+            name = self.protocol.player.org_name
+            if name in self.player_planets[self.protocol.player.planet]:
+                return True
+            else:
+                self.logger.warning(
+                    'Player %s tried to collect liquid on a protected planet',
+                    self.protocol.player.name
+                )
+                return False
+
+    def on_connect_wire(self, data):
+        """
+        Wire addition protection
+        """
+        if (
+                self.protocol.player.planet in self.protected_planets and
+                self.protocol.player.access_level < UserLevels.ADMIN
+        ):
+            name = self.protocol.player.org_name
+            if name in self.player_planets[self.protocol.player.planet]:
+                return True
+            else:
+                self.logger.warning(
+                    'Player %s tried to add wires on a protected planet',
+                    self.protocol.player.name
+                )
+                return False
+
+    def on_disconnect_all_wires(self, data):
+        """
+        Wire disconnect protection
+        """
+        if (
+                self.protocol.player.planet in self.protected_planets and
+                self.protocol.player.access_level < UserLevels.ADMIN
+        ):
+            name = self.protocol.player.org_name
+            if name in self.player_planets[self.protocol.player.planet]:
+                return True
+            else:
+                self.logger.warning(
+                    'Player %s tried to disconnect wires on a protected planet',
+                    self.protocol.player.name
+                )
+                return False
