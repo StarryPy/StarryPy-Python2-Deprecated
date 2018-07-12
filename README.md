@@ -1,3 +1,5 @@
+# This project is DEPRECATED and will not work on Starbound 1.0+!
+## Please use [StarryPy3k](https://github.com/StarryPy/StarryPy3k), which supports Python 3 and Starbound 1.0+, instead!
 # StarryPy
 
 StarryPy is Twisted-based plugin-driven Starbound server wrapper. It is
